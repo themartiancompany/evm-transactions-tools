@@ -97,7 +97,8 @@ _evm_contract_call() {
   NODE_PATH="${_node_path}" \
   node \
     "${_cmd}" \
-      "${_args[@]}"
+      "${_args[@]}" || \
+    true
 }
 
 _set_overrides() {
