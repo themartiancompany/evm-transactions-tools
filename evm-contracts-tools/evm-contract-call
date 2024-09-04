@@ -44,7 +44,36 @@ _get_conf_dir_path() {
 }
 
 _evm_contract_call_type() {
-  evm-contract-call-static
+  local \
+    _type="${1}" \
+    _lib
+  _lib="$( \
+    _get_lib)/evm-contracts-tools"
+  echo \
+    "${_lib}/evm-contract-call-${_type}"
+}
+
+_node_run() {
+  local \
+    _cmd="${1}" \
+    _args=() \
+    _node_path \
+    _lib
+  shift \
+    1
+  _args=(
+    "$@"
+  )
+  _lib="$( \
+    _get_lib)"
+  _node_path="${_lib}/node_modules" 
+  export \
+    NODE_PATH="${_node_path}"
+  NODE_PATH="${_node_path}" \
+  node \
+    "${_cmd}" \
+      "${_args[@]}" || \
+    true
 }
 
 _evm_contract_call() {
@@ -54,51 +83,50 @@ _evm_contract_call() {
     _contract_method="${3}" \
     _contract_abi="${4}" \
     _target_network="${5}" \
-    _etherscan_api="${6}" \
+    _etherscan_key="${6}" \
     _cmd \
     _args=() \
-    _lib \
-    _node_path
-  _lib="$( \
-    _get_lib)/evm-contracts-tools"
+    _node_path \
+    _abi \
+    _etherscan_api_key
+  _abi="$( \
+    cat \
+      "${_contract_abi}")"
+  if [ ! -e "${_etherscan_key}" ]; then
+    _msg_error \
+      "etherscan api key file '${_etherscan_key}' not found" \
+      1
+  fi
+  _etherscan_api_key="$( \
+    cat \
+      "${_etherscan_key}")"
   if [[ "${_call_type}" == "static" ]]; then
-    _cmd="${_lib}/evm-contract-call-${_call_type}"
+    _cmd="$( \
+      _evm_contract_call_type \
+        "${_call_type}")"
     _args+=(
-      "$( \
-        _get \
-          "contract" \
-          "address")"
-      "$( \
-        _get \
-          "contract" \
-          "method")"
-      "$( \
-        cat \
-          "$( \
-            _get \
-              "contract" \
-              "abi")")"
-      "$( \
-        _get \
-          "target" \
-          "network")"
-      "$( \
-        _get \
-          "etherscan" \
-          "key")"
+      "${_contract_address}"
+      "${_contract_method}"
+      "${_abi}"
+      "${_target_network}"
+      "${_etherscan_api_key}"
     )
   fi
-  _node_path="$( \
-    _get_lib)/node_modules" 
-  _msg_info \
-    "node path: '${_node_path}'"
-  export \
-    NODE_PATH="${_node_path}"
-  NODE_PATH="${_node_path}" \
-  node \
+  _node_run \
     "${_cmd}" \
-      "${_args[@]}" || \
-    true
+    "${_args[@]}"
+}
+
+_etherscan_key_get() {
+  local \
+    _name="${1}" \
+    _conf_dir \
+  _conf_dir="${HOME}/.config/etherscan"
+  mkdir \
+    -p \
+    "${_conf_dir}"
+  echo \
+    "${_conf_dir}/${_name}.txt"
 }
 
 _set_overrides() {
@@ -117,7 +145,8 @@ _set_overrides() {
   _set_override \
     "etherscan" \
     "key" \
-    ""
+    "$(_etherscan_key_get \
+         "default")"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
