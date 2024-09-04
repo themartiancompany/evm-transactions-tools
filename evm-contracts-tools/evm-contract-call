@@ -30,6 +30,8 @@ _requirements() {
     _check_cmd \
       'node' \
       'nodejs'
+  _check_cmd \
+    'evm-contracts-abi-get'
 }
 
 _get_conf_dir_path() {
@@ -129,6 +131,32 @@ _etherscan_key_get() {
     "${_conf_dir}/${_name}.txt"
 }
 
+_contract_abi_auto_detect() {
+  local \
+    _conf_dir \
+    _contract_abi
+  _conf_dir="${HOME}/.local/share/evm-contracts-tools"
+  _contract_abi="${_conf_dir}/$( \
+    _get \
+      "contract" \
+      "address")"
+  if [ ! -e "${_contract_abi}" ]; then
+    mkdir \
+      -p \
+      "${_conf_dir}"
+    chmod \
+      700 \
+      "${_conf_dir}"
+    evm-contracts-abi-get \
+      "$(_get \
+           "contract" \
+           "address")" > \
+      "${_contract_abi}"
+  fi
+  echo \
+    "${_contract_abi}"
+}
+
 _set_overrides() {
   _set_override \
     "target" \
@@ -141,7 +169,7 @@ _set_overrides() {
   _set_override \
     "contract" \
     "abi" \
-    ""
+    "$(_contract_abi_auto_detect)"
   _set_override \
     "etherscan" \
     "key" \
