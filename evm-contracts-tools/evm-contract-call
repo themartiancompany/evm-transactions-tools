@@ -139,7 +139,7 @@ _contract_abi_auto_detect() {
   _contract_abi="${_conf_dir}/$( \
     _get \
       "contract" \
-      "address")"
+      "address").json"
   if [ ! -e "${_contract_abi}" ]; then
     mkdir \
       -p \
