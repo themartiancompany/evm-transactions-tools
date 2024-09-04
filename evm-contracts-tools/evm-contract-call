@@ -20,6 +20,7 @@ _global_variables() {
   contract_method=""
   contract_abi=""
   etherscan_key=""
+  method_args=()
   color=""
   quiet=""
 }
@@ -86,19 +87,24 @@ _evm_contract_call() {
     _contract_abi="${4}" \
     _target_network="${5}" \
     _etherscan_key="${6}" \
+    _method_args=() \
     _cmd \
     _args=() \
-    _node_path \
     _abi \
     _etherscan_api_key
-  _abi="$( \
-    cat \
-      "${_contract_abi}")"
+  shift \
+    6
+  _method_args+=(
+    "$@"
+  )
   if [ ! -e "${_etherscan_key}" ]; then
     _msg_error \
       "etherscan api key file '${_etherscan_key}' not found" \
       1
   fi
+  _abi="$( \
+    cat \
+      "${_contract_abi}")"
   _etherscan_api_key="$( \
     cat \
       "${_etherscan_key}")"
@@ -112,6 +118,7 @@ _evm_contract_call() {
       "${_abi}"
       "${_target_network}"
       "${_etherscan_api_key}"
+      "${_method_args[@]}"
     )
   fi
   _node_run \
@@ -199,11 +206,13 @@ _usage() {
       _usage_text << \
         ENDUSAGETEXT || true
 Run a smart contract function 
-usage:
+
+Usage:
   $(_get "app" "name")
     [options]
     <address>
     <method>
+    ([method_args])
   options:
      -a <address>         Contract address.
      -A <abi>             Contract ABI.
@@ -252,6 +261,7 @@ _show_config() {
   _msg_info "                Call date:   $(_get "_call" "date")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
+  _msg_info "         Method arguments:   $(_get "method" "args")"
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                Call type:   $(_get "call" "type")"
@@ -321,6 +331,11 @@ if (( 1 < $# )); then
     "method" \
     "${2}"
 fi
+shift \
+  2
+method_args=(
+  "$@"
+)
 _set_overrides
 _config_user_init \
   "$( \
@@ -353,6 +368,7 @@ app_opts=(
     _get \
       "etherscan" \
       "key")"
+  "${method_args[@]}"
 )
 
 _evm_contract_call \

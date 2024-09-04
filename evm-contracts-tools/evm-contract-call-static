@@ -6,14 +6,16 @@ _ethers = ethers;
 async function _get(
   _contract_address,
   _contract_method,
-  _network_provider) {
+  _contract_abi,
+  _network_provider,
+  _method_args) {
   _contract = new _ethers.BaseContract(
     _contract_address,
     _contract_abi,
     runner=_network_provider);
     _method = _contract.getFunction(
       _contract_method);
-    _value = await _method.staticCall();
+    _value = await _method.staticCall.apply(null, _method_args);
   return _value;
 }
 
@@ -30,14 +32,22 @@ function _get_provider(
   return _provider;
 }
 
-async function _contract_run() {
+async function _contract_run(
+  _contract_address,
+  _contract_method,
+  _contract_abi,
+  _target_network,
+  _etherscan_key,
+  _method_args) {
   _network_provider = _get_provider(
     _target_network,
     _etherscan_key);
   _value = await _get(
     _contract_address,
     _contract_method,
-    _network_provider);
+    _contract_abi,
+    _network_provider,
+    _method_args);
   console.log(
     _value);
 }
@@ -49,22 +59,33 @@ function _cmdline_parse() {
       _index,
       _array) {
       if ( _index == 2 ) {
-        _contract_address = _value
+        contract_address = _value
       }
       if ( _index == 3 ) {
-        _contract_method = _value
+        contract_method = _value
       }
       if ( _index == 4 ) {
-        _contract_abi = _value
+        contract_abi = _value
       }
       if ( _index == 5 ) {
-        _target_network = _value
+        target_network = _value
       }
       if ( _index == 6 ) {
-        _etherscan_key = _value
+        etherscan_key = _value
+      }
+      if ( 6 < _index ) {
+        method_args.push(
+	  _value)
       }
   });
 }
 
+method_args=[]
 _cmdline_parse();
-_contract_run();
+_contract_run(
+  contract_address,
+  contract_method,
+  contract_abi,
+  target_network,
+  etherscan_key,
+  method_args);
