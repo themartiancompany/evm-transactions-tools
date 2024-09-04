@@ -1,0 +1,303 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+# shellcheck disable=SC2034
+_global_variables() {
+  call_type=""
+  target_network=""
+  contract_address=""
+  contract_method=""
+  contract_abi=""
+  etherscan_key=""
+  color=""
+  quiet=""
+}
+
+_requirements() {
+  local \
+    _app
+    _check_cmd \
+      'node' \
+      'nodejs'
+}
+
+_get_conf_dir_path() {
+  local \
+    _dir
+  _dir="${HOME}/.config/$( \
+    _get \
+      "app" \
+      "name")"
+  echo \
+    "${_dir}"
+}
+
+_evm_contract_call_type() {
+  evm-contract-call-static
+}
+
+_evm_contract_call() {
+  local \
+    _call_type="${1}" \
+    _contract_address="${2}" \
+    _contract_method="${3}" \
+    _contract_abi="${4}" \
+    _target_network="${5}" \
+    _etherscan_api="${6}" \
+    _cmd \
+    _args=() \
+    _lib \
+    _node_path
+  _lib="$( \
+    _get_lib)/evm-contracts-tools"
+  if [[ "${_call_type}" == "static" ]]; then
+    _cmd="${_lib}/evm-contract-call-${_call_type}"
+    _args+=(
+      "$( \
+        _get \
+          "contract" \
+          "address")"
+      "$( \
+        _get \
+          "contract" \
+          "method")"
+      "$( \
+        cat \
+          "$( \
+            _get \
+              "contract" \
+              "abi")")"
+      "$( \
+        _get \
+          "target" \
+          "network")"
+      "$( \
+        _get \
+          "etherscan" \
+          "key")"
+    )
+  fi
+  _node_path="$( \
+    _get_lib)/node_modules" 
+  _msg_info \
+    "node path: '${_node_path}'"
+  export \
+    NODE_PATH="${_node_path}"
+  NODE_PATH="${_node_path}" \
+  node \
+    "${_cmd}" \
+      "${_args[@]}"
+}
+
+_set_overrides() {
+  _set_override \
+    "target" \
+    "network" \
+    "mainnet"
+  _set_override \
+    "call" \
+    "type" \
+    "static"
+  _set_override \
+    "contract" \
+    "abi" \
+    ""
+  _set_override \
+    "etherscan" \
+    "key" \
+    ""
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+Run a smart contract function 
+usage:
+  $(_get "app" "name")
+    [options]
+    <address>
+    <method>
+  options:
+     -a <address>         Contract address.
+     -A <abi>             Contract ABI.
+                          Default: $(_get "contract" "abi")
+     -n <network>         EVM network name.
+                          Default: $(_get "target" "network")
+     -t <call_type>       Static or dynamic.
+                          Default: $(_get "call" "type")
+     -k <etherscan_key>   Etherscan key.
+                          Default: $(_get "etherscan" "key")
+     -h                   This message.
+     -c                   Enable color output
+     -v                   Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_display_flags() {
+  local \
+    _flags=(
+      "${1}"
+    ) \
+    _flag
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info \
+    "                             ${_flag}"
+  done
+}
+
+# Shows configuration options.
+_show_config() {
+  local \
+    _call_date
+  TZ=UTC \
+  printf \
+    -v \
+      _call_date \
+    '%(%FT%R%z)T' \
+    "${SOURCE_DATE_EPOCH}"
+  _msg_info "${app_name} configuration"
+  _msg_info "                Call date:   $(_get "_call" "date")"
+  _msg_info "          Contract method:   $(_get "contract" "method")"
+  _msg_info "         Contract address:   $(_get "contract" "address")"
+  _msg_info "             Contract ABI:   $(_get "contract" "abi")"
+  _msg_info "           Target network:   $(_get "target" "network")"
+  _msg_info "                Call type:   $(_get "call" "type")"
+  _msg_info "            Etherscan key:   $(_get "etherscan" "key")"
+}
+
+_globals
+_global_variables
+_requirements
+_config_user_init \
+  "$(_get \
+       "app" \
+       "name")"
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'a:A:n:t:k:cvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    a) override_contract_address="${OPTARG}" ;;
+    A) override_contract_abi="${OPTARG}" ;;
+    n) override_target_network="${OPTARG}" ;;
+    t) override_call_type="${OPTARG}" ;;
+    k) override_etherscan_key="${OPTARG}" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+         _usage \
+           0 ;;
+    *)
+    _msg_error \
+      "Invalid argument '${arg}'" \
+      0
+    _usage \
+      1
+    ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+if (( $# < 1 )); then
+  _msg_error \
+    "no address given" \
+    0
+  _set_overrides
+  _usage \
+    1
+if (( $# < 2 )); then
+  _msg_error \
+    "no method given" \
+    0
+  _set_overrides
+  _usage \
+    1
+fi
+fi
+_set \
+  "contract" \
+  "address" \
+  "${1}"
+if (( 1 < $# )); then
+  _set \
+    "contract" \
+    "method" \
+    "${2}"
+fi
+_set_overrides
+_config_user_init \
+  "$( \
+    _get \
+      "app" \
+      "name")"
+_show_config
+app_opts=(
+  "$( \
+    _get \
+      "call" \
+      "type")"
+  "$( \
+    _get \
+      "contract" \
+      "address")"
+  "$( \
+    _get \
+      "contract" \
+      "method")"
+  "$( \
+    _get \
+      "contract" \
+      "abi")"
+  "$( \
+    _get \
+      "target" \
+      "network")"
+  "$( \
+    _get \
+      "etherscan" \
+      "key")"
+)
+
+_evm_contract_call \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:

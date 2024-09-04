@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+
+const { ethers } = require("ethers");
+_ethers = ethers;
+
+async function _get(
+  _contract_address,
+  _contract_method,
+  _network_provider) {
+  _contract = new _ethers.BaseContract(
+    _contract_address,
+    _contract_abi,
+    runner=_network_provider);
+    _method = _contract.getFunction(
+      _contract_method);
+    _value = await _method.staticCall();
+  return _value;
+}
+
+function _get_provider(
+  _network,
+  _etherscan_key) {
+  _provider = _ethers.getDefaultProvider(
+    _network,
+    { etherscan: _etherscan_key,
+      exclusive: [
+        "etherscan",
+        "infura"
+      ]});
+  return _provider;
+}
+
+async function _contract_run() {
+  _network_provider = _get_provider(
+    _target_network,
+    _etherscan_key);
+  _value = await _get(
+    _contract_address,
+    _contract_method,
+    _network_provider);
+  console.log(
+    _value);
+}
+
+function _cmdline_parse() {
+  process.argv.forEach(
+    function (
+      _value,
+      _index,
+      _array) {
+      if ( _index == 2 ) {
+        _contract_address = _value
+      }
+      if ( _index == 3 ) {
+        _contract_method = _value
+      }
+      if ( _index == 4 ) {
+        _contract_abi = _value
+      }
+      if ( _index == 5 ) {
+        _target_network = _value
+      }
+      if ( _index == 6 ) {
+        _etherscan_key = _value
+      }
+  });
+}
+
+_cmdline_parse();
+_contract_run();
