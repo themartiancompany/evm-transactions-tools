@@ -144,11 +144,12 @@ _evm_contract_call() {
     "${_args[@]}"
 }
 
-_key_get() {
+_api_key_get() {
   local \
     _name="${1}" \
-    _network \
+    _network="${2}" \
     _conf_dir \
+    _service
   if [[ "${_network}" == "ethereum" ]]; then
     _service="etherscan"
   elif [[ "${_network}" == "gnosis" ]]; then
@@ -171,23 +172,23 @@ _contract_abi_auto_detect() {
     _key \
     _evm_contracts_abi_get_opts=()
   _network="$( \
-    get \
+    _get \
       "target" \
       "network")"
   _address="$( \
-    get \
-      "target" \
+    _get \
+      "contract" \
       "address")"
   _key="$( \
-    get \
+    _get \
       "api" \
       "key")"
   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
-  _contract_abi="${_conf_dir}/${_network}/${address}.json"
+  _contract_abi="${_conf_dir}/${_network}/${_address}.json"
   if [ ! -e "${_contract_abi}" ]; then
     mkdir \
       -p \
-      "$(basedir \
+      "$(dirname \
            "${_contract_abi}")"
     chmod \
       700 \
@@ -209,6 +210,10 @@ _contract_abi_auto_detect() {
 
 _set_overrides() {
   _set_override \
+    "contract" \
+    "address" \
+    ""
+  _set_override \
     "target" \
     "network" \
     "gnosis"
@@ -224,7 +229,13 @@ _set_overrides() {
     "api" \
     "key" \
     "$(_api_key_get \
-         "default")"
+         "$(_get \
+              "target" \
+              "network")")"
+  _set_override \
+    "contract" \
+    "abi" \
+    "$(_contract_abi_auto_detect)"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
