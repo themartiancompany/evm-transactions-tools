@@ -81,7 +81,7 @@ _node_run() {
 
 _network_setup() {
   if [[ "${_network}" == "gnosis" ]]; then
-    _rpc="https://rpc.gnosischain.io"
+    _rpc="https://rpc.gnosischain.com"
     _network_backend="${_network}"
   elif [[ "${_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
