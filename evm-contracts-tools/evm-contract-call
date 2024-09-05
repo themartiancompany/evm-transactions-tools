@@ -19,7 +19,7 @@ _global_variables() {
   contract_address=""
   contract_method=""
   contract_abi=""
-  etherscan_key=""
+  api_key=""
   method_args=()
   color=""
   quiet=""
@@ -81,8 +81,24 @@ _node_run() {
 
 _network_setup() {
   if [[ "${_network}" == "gnosis" ]]; then
-    _ethers_opt
+    _rpc="https://rpc.gnosischain.io"
+    _network_backend="${_rpc}"
   fi
+  if [[ "${_network}" == "ethereum" ]]; then
+    _network_backend="etherscan"
+  fi
+}
+
+_api_key_read() {
+  local \
+    _path="${1}"
+  if [ ! -e "${_path}" ]; then
+    _msg_error \
+      "service api key file '${_path}' not found" \
+      1
+  fi
+  cat \
+    "${_api_key_path}"
 }
 
 _evm_contract_call() {
@@ -92,28 +108,24 @@ _evm_contract_call() {
     _contract_method="${3}" \
     _contract_abi="${4}" \
     _target_network="${5}" \
-    _etherscan_key="${6}" \
+    _api_key_path="${6}" \
     _method_args=() \
     _cmd \
     _args=() \
     _abi \
-    _etherscan_api_key
+    _api_key
   shift \
     6
   _method_args+=(
     "$@"
   )
-  if [ ! -e "${_etherscan_key}" ]; then
-    _msg_error \
-      "etherscan api key file '${_etherscan_key}' not found" \
-      1
-  fi
   _abi="$( \
     cat \
       "${_contract_abi}")"
-  _etherscan_api_key="$( \
-    cat \
-      "${_etherscan_key}")"
+  _api_key="$( \
+    _api_key_read \
+      "${_api_key_path}")"
+  _network_setup
   if [[ "${_call_type}" == "static" ]]; then
     _cmd="$( \
       _evm_contract_call_type \
@@ -123,7 +135,7 @@ _evm_contract_call() {
       "${_contract_method}"
       "${_abi}"
       "${_target_network}"
-      "${_etherscan_api_key}"
+      "${_api_key}"
       "${_method_args[@]}"
     )
   fi
@@ -132,11 +144,17 @@ _evm_contract_call() {
     "${_args[@]}"
 }
 
-_etherscan_key_get() {
+_key_get() {
   local \
     _name="${1}" \
+    _network \
     _conf_dir \
-  _conf_dir="${HOME}/.config/etherscan"
+  if [[ "${_network}" == "ethereum" ]]; then
+    _service="etherscan"
+  elif [[ "${_network}" == "gnosis" ]]; then
+    _service="gnosisscan"
+  fi
+  _conf_dir="${HOME}/.config/${_service}"
   mkdir \
     -p \
     "${_conf_dir}"
@@ -150,6 +168,7 @@ _contract_abi_auto_detect() {
     _address \
     _contract_abi \
     _network \
+    _key \
     _evm_contracts_abi_get_opts=()
   _network="$( \
     get \
@@ -159,6 +178,10 @@ _contract_abi_auto_detect() {
     get \
       "target" \
       "address")"
+  _key="$( \
+    get \
+      "api" \
+      "key")"
   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
   _contract_abi="${_conf_dir}/${_network}/${address}.json"
   if [ ! -e "${_contract_abi}" ]; then
@@ -172,6 +195,8 @@ _contract_abi_auto_detect() {
     _evm_contracts_abi_get_opts+=(
       --network
         "${_network}"
+      --key
+        "${_key}"
     )
     evm-contracts-abi-get \
       "${_evm_contracts_abi_get_opts[@]}" \
@@ -186,7 +211,7 @@ _set_overrides() {
   _set_override \
     "target" \
     "network" \
-    "etherscan"
+    "gnosis"
   _set_override \
     "call" \
     "type" \
@@ -196,9 +221,9 @@ _set_overrides() {
     "abi" \
     "$(_contract_abi_auto_detect)"
   _set_override \
-    "etherscan" \
+    "api" \
     "key" \
-    "$(_etherscan_key_get \
+    "$(_api_key_get \
          "default")"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -237,6 +262,7 @@ Usage:
     cloudflare
     chainstack
     etherscan
+    gnosis
     infura
     publicPolygon
     quicknode
@@ -248,8 +274,8 @@ Usage:
                           Default: $(_get "target" "network")
      -t <call_type>       Static or dynamic.
                           Default: $(_get "call" "type")
-     -k <etherscan_key>   Etherscan key.
-                          Default: $(_get "etherscan" "key")
+     -k <api_key>         Etherscan-like service key.
+                          Default: $(_get "api" "key")
      -h                   This message.
      -c                   Enable color output
      -v                   Enable verbose output
@@ -292,7 +318,7 @@ _show_config() {
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                Call type:   $(_get "call" "type")"
-  _msg_info "            Etherscan key:   $(_get "etherscan" "key")"
+  _msg_info "            Etherscan key:   $(_get "api" "key")"
 }
 
 _globals
@@ -313,7 +339,7 @@ while \
     A) override_contract_abi="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     t) override_call_type="${OPTARG}" ;;
-    k) override_etherscan_key="${OPTARG}" ;;
+    k) override_api_key="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -393,7 +419,7 @@ app_opts=(
       "network")"
   "$( \
     _get \
-      "etherscan" \
+      "api" \
       "key")"
   "${method_args[@]}"
 )
