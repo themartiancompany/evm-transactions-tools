@@ -79,6 +79,12 @@ _node_run() {
     true
 }
 
+_network_setup() {
+  if [[ "${_network}" == "gnosis" ]]; then
+    _ethers_opt
+  fi
+}
+
 _evm_contract_call() {
   local \
     _call_type="${1}" \
@@ -141,23 +147,35 @@ _etherscan_key_get() {
 _contract_abi_auto_detect() {
   local \
     _conf_dir \
-    _contract_abi
+    _address \
+    _contract_abi \
+    _network \
+    _evm_contracts_abi_get_opts=()
+  _network="$( \
+    get \
+      "target" \
+      "network")"
+  _address="$( \
+    get \
+      "target" \
+      "address")"
   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
-  _contract_abi="${_conf_dir}/$( \
-    _get \
-      "contract" \
-      "address").json"
+  _contract_abi="${_conf_dir}/${_network}/${address}.json"
   if [ ! -e "${_contract_abi}" ]; then
     mkdir \
       -p \
-      "${_conf_dir}"
+      "$(basedir \
+           "${_contract_abi}")"
     chmod \
       700 \
       "${_conf_dir}"
+    _evm_contracts_abi_get_opts+=(
+      --network
+        "${_network}"
+    )
     evm-contracts-abi-get \
-      "$(_get \
-           "contract" \
-           "address")" > \
+      "${_evm_contracts_abi_get_opts[@]}" \
+      "${_address}" > \
       "${_contract_abi}"
   fi
   echo \
@@ -168,7 +186,7 @@ _set_overrides() {
   _set_override \
     "target" \
     "network" \
-    "mainnet"
+    "etherscan"
   _set_override \
     "call" \
     "type" \
@@ -213,11 +231,20 @@ Usage:
     <address>
     <method>
     ([method_args])
+  networks:
+    alchemy
+    ankr
+    cloudflare
+    chainstack
+    etherscan
+    infura
+    publicPolygon
+    quicknode
   options:
      -a <address>         Contract address.
      -A <abi>             Contract ABI.
                           Default: $(_get "contract" "abi")
-     -n <network>         EVM network name.
+     -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
      -t <call_type>       Static or dynamic.
                           Default: $(_get "call" "type")
