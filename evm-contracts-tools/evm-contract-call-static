@@ -24,7 +24,7 @@ function _get_provider(
   _api_key) {
   _provider_opts = {};
   if ( _network == "gnosis" ) {
-    _rpc = "https://rpc.gnosischain.com" ;
+    _rpc = "https://rpc.gnosischain.io" ;
     _default_network = _rpc;
   } 
   if ( _network == "ethereum" ) {
