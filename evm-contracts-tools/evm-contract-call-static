@@ -21,14 +21,25 @@ async function _get(
 
 function _get_provider(
   _network,
-  _etherscan_key) {
-  _provider = _ethers.getDefaultProvider(
-    _network,
-    { etherscan: _etherscan_key,
-      exclusive: [
+  _api_key) {
+  _provider_opts = {};
+  if ( _network == "gnosis" ) {
+    _rpc = "https://rpc.gnosischain.com" ;
+    _default_network = _rpc;
+  } 
+  if ( _network == "ethereum" ) {
+    _default_network = "etherscan";
+    _provider_opts = {
+     'etherscan': _api_key,
+      'exclusive': [
         "etherscan",
         "infura"
-      ]});
+      ]
+    };
+  }
+  _provider = _ethers.getDefaultProvider(
+    _default_network,
+    _provider_opts);
   return _provider;
 }
 
