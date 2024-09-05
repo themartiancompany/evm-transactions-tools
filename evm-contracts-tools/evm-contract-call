@@ -82,7 +82,7 @@ _node_run() {
 _network_setup() {
   if [[ "${_network}" == "gnosis" ]]; then
     _rpc="https://rpc.gnosischain.io"
-    _network_backend="${_rpc}"
+    _network_backend="${_network}"
   elif [[ "${_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
   else
@@ -187,22 +187,30 @@ _contract_abi_auto_detect() {
       "key")"
   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
   _contract_abi="${_conf_dir}/${_network}/${_address}.json"
+  if [ ! -e "${_key}" ]; then
+    _msg_error \
+      "key '${_key}' not found" \
+      1
+  fi
   if [ ! -e "${_contract_abi}" ]; then
     mkdir \
       -p \
       "$(dirname \
            "${_contract_abi}")"
-    chmod \
-      700 \
-      "${_conf_dir}"
+    # chmod \
+    #   700 \
+    #   "${_conf_dir}"
     _evm_contracts_abi_get_opts+=(
       --network
         "${_network}"
-      --key
+      --key 
         "${_key}"
     )
     evm-contracts-abi-get \
-      "${_evm_contracts_abi_get_opts[@]}" \
+      --network \
+        "${_network}" \
+      --key \
+        "${_key}" \
       "${_address}" > \
       "${_contract_abi}"
   fi
@@ -223,10 +231,6 @@ _set_overrides() {
     "call" \
     "type" \
     "static"
-  _set_override \
-    "contract" \
-    "abi" \
-    "$(_contract_abi_auto_detect)"
   _set_override \
     "api" \
     "key" \
