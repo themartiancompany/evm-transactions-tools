@@ -24,7 +24,7 @@ function _get_provider(
   _api_key) {
   _provider_opts = {};
   if ( _network == "gnosis" ) {
-    _rpc = "https://rpc.gnosischain.io" ;
+    _rpc = "https://rpc.gnosischain.com" ;
     _default_network = _rpc;
   } 
   if ( _network == "ethereum" ) {
@@ -48,11 +48,11 @@ async function _contract_run(
   _contract_method,
   _contract_abi,
   _target_network,
-  _etherscan_key,
+  _api_key,
   _method_args) {
   _network_provider = _get_provider(
     _target_network,
-    _etherscan_key);
+    _api_key);
   _value = await _get(
     _contract_address,
     _contract_method,
@@ -70,33 +70,33 @@ function _cmdline_parse() {
       _index,
       _array) {
       if ( _index == 2 ) {
-        contract_address = _value
+        contract_address = _value;
       }
       if ( _index == 3 ) {
-        contract_method = _value
+        contract_method = _value;
       }
       if ( _index == 4 ) {
-        contract_abi = _value
+        contract_abi = _value;
       }
       if ( _index == 5 ) {
-        target_network = _value
+        target_network = _value;
       }
       if ( _index == 6 ) {
-        etherscan_key = _value
+        api_key = _value;
       }
       if ( 6 < _index ) {
         method_args.push(
-	  _value)
+	  _value);
       }
   });
 }
 
-method_args=[]
+method_args=[];
 _cmdline_parse();
 _contract_run(
   contract_address,
   contract_method,
   contract_abi,
   target_network,
-  etherscan_key,
+  api_key,
   method_args);
