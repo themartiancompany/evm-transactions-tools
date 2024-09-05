@@ -98,7 +98,7 @@ _api_key_read() {
       1
   fi
   cat \
-    "${_api_key_path}"
+    "${_path}"
 }
 
 _evm_contract_call() {
@@ -229,6 +229,7 @@ _set_overrides() {
     "api" \
     "key" \
     "$(_api_key_get \
+         "default" \
          "$(_get \
               "target" \
               "network")")"
@@ -329,7 +330,7 @@ _show_config() {
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                Call type:   $(_get "call" "type")"
-  _msg_info "            Etherscan key:   $(_get "api" "key")"
+  _msg_info "                  API key:   $(_get "api" "key")"
 }
 
 _globals
