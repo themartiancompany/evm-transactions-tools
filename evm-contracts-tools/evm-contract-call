@@ -83,9 +83,10 @@ _network_setup() {
   if [[ "${_network}" == "gnosis" ]]; then
     _rpc="https://rpc.gnosischain.io"
     _network_backend="${_rpc}"
-  fi
-  if [[ "${_network}" == "ethereum" ]]; then
+  elif [[ "${_network}" == "ethereum" ]]; then
     _network_backend="etherscan"
+  else
+    _network_backend="${_network}"
   fi
 }
 
@@ -107,13 +108,14 @@ _evm_contract_call() {
     _contract_address="${2}" \
     _contract_method="${3}" \
     _contract_abi="${4}" \
-    _target_network="${5}" \
+    _network="${5}" \
     _api_key_path="${6}" \
     _method_args=() \
     _cmd \
     _args=() \
     _abi \
-    _api_key
+    _api_key \
+    _network_backend
   shift \
     6
   _method_args+=(
@@ -134,7 +136,7 @@ _evm_contract_call() {
       "${_contract_address}"
       "${_contract_method}"
       "${_abi}"
-      "${_target_network}"
+      "${_network_backend}"
       "${_api_key}"
       "${_method_args[@]}"
     )
