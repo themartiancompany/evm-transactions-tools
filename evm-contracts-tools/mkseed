@@ -1,19 +1,74 @@
 #!/usr/bin/env node
 
-const { ethers } = require("ethers");
+const { ethers } = require(
+  "ethers");
+const _fs = require(
+  'fs');
+_path = require(
+  'path');
 
 function _global_variables() {
   wallet_path = "";
 }
 
+function _dirname(
+  _file_path) {
+  _dir = _path.dirname(_file_path);
+  return _dir 
+}
+
+function _file_exists(
+  _path) {
+  _return = false
+  if (_fs.existsSync(
+        _path)) {
+  _return = true;
+  }
+  return _return;
+}
+
+function _file_write(
+  _path,
+  _content) {
+  _fs.writeFileSync(
+    _path,
+    _content);
+}
+
+function _log(
+  _msg) {
+  console.log(
+    "INFO:",
+    _msg);
+}
+
 function _mkseed(
   _path) {
   _wallet = ethers.Wallet.createRandom();
+  _phrase = _wallet.mnemonic.phrase;
   if ( _path != "" ) {
-    console.log("mm");
+    _dir = _dirname(
+      _path);
+    if ( _file_exists(_dir) != true ) {
+      console.error(
+        "ERROR: the directory",
+        _dir,
+        "does not exist");
+      process.exit();
+    }
+    else {
+      console.log(
+        "INFO: writing to",
+        _path);
+    }
+    _file_write(
+      _path,
+      _phrase);
+    console.log(
+      "INFO seed saved in",
+      _path);
   }
   else {
-    _phrase = _wallet.mnemonic.phrase;
     console.log(
     _phrase);
   }
@@ -35,7 +90,7 @@ function _cmdline_parse() {
     console.log(
       "  mkseed");
     console.log(
-      "    <path>");
+      "    (<path>)");
     process.exit();
   }
 }
