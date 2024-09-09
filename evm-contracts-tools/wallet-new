@@ -61,14 +61,14 @@ function _wallet_get(
   console.log(
     "INFO; the content of", _seed, ":", _phrase);
   // _bytes = ethers.randomBytes(512000);
-  _wallet = ethers.Wallet.createRandom();
+  // _wallet = ethers.Wallet.createRandom();
   // _mnemonic = ethers.Mnemonic.fromEntropy(
   //   _bytes);
   // console.log(
   //   "INFO Mnemonic:", _mnemonic);
-  // _wallet = ethers.HDNodeWallet.fromPhrase(
-  //   _phrase,
-  //   _provider);
+  _wallet = ethers.HDNodeWallet.fromPhrase(
+    _phrase,
+    _provider);
   console.log(
     _wallet);
   return _wallet
