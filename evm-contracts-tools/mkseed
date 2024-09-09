@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+const { ethers } = require("ethers");
+
+function _global_variables() {
+  wallet_path = "";
+}
+
+function _mkseed(
+  _path) {
+  _wallet = ethers.Wallet.createRandom();
+  if ( _path != "" ) {
+    console.log("mm");
+  }
+  else {
+    _phrase = _wallet.mnemonic.phrase;
+    console.log(
+    _phrase);
+  }
+}
+
+function _cmdline_parse() {
+  process.argv.forEach(
+    function (
+      _value,
+      _index,
+      _array) {
+      if ( _index == 2 ) {
+        wallet_path = _value;
+      }
+  });
+  if ( wallet_path == "-h" ) {
+    console.log(
+      "Usage:");
+    console.log(
+      "  mkseed");
+    console.log(
+      "    <path>");
+    process.exit();
+  }
+}
+
+_global_variables();
+_cmdline_parse();
+_mkseed(
+  wallet_path);
+
+// console.log('wallet.address:', wallet.address)
+// console.log('wallet.mnemonic.phrase:', wallet.mnemonic.phrase)
+// console.log('wallet.privateKey:', wallet.privateKey)
