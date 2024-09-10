@@ -8,7 +8,7 @@ const { ethers } = require(
   "ethers");
 _ethers = ethers;
 const _fs_utils = require(
-  '../evm-wallet/fs-utils');
+  '../libcrash-js/fs-utils');
 const _wallet_get = require(
   '../evm-wallet/wallet-get');
 const _network_provider = require(
