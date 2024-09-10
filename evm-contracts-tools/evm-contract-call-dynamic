@@ -1,0 +1,173 @@
+#!/usr/bin/env node
+
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//
+
+const { ethers } = require(
+  "ethers");
+_ethers = ethers;
+const _fs_utils = require(
+  '../evm-wallet/fs-utils');
+const _wallet_get = require(
+  '../evm-wallet/wallet-get');
+const _network_provider = require(
+  '../evm-wallet/network-provider');
+
+function _global_variables() {
+  method_args = [];
+  wallet_seed = "";
+  wallet_password = "";
+  contract_address = "";
+  contract_method = "";
+  contract_abi = "";
+  target_network = "";
+  api_key = "";
+}
+
+async function _get(
+  _wallet,
+  _contract_address,
+  _contract_method,
+  _contract_abi,
+  _network_provider,
+  _method_args) {
+  _contract = new _ethers.BaseContract(
+    _contract_address,
+    _contract_abi,
+    runner=_network_provider);
+    _method = _contract.getFunction(
+      _contract_method);
+    _value = await _method.staticCall.apply(null, _method_args);
+  return _value;
+}
+
+async function _contract_run(
+  _wallet_seed,
+  _wallet_password,
+  _contract_address,
+  _contract_method,
+  _contract_abi,
+  _target_network,
+  _api_key_path,
+  _method_args) {
+  _wallet_path = [
+    _fs_utils._dirname(
+      _wallet_seed),
+    "wallet.dat"].join("/");
+  _api_key = _fs_utils._file_read(
+    _api_key_path);
+  // _contract_abi = _fs_utils._file_read(
+  //   _contract_abi_path);
+  _provider = _network_provider._provider_get(
+    _target_network,
+    _api_key);
+  console.log(
+    "[evm-contract-call-dynamic] INFO: provider generated",
+    _provider);
+  _wallet_get_opts=[
+    _wallet_path,
+    _wallet_password,
+    _wallet_seed,
+    _provider
+  ];
+  _wallet = _wallet_get._wallet_get.apply(
+    null,
+    _wallet_get_opts);
+  _wallet.provider = _provider;
+  // bookmark
+  console.log(
+    _wallet.sendTransaction);
+  console.log(
+    _wallet.provider);
+  _value = await _get(
+    _wallet,
+    _contract_address,
+    _contract_method,
+    _contract_abi,
+    _provider,
+    _method_args);
+  console.log(
+    _value);
+}
+
+function _config_show() {
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:       Wallet seed: {wallet_seed}".replace(
+      "{wallet_seed}",
+      wallet_seed));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:   Wallet password: {wallet_password}".replace(
+      "{wallet_password}",
+      wallet_password));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:  Contract address: {contract_address}".replace(
+      "{contract_address}",
+      contract_address));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:   Contract method: {contract_method}".replace(
+      "{contract_method}",
+      contract_method));
+  // console.log(
+  //   "[evm-contracts-call-dynamic] INFO:      Contract ABI: {contract_abi}".replace(
+  //     "{contract_abi}",
+  //     contract_abi));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:    Target network: {target_network}".replace(
+      "{target_network}",
+      target_network));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:           API Key: {api_key}".replace(
+      "{api_key}",
+      api_key));
+  console.log(
+    "[evm-contracts-call-dynamic] INFO:       Method args:",
+      method_args);
+}
+
+function _cmdline_parse() {
+  process.argv.forEach(
+    function (
+      _value,
+      _index,
+      _array) {
+      if ( _index == 2 ) {
+        wallet_seed = _value;
+      }
+      if ( _index == 3 ) {
+        wallet_password = _value;
+      }
+      if ( _index == 4 ) {
+        contract_address = _value;
+      }
+      if ( _index == 5 ) {
+        contract_method = _value;
+      }
+      if ( _index == 6 ) {
+        contract_abi = _value;
+      }
+      if ( _index == 7 ) {
+        target_network = _value;
+      }
+      if ( _index == 8 ) {
+        api_key = _value;
+      }
+      if ( 8 < _index ) {
+        method_args.push(
+	  _value);
+      }
+  });
+}
+
+_global_variables();
+_cmdline_parse();
+_config_show();
+_contract_run(
+  wallet_seed,
+  wallet_password,
+  contract_address,
+  contract_method,
+  contract_abi,
+  target_network,
+  api_key,
+  method_args);
