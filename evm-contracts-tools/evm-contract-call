@@ -109,8 +109,8 @@ _evm_contract_call() {
   local \
     _call_type="${1}" \
     _wallet_path="${2}" \
-    _wallet_password="${3}"
-    _wallet_seed="${4}"
+    _wallet_password="${3}" \
+    _wallet_seed="${4}" \
     _contract_address="${5}" \
     _contract_method="${6}" \
     _contract_abi="${7}" \
@@ -437,6 +437,9 @@ _show_config() {
     "${SOURCE_DATE_EPOCH}"
   _msg_info "${app_name} configuration"
   _msg_info "                Call date:   $(_get "_call" "date")"
+  _msg_info "              Wallet path:   $(_get "wallet" "path")"
+  _msg_info "          Contract method:   $(_get "contract" "method")"
+  _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "         Method arguments:   $(_get "method" "args")"
@@ -456,10 +459,13 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'a:A:n:t:k:cvh?' \
+    'w:p:s:a:A:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
+    w) override_wallet_path="${OPTARG}" ;;
+    p) override_wallet_password="${OPTARG}" ;;
+    s) override_wallet_seed="${OPTARG}" ;;
     a) override_contract_address="${OPTARG}" ;;
     A) override_contract_abi="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
