@@ -134,10 +134,10 @@ _evm_contract_call() {
     _api_key_read \
       "${_api_key_path}")"
   _network_setup
+  _cmd="$( \
+    _evm_contract_call_type \
+      "${_call_type}")"
   if [[ "${_call_type}" == "static" ]]; then
-    _cmd="$( \
-      _evm_contract_call_type \
-        "${_call_type}")"
     _args+=(
       "${_contract_address}"
       "${_contract_method}"
@@ -148,14 +148,13 @@ _evm_contract_call() {
     )
   elif [[ "${_call_type}" == "dynamic" ]]; then
     _args+=(
-      "${_wallet_path}"
       "${_wallet_seed}"
       "${_wallet_password}"
       "${_contract_address}"
       "${_contract_method}"
-      "${_abi}"
+      "${_contract_abi}"
       "${_network_backend}"
-      "${_api_key}"
+      "${_api_key_path}"
       "${_method_args[@]}"
     )
   fi
@@ -438,10 +437,10 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                Call date:   $(_get "_call" "date")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
-  _msg_info "          Contract method:   $(_get "contract" "method")"
-  _msg_info "          Contract method:   $(_get "contract" "method")"
-  _msg_info "          Contract method:   $(_get "contract" "method")"
+  _msg_info "          Wallet password:   $(_get "wallet" "password")"
+  _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
+  _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   $(_get "method" "args")"
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "           Target network:   $(_get "target" "network")"
