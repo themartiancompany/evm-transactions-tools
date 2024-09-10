@@ -152,7 +152,7 @@ _evm_contract_call() {
       "${_wallet_password}"
       "${_contract_address}"
       "${_contract_method}"
-      "${_contract_abi}"
+      "${_abi}"
       "${_network_backend}"
       "${_api_key_path}"
       "${_method_args[@]}"
