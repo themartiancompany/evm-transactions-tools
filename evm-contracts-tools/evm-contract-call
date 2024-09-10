@@ -15,6 +15,9 @@ source \
 # shellcheck disable=SC2034
 _global_variables() {
   call_type=""
+  wallet_path=""
+  wallet_password=""
+  wallet_seed=""
   target_network=""
   contract_address=""
   contract_method=""
@@ -105,11 +108,14 @@ _api_key_read() {
 _evm_contract_call() {
   local \
     _call_type="${1}" \
-    _contract_address="${2}" \
-    _contract_method="${3}" \
-    _contract_abi="${4}" \
-    _network="${5}" \
-    _api_key_path="${6}" \
+    _wallet_path="${2}" \
+    _wallet_password="${3}"
+    _wallet_seed="${4}"
+    _contract_address="${5}" \
+    _contract_method="${6}" \
+    _contract_abi="${7}" \
+    _network="${8}" \
+    _api_key_path="${9}" \
     _method_args=() \
     _cmd \
     _args=() \
@@ -117,7 +123,7 @@ _evm_contract_call() {
     _api_key \
     _network_backend
   shift \
-    6
+    9
   _method_args+=(
     "$@"
   )
@@ -140,10 +146,99 @@ _evm_contract_call() {
       "${_api_key}"
       "${_method_args[@]}"
     )
+  elif [[ "${_call_type}" == "dynamic" ]]; then
+    _args+=(
+      "${_wallet_path}"
+      "${_wallet_seed}"
+      "${_wallet_password}"
+      "${_contract_address}"
+      "${_contract_method}"
+      "${_abi}"
+      "${_network_backend}"
+      "${_api_key}"
+      "${_method_args[@]}"
+    )
   fi
   _node_run \
     "${_cmd}" \
     "${_args[@]}"
+}
+
+_wallet_path_get() {
+  local \
+    _path
+  _path="${HOME}/.config/evm-wallet/wallet.dat"
+  echo \
+    "${_path}"
+}
+
+_wallet_seed_auto_detect() {
+  local \
+    _path \
+    _dir
+  _path="$( \
+    _wallet_seed_get)"
+  _dir="$( \
+    dirname \
+      "${_path}")"
+  if [[ ! -e "${_path}" ]]; then
+    mkdir \
+      -p \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    mkseed \
+      "${_path}"
+  fi
+  echo \
+    "${_path}"
+}
+
+_wallet_password_auto_detect() {
+  local \
+    _path \
+    _dir
+  _path="$( \
+    _wallet_seed_get)"
+  _dir="$( \
+    dirname \
+      "${_path}")"
+  if [[ ! -e "${_path}" ]]; then
+    mkdir \
+      -p \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    chmod \
+      700 \
+      "${_dir}"
+    key-gen \
+      -t 'plain' \
+      "${_path}"
+  fi
+  echo \
+    "${_path}"
+}
+
+_wallet_password_get() {
+  local \
+    _path
+  _path="${HOME}/.config/evm-wallet/password.txt"
+  echo \
+    "${_path}"
+}
+
+_wallet_seed_get() {
+  local \
+    _path
+  _path="${HOME}/.config/evm-wallet/seed.txt"
+  echo \
+    "${_path}"
 }
 
 _api_key_get() {
@@ -243,6 +338,18 @@ _set_overrides() {
     "contract" \
     "abi" \
     "$(_contract_abi_auto_detect)"
+  _set_override \
+    "wallet" \
+    "path" \
+    "$(_wallet_path_get)"
+  _set_override \
+    "wallet" \
+    "seed" \
+    "$(_wallet_seed_auto_detect)"
+  _set_override \
+    "wallet" \
+    "password" \
+    "$(_wallet_password_get)"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -419,6 +526,18 @@ app_opts=(
     _get \
       "call" \
       "type")"
+  "$( \
+    _get \
+      "wallet" \
+      "path")"
+  "$( \
+    _get \
+      "wallet" \
+      "password")"
+  "$( \
+    _get \
+      "wallet" \
+      "seed")"
   "$( \
     _get \
       "contract" \

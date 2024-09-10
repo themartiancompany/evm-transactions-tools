@@ -22,7 +22,6 @@ install-scripts:
 
 	install -vDm 755 evm-contracts-tools/evm-contract-call-static "$(LIB_DIR)/evm-contracts-tools/evm-contract-call-static"
 	install -vDm 755 evm-contracts-tools/evm-contract-call "$(BIN_DIR)/evm-contract-call"
-	install -vDm 755 evm-contracts-tools/mkseed "$(BIN_DIR)/mkseed"
 
 install-doc:
 
