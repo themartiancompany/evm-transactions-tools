@@ -29,13 +29,13 @@ _global_variables() {
 }
 
 _requirements() {
-  local \
-    _app
-    _check_cmd \
-      'node' \
-      'nodejs'
   _check_cmd \
     'evm-contracts-abi-get'
+  _check_cmd \
+    'evm-wallet'
+  _check_cmd \
+    'node' \
+    'nodejs'
 }
 
 _get_conf_dir_path() {
@@ -165,79 +165,56 @@ _evm_contract_call() {
 
 _wallet_path_get() {
   local \
-    _path
-  _path="${HOME}/.config/evm-wallet/wallet.dat"
-  echo \
-    "${_path}"
-}
-
-_wallet_seed_auto_detect() {
-  local \
     _path \
-    _dir
-  _path="$( \
-    _wallet_seed_get)"
-  _dir="$( \
-    dirname \
-      "${_path}")"
-  if [[ ! -e "${_path}" ]]; then
-    mkdir \
-      -p \
-      "${_dir}"
-    chmod \
-      700 \
-      "${_dir}"
-    chmod \
-      700 \
-      "${_dir}"
-    mkseed \
-      "${_path}"
-  fi
-  echo \
-    "${_path}"
-}
-
-_wallet_password_auto_detect() {
-  local \
-    _path \
-    _dir
-  _path="$( \
-    _wallet_seed_get)"
-  _dir="$( \
-    dirname \
-      "${_path}")"
-  if [[ ! -e "${_path}" ]]; then
-    mkdir \
-      -p \
-      "${_dir}"
-    chmod \
-      700 \
-      "${_dir}"
-    chmod \
-      700 \
-      "${_dir}"
-    key-gen \
-      -t 'plain' \
-      "${_path}"
-  fi
+    _wallet_name \
+    _wallet_address
+  _wallet_name="$( \
+    evm-wallet)"
+  _wallet_address="$( \
+    evm-wallet \
+      get \
+        "${_wallet_name}" \
+        "address")"
+  _path="${HOME}/.config/evm-wallet/${_wallet_name}.dat"
   echo \
     "${_path}"
 }
 
 _wallet_password_get() {
   local \
-    _path
-  _path="${HOME}/.config/evm-wallet/password.txt"
+    _path \
+    _wallet_name
+  _wallet_name="$( \
+    evm-wallet)"
+  _path="${HOME}/.config/evm-wallet/${_wallet_name}-password.txt"
   echo \
     "${_path}"
 }
 
 _wallet_seed_get() {
   local \
-    _path
-  _path="${HOME}/.config/evm-wallet/seed.txt"
+    _path \
+    _wallet_name
+  _wallet_name="$( \
+    evm-wallet)"
+  _path="${HOME}/.config/evm-wallet/${_wallet_name}-seed.txt"
   echo \
     "${_path}"
+}
+
+_wallet_address_get() {
+  local \
+    _wallet_address \
+    _wallet_name
+  _wallet_name="$( \
+    evm-wallet)"
+  _wallet_address="$( \
+    evm-wallet \
+      get \
+        "${_wallet_name}" \
+        "address")"
+  echo \
+    "${_wallet_address}"
 }
 
 _api_key_get() {
@@ -291,9 +268,9 @@ _contract_abi_auto_detect() {
       -p \
       "$(dirname \
            "${_contract_abi}")"
-    # chmod \
-    #   700 \
-    #   "${_conf_dir}"
+    chmod \
+      700 \
+      "${_conf_dir}"
     _evm_contracts_abi_get_opts+=(
       --network
         "${_network}"
@@ -344,7 +321,7 @@ _set_overrides() {
   _set_override \
     "wallet" \
     "seed" \
-    "$(_wallet_seed_auto_detect)"
+    "$(_wallet_seed_get)"
   _set_override \
     "wallet" \
     "password" \
@@ -427,7 +404,10 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   local \
-    _call_date
+    _call_date \
+    _wallet_address
+  _wallet_address="$( \
+    _wallet_address_get)"
   TZ=UTC \
   printf \
     -v \
@@ -439,6 +419,7 @@ _show_config() {
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
+  _msg_info "           Wallet address:   $(_get "_wallet" "address")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   $(_get "method" "args")"

@@ -88,10 +88,6 @@ async function _contract_run(
   _signer = _wallet.connect(
     _provider);
   // bookmark
-  console.log(
-    _wallet.sendTransaction);
-  console.log(
-    _signer.provider);
   _value = await _get(
     _signer,
     _contract_address,
