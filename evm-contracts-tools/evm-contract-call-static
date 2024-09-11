@@ -3,6 +3,10 @@
 const { ethers } = require(
   "ethers");
 _ethers = ethers;
+const _libcrash = require(
+  '../libcrash-js/crash-js');
+_msg_info = _libcrash._msg_info
+_msg_error = _libcrash._msg_error
 const _network_provider = require(
   '../evm-wallet/network-provider');
 
@@ -53,14 +57,14 @@ async function _contract_run(
   _target_network,
   _api_key,
   _method_args) {
-  _network_provider = _network_provider._provider_get(
+  _provider = _network_provider._provider_get(
     _target_network,
     _api_key);
   _value = await _get(
     _contract_address,
     _contract_method,
     _contract_abi,
-    _network_provider,
+    _provider,
     _method_args);
   console.log(
     _value);
