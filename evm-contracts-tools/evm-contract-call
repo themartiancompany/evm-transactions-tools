@@ -15,6 +15,7 @@ source \
 # shellcheck disable=SC2034
 _global_variables() {
   call_type=""
+  wallet_name=""
   wallet_path=""
   wallet_password=""
   wallet_seed=""
@@ -108,14 +109,15 @@ _api_key_read() {
 _evm_contract_call() {
   local \
     _call_type="${1}" \
-    _wallet_path="${2}" \
-    _wallet_password="${3}" \
-    _wallet_seed="${4}" \
-    _contract_address="${5}" \
-    _contract_method="${6}" \
-    _contract_abi="${7}" \
-    _network="${8}" \
-    _api_key_path="${9}" \
+    _wallet_name="${2}" \
+    _wallet_path="${3}" \
+    _wallet_password="${4}" \
+    _wallet_seed="${5}" \
+    _contract_address="${6}" \
+    _contract_method="${7}" \
+    _contract_abi="${8}" \
+    _network="${9}" \
+    _api_key_path="${10}" \
     _method_args=() \
     _cmd \
     _args=() \
@@ -123,7 +125,7 @@ _evm_contract_call() {
     _api_key \
     _network_backend
   shift \
-    9
+    10
   _method_args+=(
     "$@"
   )
@@ -165,11 +167,9 @@ _evm_contract_call() {
 
 _wallet_path_get() {
   local \
+    _wallet_name="${1}" \
     _path \
-    _wallet_name \
     _wallet_address
-  _wallet_name="$( \
-    evm-wallet)"
   _wallet_address="$( \
     evm-wallet \
       get \
@@ -182,10 +182,8 @@ _wallet_path_get() {
 
 _wallet_password_get() {
   local \
-    _path \
-    _wallet_name
-  _wallet_name="$( \
-    evm-wallet)"
+    _wallet_name="${1}" \
+    _path
   _path="${HOME}/.config/evm-wallet/${_wallet_name}-password.txt"
   echo \
     "${_path}"
@@ -193,10 +191,8 @@ _wallet_password_get() {
 
 _wallet_seed_get() {
   local \
-    _path \
-    _wallet_name
-  _wallet_name="$( \
-    evm-wallet)"
+    _wallet_name="${1}" \
+    _path
   _path="${HOME}/.config/evm-wallet/${_wallet_name}-seed.txt"
   echo \
     "${_path}"
@@ -204,10 +200,8 @@ _wallet_seed_get() {
 
 _wallet_address_get() {
   local \
-    _wallet_address \
-    _wallet_name
-  _wallet_name="$( \
-    evm-wallet)"
+    _wallet_name="${1}" \
+    _wallet_address
   _wallet_address="$( \
     evm-wallet \
       get \
@@ -291,6 +285,10 @@ _contract_abi_auto_detect() {
 
 _set_overrides() {
   _set_override \
+    "wallet" \
+    "name" \
+    "default"
+  _set_override \
     "contract" \
     "address" \
     ""
@@ -316,16 +314,32 @@ _set_overrides() {
     "$(_contract_abi_auto_detect)"
   _set_override \
     "wallet" \
+    "address" \
+    "$(_wallet_address_get \
+         "$(_get \
+              "wallet" \
+              "name")")"
+  _set_override \
+    "wallet" \
     "path" \
-    "$(_wallet_path_get)"
+    "$(_wallet_path_get \
+         "$(_get \
+              "wallet" \
+              "name")")"
   _set_override \
     "wallet" \
     "seed" \
-    "$(_wallet_seed_get)"
+    "$(_wallet_seed_get \
+         "$(_get \
+              "wallet" \
+              "name")")"
   _set_override \
     "wallet" \
     "password" \
-    "$(_wallet_password_get)"
+    "$(_wallet_password_get \
+         "$(_get \
+              "wallet" \
+              "name")")"
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -403,23 +417,13 @@ _display_flags() {
 
 # Shows configuration options.
 _show_config() {
-  local \
-    _call_date \
-    _wallet_address
-  _wallet_address="$( \
-    _wallet_address_get)"
-  TZ=UTC \
-  printf \
-    -v \
-      _call_date \
-    '%(%FT%R%z)T' \
-    "${SOURCE_DATE_EPOCH}"
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   $(_get "_call" "date")"
+  _msg_info "                Call date:   $(_get "call" "date")"
+  _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
-  _msg_info "           Wallet address:   $(_get "_wallet" "address")"
+  _msg_info "           Wallet address:   $(_get "wallet" "address")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   $(_get "method" "args")"
@@ -439,10 +443,11 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'w:p:s:a:A:n:t:k:cvh?' \
+    'N:w:p:s:a:A:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
+    N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
@@ -512,6 +517,10 @@ app_opts=(
     _get \
       "call" \
       "type")"
+  "$( \
+    _get \
+      "wallet" \
+      "name")"
   "$( \
     _get \
       "wallet" \
