@@ -14,6 +14,7 @@ source \
 
 # shellcheck disable=SC2034
 _global_variables() {
+  call_date=""
   call_type=""
   wallet_name=""
   wallet_path=""
@@ -151,6 +152,7 @@ _evm_contract_call() {
     )
   elif [[ "${_call_type}" == "dynamic" ]]; then
     _args+=(
+      "${quiet}"
       "${_wallet_seed}"
       "${_wallet_password}"
       "${_contract_address}"
@@ -285,6 +287,10 @@ _contract_abi_auto_detect() {
 }
 
 _set_overrides() {
+  _set_override \
+    "call" \
+    "date" \
+    "$(_get_date_human)"
   _set_override \
     "wallet" \
     "name" \
