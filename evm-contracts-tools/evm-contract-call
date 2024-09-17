@@ -19,6 +19,7 @@ _global_variables() {
   wallet_path=""
   wallet_password=""
   wallet_seed=""
+  wallet_address=""
   target_network=""
   contract_address=""
   contract_method=""
