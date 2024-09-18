@@ -9,9 +9,11 @@ const { ethers } = require(
 _ethers = ethers;
 const _libcrash = require(
   '../libcrash-js/crash-js');
+_app_name_get = _libcrash._app_name_get;
 _dirname = _libcrash._dirname;
 _file_read = _libcrash._file_read;
 _msg_info = _libcrash._msg_info;
+_msg_error = _libcrash._msg_error;
 const _wallet_get = require(
   '../evm-wallet/wallet-get');
 const _network_provider = require(
@@ -44,7 +46,7 @@ async function _get(
   );
   _method = _contract.getFunction(
   _contract_method);
-    _value = await _method.staticCall.apply(
+    _value = await _method.send.apply(
     null,
     _method_args);
   return _value;
@@ -88,15 +90,19 @@ async function _contract_run(
   _signer = _wallet.connect(
     _provider);
   // bookmark
-  _value = await _get(
+  _tx = await _set(
     _signer,
     _contract_address,
     _contract_method,
     _contract_abi,
     _provider,
     _method_args);
-  console.log(
-    _value);
+  if ( _tx.hash != "" ) {
+    _msg_info(
+      _value);
+    _msg_info(
+      "transaction sent");
+  }
 }
 
 function _config_show() {
@@ -152,37 +158,59 @@ function _cmdline_parse() {
       _index,
       _array) {
       if ( _index == 2 ) {
-        wallet_seed = _value;
+        quiet = _value;
       }
       if ( _index == 3 ) {
-        wallet_password = _value;
+        wallet_seed = _value;
       }
       if ( _index == 4 ) {
-        contract_address = _value;
+        wallet_password = _value;
       }
       if ( _index == 5 ) {
-        contract_method = _value;
+        contract_address = _value;
       }
       if ( _index == 6 ) {
-        contract_abi = _value;
+        contract_method = _value;
       }
       if ( _index == 7 ) {
-        target_network = _value;
+        contract_abi = _value;
       }
       if ( _index == 8 ) {
+        target_network = _value;
+      }
+      if ( _index == 9 ) {
         api_key = _value;
       }
-      if ( 8 < _index ) {
+      if ( 9 < _index ) {
         method_args.push(
 	  _value);
       }
-      if ( _value == "-v" ) {
-	quiet = "n";
-      }
   });
+  if ( contract_address == "" ) {
+    _msg = [
+      "Usage:",
+      "  {app_name}".replace(
+        "{app_name}",
+        app_name),
+      "    <quiet>",
+      "    <wallet_seed>",
+      "    <wallet_password>",
+      "    <contract_address>",
+      "    <contract_method>",
+      "    <target_network>",
+      "    <api_key>"
+    ]
+    for (let _line = 0; _line < _msg.length; _line++) {
+      _msg_error(
+        _msg[_line],
+        0);
+    }
+    process.exit();
+  }
 }
 
 _global_variables();
+app_name = _app_name_get();
 _cmdline_parse();
 _config_show();
 _contract_run(
