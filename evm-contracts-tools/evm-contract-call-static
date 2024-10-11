@@ -5,6 +5,9 @@ const { ethers } = require(
 _ethers = ethers;
 const _libcrash = require(
   '../libcrash-js/crash-js');
+const _contract_get_module = require(
+  './contract-get');
+_contract_get = _contract_get_module._contract_get
 _msg_info = _libcrash._msg_info
 _msg_error = _libcrash._msg_error
 const _network_provider = require(
@@ -20,9 +23,9 @@ async function _get(
     _contract_address,
     _contract_abi,
     runner=_network_provider);
-    _method = _contract.getFunction(
-      _contract_method);
-    _value = await _method.staticCall.apply(null, _method_args);
+  _method = _contract.getFunction(
+    _contract_method);
+  _value = await _method.staticCall.apply(null, _method_args);
   return _value;
 }
 
