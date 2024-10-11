@@ -23,8 +23,9 @@ _global_variables() {
   wallet_address=""
   target_network=""
   contract_address=""
+  contract_source=""
   contract_method=""
-  contract_abi=""
+  contract_bytecode=""
   api_key=""
   method_args=()
   color=""
@@ -233,64 +234,76 @@ _api_key_get() {
     "${_conf_dir}/${_name}.txt"
 }
 
-_contract_abi_auto_detect() {
-  local \
-    _conf_dir \
-    _address \
-    _contract_abi \
-    _network \
-    _key \
-    _evm_contracts_abi_get_opts=()
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _address="$( \
-    _get \
-      "contract" \
-      "address")"
-  _key="$( \
-    _get \
-      "api" \
-      "key")"
-  _conf_dir="${HOME}/.local/share/evm-contracts-tools"
-  _contract_abi="${_conf_dir}/${_network}/${_address}.json"
-  if [ ! -e "${_key}" ]; then
-    _msg_error \
-      "key '${_key}' not found" \
-      1
-  fi
-  if [ ! -e "${contract_abi}" ]; then
-    mkdir \
-      -p \
-      "$(dirname \
-           "${_contract_abi}")"
-    chmod \
-      700 \
-      "${_conf_dir}"
-    _evm_contracts_abi_get_opts+=(
-      --network
-        "${_network}"
-      --key 
-        "${_key}"
-    )
-    evm-contracts-abi-get \
-      --network \
-        "${_network}" \
-      --key \
-        "${_key}" \
-      "${_address}" > \
-      "${_contract_abi}"
-  fi
-  echo \
-    "${_contract_abi}"
-}
+# _contract_abi_auto_detect() {
+#   local \
+#     _conf_dir \
+#     _address \
+#     _contract_abi \
+#     _network \
+#     _key \
+#     _evm_contracts_abi_get_opts=()
+#   _network="$( \
+#     _get \
+#       "target" \
+#       "network")"
+#   _network="$( \
+#     _get \
+#       "target" \
+#       "network")"
+#   _address="$( \
+#     _get \
+#       "contract" \
+#       "address")"
+#   _key="$( \
+#     _get \
+#       "api" \
+#       "key")"
+#   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
+#   _contract_abi="${_conf_dir}/${_network}/${_address}.json"
+#   if [ ! -e "${_key}" ]; then
+#     _msg_error \
+#       "key '${_key}' not found" \
+#       1
+#   fi
+#   if [ ! -e "${contract_abi}" ]; then
+#     _msg_info \
+#       "abi '${contract_abi}' does not exist"
+#     mkdir \
+#       -p \
+#       "$(dirname \
+#            "${_contract_abi}")"
+#     chmod \
+#       700 \
+#       "${_conf_dir}"
+#     _evm_contracts_abi_get_opts+=(
+#       --network
+#         "${_network}"
+#       --key 
+#         "${_key}"
+#     )
+#     evm-contracts-abi-get \
+#       --network \
+#         "${_network}" \
+#       --key \
+#         "${_key}" \
+#       "${_address}" > \
+#       "${_contract_abi}"
+#   fi
+#   _set \
+#     "contract" \
+#     "abi" \
+#     "${_contract_abi}"
+# }
 
 _set_overrides() {
   _set_override \
     "call" \
     "date" \
     "$(_get_date_human)"
+  _set_override \
+    "contract" \
+    "bytecode" \
+    "${HOME}.config/$(_get "app" "name")/${target_network}/${contract_address}.json"
   _set_override \
     "wallet" \
     "name" \
@@ -315,10 +328,9 @@ _set_overrides() {
          "$(_get \
               "target" \
               "network")")"
-  _set_override \
-    "contract" \
-    "abi" \
-    "$(_contract_abi_auto_detect)"
+  # if [[ -n "contract_abi" ]]; then
+  #   _contract_abi_auto_detect
+  # fi
   _set_override \
     "wallet" \
     "address" \
@@ -391,7 +403,7 @@ Usage:
   options:
      -a <address>         Contract address.
      -A <abi>             Contract ABI.
-                          Default: $(_get "contract" "abi")
+                          Default: $(_get "contract" "bytecode")
      -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
      -t <call_type>       Static or dynamic.
@@ -434,7 +446,7 @@ _show_config() {
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   $(_get "method" "args")"
-  _msg_info "             Contract ABI:   $(_get "contract" "abi")"
+  _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "                Call type:   $(_get "call" "type")"
   _msg_info "                  API key:   $(_get "api" "key")"
@@ -443,23 +455,19 @@ _show_config() {
 _globals
 _global_variables
 _requirements
-_config_user_init \
-  "$(_get \
-       "app" \
-       "name")"
 # shellcheck disable=SC2034
 while \
   getopts \
-    'N:w:p:s:a:A:n:t:k:cvh?' \
+    'B:N:w:p:s:a:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
+    B) override_contract_bytecode="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
     a) override_contract_address="${OPTARG}" ;;
-    A) override_contract_abi="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     t) override_call_type="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
@@ -468,19 +476,17 @@ while \
     h|?) _set_overrides && \
          _usage \
            0 ;;
-    *)
-    _msg_error \
-      "Invalid argument '${arg}'" \
-      0
-    _usage \
-      1
-    ;;
+    *) _msg_error \
+         "Invalid argument '${arg}'" \
+         0 && \
+       _usage \
+         1 ;;
   esac
 done
 shift \
   $(( \
-    OPTIND - 1 \
-  ))
+    OPTIND - 1 ))
+echo "${contract_bytecode}"
 if (( $# < 1 )); then
   _msg_error \
     "no address given" \
@@ -488,6 +494,7 @@ if (( $# < 1 )); then
   _set_overrides
   _usage \
     1
+fi
 if (( $# < 2 )); then
   _msg_error \
     "no method given" \
@@ -496,11 +503,12 @@ if (( $# < 2 )); then
   _usage \
     1
 fi
+if (( 0 < $# )); then
+  _set \
+    "contract" \
+    "address" \
+    "${1}"
 fi
-_set \
-  "contract" \
-  "address" \
-  "${1}"
 if (( 1 < $# )); then
   _set \
     "contract" \
@@ -551,7 +559,7 @@ app_opts=(
   "$( \
     _get \
       "contract" \
-      "abi")"
+      "bytecode")"
   "$( \
     _get \
       "target" \
@@ -564,5 +572,4 @@ app_opts=(
 )
 _evm_contract_call \
   "${app_opts[@]}"
-
 # vim:set sw=2 sts=-1 et:
