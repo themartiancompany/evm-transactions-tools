@@ -19,14 +19,14 @@ _global_variables() {
   wallet_name=""
   wallet_path=""
   wallet_password=""
-  wallet_seed=""
   wallet_address=""
+  wallet_seed=""
+  api_key=""
   target_network=""
   contract_address=""
-  contract_source=""
-  contract_method=""
   contract_bytecode=""
-  api_key=""
+  contract_abi=""
+  contract_method=""
   method_args=()
   color=""
   quiet=""
@@ -116,11 +116,12 @@ _evm_contract_call() {
     _wallet_path="${3}" \
     _wallet_password="${4}" \
     _wallet_seed="${5}" \
-    _contract_address="${6}" \
-    _contract_method="${7}" \
-    _contract_abi="${8}" \
-    _network="${9}" \
-    _api_key_path="${10}" \
+    _api_key_path="${6}" \
+    _network="${7}" \
+    _contract_address="${8}" \
+    _contract_abi="${9}" \
+    _contract_bytecode_path="${10}" \
+    _contract_method="${11}" \
     _method_args=() \
     _cmd \
     _args=() \
@@ -128,7 +129,7 @@ _evm_contract_call() {
     _api_key \
     _network_backend
   shift \
-    10
+    11
   _method_args+=(
     "$@"
   )
@@ -236,76 +237,89 @@ _api_key_get() {
     "${_conf_dir}/${_name}.txt"
 }
 
-# _contract_abi_auto_detect() {
-#   local \
-#     _conf_dir \
-#     _address \
-#     _contract_abi \
-#     _network \
-#     _key \
-#     _evm_contracts_abi_get_opts=()
-#   _network="$( \
-#     _get \
-#       "target" \
-#       "network")"
-#   _network="$( \
-#     _get \
-#       "target" \
-#       "network")"
-#   _address="$( \
-#     _get \
-#       "contract" \
-#       "address")"
-#   _key="$( \
-#     _get \
-#       "api" \
-#       "key")"
-#   _conf_dir="${HOME}/.local/share/evm-contracts-tools"
-#   _contract_abi="${_conf_dir}/${_network}/${_address}.json"
-#   if [ ! -e "${_key}" ]; then
-#     _msg_error \
-#       "key '${_key}' not found" \
-#       1
-#   fi
-#   if [ ! -e "${contract_abi}" ]; then
-#     _msg_info \
-#       "abi '${contract_abi}' does not exist"
-#     mkdir \
-#       -p \
-#       "$(dirname \
-#            "${_contract_abi}")"
-#     chmod \
-#       700 \
-#       "${_conf_dir}"
-#     _evm_contracts_abi_get_opts+=(
-#       --network
-#         "${_network}"
-#       --key 
-#         "${_key}"
-#     )
-#     evm-contracts-abi-get \
-#       --network \
-#         "${_network}" \
-#       --key \
-#         "${_key}" \
-#       "${_address}" > \
-#       "${_contract_abi}"
-#   fi
-#   _set \
-#     "contract" \
-#     "abi" \
-#     "${_contract_abi}"
-# }
+_contract_abi_auto_detect() {
+  local \
+    _data_dir \
+    _key \
+    _address \
+    _network \
+    _abi \
+    _evm_contracts_abi_get_opts=()
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _address="$( \
+    _get \
+      "contract" \
+      "address")"
+  _key="$( \
+    _get \
+      "api" \
+      "key")"
+  if [ ! -e "${_key}" ]; then
+    _msg_error \
+      "key '${_key}' not found" \
+      1
+  fi
+  if [ ! -e "${contract_abi}" ]; then
+    _data_dir="$( \
+      dirname \
+        "${contract_abi}")"
+    _msg_info \
+      "abi '${contract_abi}' does not exist"
+    mkdir \
+      -p \
+      "${_data_dir}"
+    chmod \
+      700 \
+      "${_data_dir}"
+    _evm_contracts_abi_get_opts+=(
+      --network
+        "${_network}"
+      --key 
+        "${_key}"
+    )
+    _abi="$( \
+      evm-contracts-abi-get \
+        --network \
+          "${_network}" \
+        --key \
+          "${_key}" \
+        "${_address}")"
+    if [ $? -eq 0 ]; then
+      _msg_info \
+        "obtained ABI from a network explorer"
+    echo \
+      "${_abi}" >
+      "${contract_abi}"
+    else
+      _msg_error \
+        "Couldn't obtain ABI from the internet"
+    fi
+  fi
+  _set \
+    "contract" \
+    "abi" \
+    "${_contract_abi}"
+}
 
 _set_overrides() {
+  local \
+    _data_dir
+  _data_dir="${HOME}/.local/share/$(_get "app" "name")"
   _set_override \
     "call" \
     "date" \
     "$(_get_date_human)"
   _set_override \
     "contract" \
+    "abi" \
+    "${_data_dir}/${target_network}/${contract_address}.abi.json"
+  _set_override \
+    "contract" \
     "bytecode" \
-    "${HOME}.config/$(_get "app" "name")/${target_network}/${contract_address}.json"
+    "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
   _set_override \
     "wallet" \
     "name" \
@@ -330,9 +344,9 @@ _set_overrides() {
          "$(_get \
               "target" \
               "network")")"
-  # if [[ -n "contract_abi" ]]; then
-  #   _contract_abi_auto_detect
-  # fi
+  if [[ -n "contract_abi" ]]; then
+    _contract_abi_auto_detect
+  fi
   _set_override \
     "wallet" \
     "address" \
@@ -440,18 +454,19 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                Call date:   $(_get "call" "date")"
+  _msg_info "                Call type:   $(_get "call" "type")"
   _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
+  _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "           Wallet address:   $(_get "wallet" "address")"
+  _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
+  _msg_info "             Contract ABI:   $(_get "contract" "abi")"
+  _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   $(_get "method" "args")"
-  _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
-  _msg_info "           Target network:   $(_get "target" "network")"
-  _msg_info "                Call type:   $(_get "call" "type")"
-  _msg_info "                  API key:   $(_get "api" "key")"
 }
 
 _globals
@@ -460,10 +475,11 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'B:N:w:p:s:a:n:t:k:cvh?' \
+    'A:B:N:w:p:s:a:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
+    A) override_contract_abi="${OPTARG}" ;;
     B) override_contract_bytecode="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
@@ -488,7 +504,6 @@ done
 shift \
   $(( \
     OPTIND - 1 ))
-echo "${contract_bytecode}"
 if (( $# < 1 )); then
   _msg_error \
     "no address given" \
@@ -552,24 +567,28 @@ app_opts=(
       "seed")"
   "$( \
     _get \
-      "contract" \
-      "address")"
-  "$( \
-    _get \
-      "contract" \
-      "method")"
-  "$( \
-    _get \
-      "contract" \
-      "bytecode")"
+      "api" \
+      "key")"
   "$( \
     _get \
       "target" \
       "network")"
   "$( \
     _get \
-      "api" \
-      "key")"
+      "contract" \
+      "address")"
+  "$( \
+    _get \
+      "contract" \
+      "abi")"
+  "$( \
+    _get \
+      "contract" \
+      "bytecode")"
+  "$( \
+    _get \
+      "contract" \
+      "method")"
   "${method_args[@]}"
 )
 _evm_contract_call \
