@@ -29,7 +29,7 @@ function _global_variables() {
   quiet = "";
 }
 
-async function _set(
+async function _contract_call_dynamic(
   _wallet_seed,
   _wallet_password,
   _api_key_path,
@@ -80,7 +80,7 @@ async function _contract_run(
     _msg_info(
       _msg);
   }
-  _tx = await _set(
+  _tx = await _contract_call_dynamic(
     _wallet_seed,
     _wallet_password,
     _api_key,
@@ -97,6 +97,29 @@ async function _contract_run(
   }
 }
 
+function _usage() {
+  _msgs = [
+    "Usage:",
+    "  {app_name}".replace(
+      "{app_name}",
+      app_name),
+    "    <quiet>",
+    "    <wallet_seed>",
+    "    <wallet_password>",
+    "    <api_key>"
+    "    <target_network>",
+    "    <contract_address>",
+    "    <contract_method>",
+    "    [contract_args]",
+  ]
+  for (let _line = 0; _line < _msgs.length; _line++) {
+    _msg_error(
+      _msgs[_line],
+      0);
+  }
+  process.exit();
+}
+
 function _config_show() {
   _msgs = [];
   _msg.push(
@@ -108,7 +131,7 @@ function _config_show() {
       "{wallet_passward}",
       wallet_password));
   _msgs.push(
-    "          API Key: {api_key}".replace(
+    "          API Key: {api_key_path}".replace(
       "{api_key}",
       api_key));
   _msgs.push(
@@ -120,13 +143,17 @@ function _config_show() {
       "{contract_address}",
       contract_address));
   _msgs.push(
-    "  Contract method: {contract_method}".replace(
-      "{contract_method}",
-      contract_method));
-  _msgs.push(
     "     Contract ABI: {contract_abi}".replace(
       "{contract_abi}",
       contract_abi.length));
+  _msgs.push(
+    "Contract Bytecode: {contract_bytecode_path}".replace(
+      "{contract_bytecode_path}",
+      contract_bytecode_path.length));
+  _msgs.push(
+    "  Contract method: {contract_method}".replace(
+      "{contract_method}",
+      contract_method));
   _method_args = method_args.join(
     " ");
   _msgs.push(
@@ -178,27 +205,8 @@ function _cmdline_parse() {
 	  _value);
       }
   });
-  if ( contract_address == "" ) {
-    _msg = [
-      "Usage:",
-      "  {app_name}".replace(
-        "{app_name}",
-        app_name),
-      "    <quiet>",
-      "    <wallet_seed>",
-      "    <wallet_password>",
-      "    <api_key>"
-      "    <target_network>",
-      "    <contract_address>",
-      "    <contract_method>",
-      "    [contract_args]",
-    ]
-    for (let _line = 0; _line < _msg.length; _line++) {
-      _msg_error(
-        _msg[_line],
-        0);
-    }
-    process.exit();
+  if ( contract_address == "" || _value == "-h" ) {
+    _usage();
   }
 }
 

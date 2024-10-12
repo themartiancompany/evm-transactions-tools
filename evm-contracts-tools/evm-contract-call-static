@@ -43,7 +43,7 @@ async function _contract_call_static(
   return _value;
 }
 
-_usage() {
+function _usage() {
   _msgs = [
     "Usage:",
     "  evm-contract-call-static",
