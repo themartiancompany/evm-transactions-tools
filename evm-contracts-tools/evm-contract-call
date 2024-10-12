@@ -404,7 +404,7 @@ Usage:
     quicknode
   options:
      -a <address>         Contract address.
-     -A <abi>             Contract ABI.
+     -B <abi>             Contract ABI.
                           Default: $(_get "contract" "bytecode")
      -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
