@@ -3,7 +3,7 @@
 const { ethers } = require(
   "ethers");
 _ethers = ethers;
-_contract_factory = _ethers.ContractFactory;
+_ContractFactory = _ethers.ContractFactory;
 const _fs_utils = require(
   '../libcrash-js/fs-utils');
 _dirname = _fs_utils._dirname;
@@ -29,29 +29,31 @@ function _global_variables() {
   quiet = "";
 }
 
-async function _contract_get(
-  _wallet_seed,
-  _contract_source_path,
+async function contract_get_abi(
+  _contract_address,
+  _contract_abi,
+  _network_provider) {
+  _contract = new _ethers.BaseContract(
+    _contract_address,
+    _contract_abi,
+    runner=_network_provider);
+  return _contract;
+}
+
+async function contract_get_bytecode(
+  _,
   _contract_bytecode_path,
-  _target_network,
-  _api_key_path) {
-  _wallet_password = "";
+  _network_provider) {
+ 
+async function _signer_get(
+  _wallet_seed,
+  _provider,
+  _contract_bytecode_path) {
   _wallet_path = [
     _dirname(
       _wallet_seed),
     "wallet.dat"].join("/");
-  _api_key = _file_read(
-    _api_key_path);
-  _contract_bytecode = _file_read(
-    _contract_bytecode_path);
-  _provider = _provider_get(
-    _target_network,
-    _api_key);
-  _msg = "provider '{_provider}' generated".replace(
-    "{_provider}",
-    _provider);
-  _msg_info(
-    _msg);
+  _wallet_password = "";
   _wallet_get_opts=[
     _wallet_path,
     _wallet_password,
@@ -61,25 +63,52 @@ async function _contract_get(
   _wallet = _wallet_get.apply(
     null,
     _wallet_get_opts);
-  _signer = _wallet.connect(
-    _provider);
-  console.log(
-    "signer is {_signer}".replace(
-      "{_signer}",
-      _signer.address));
-  _factory = _contract_factory.fromSolidity(
+  _msg = "wallet is {_wallet}".replace(
+    "{_wallet}",
+    _wallet.address)
+  console.log(_msg);
+  _contract_bytecode = _file_read(
+    _contract_bytecode_path);
+  _factory = _ContractFactory.fromSolidity(
     _contract_bytecode);
   _factory = _factory.connect(
     _signer);
   _contract = await _factory.getDeployTransaction();
-  _msg_info(
-    "{_contract}".replace(
-    "{_contract}",
-    _contract));
-  console.log(
-    _contract);
-  console.log(
-    _contract.target);
+  return _contract;
+}
+
+async function _contract_get(
+  _wallet_seed,
+  _contract_address,
+  _contract_abi,
+  _contract_bytecode_path,
+  _target_network,
+  _api_key_path) {
+  if ( _api_key_path != "" ) {
+    _api_key = _file_read(
+      _api_key_path);
+    _provider = _provider_get(
+      _target_network,
+      _api_key);
+    _msg = "provider '{_provider}' generated".replace(
+      "{_provider}",
+      _provider);
+    _msg_info(
+      _msg);
+  }
+  if ( _contract_address != "" && _contract_abi != "" ) {
+    _contract = _contract_get_abi(
+      _contract_address,
+      _contract_abi,
+      _provider);
+  }
+  if ( _contract_bytecode_path != "" ) {
+    _contract = _contract_get_bytecode(
+      _wallet_seed,
+      _provider,
+      _contract_bytecode_path);
+  }
+  return _contract;
 }
 
 function _config_show() {
@@ -89,9 +118,9 @@ function _config_show() {
       "{wallet_seed}",
       wallet_seed));
   _msgs.push(
-    "  Contract source: {contract_source}".replace(
-      "{contract_source}",
-      contract_source));
+    "     Contract ABI: {contract_abi}".replace(
+      "{contract_abi}",
+      contract_abi));
   _msgs.push(
     "   Target network: {target_network}".replace(
       "{target_network}",
@@ -121,7 +150,7 @@ function _cmdline_parse() {
         wallet_seed = _value;
       }
       if ( _index == 3 ) {
-        contract_source = _value;
+        contract_abi = _value;
       }
       if ( _index == 3 ) {
         contract_bytecode = _value;
@@ -138,7 +167,7 @@ function _cmdline_parse() {
   });
   if ( contract_bytecode == "" ) {
     _msg_error(
-      "deployer <seed_path> <contract_source> <contract_bytecode> (<target_network>) (<api_key>)",
+      "deployer <seed_path> <contract_abi> <contract_bytecode> (<target_network>) (<api_key>)",
       '1');
   }
 }
@@ -149,7 +178,7 @@ _cmdline_parse();
 _config_show();
 app_opts = [
   wallet_seed,
-  contract_source,
+  contract_abi,
   contract_bytecode,
   target_network,
   api_key,

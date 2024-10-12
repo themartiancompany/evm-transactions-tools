@@ -83,15 +83,8 @@ async function _contract_run(
     _wallet_seed,
     _provider
   ];
-  _wallet = _wallet_get._wallet_get.apply(
-    null,
-    _wallet_get_opts);
-  // _wallet.provider = _provider;
-  _signer = _wallet.connect(
-    _provider);
-  // bookmark
   _tx = await _set(
-    _signer,
+    _wallet,
     _contract_address,
     _contract_method,
     _contract_abi,
