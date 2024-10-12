@@ -36,8 +36,13 @@ async function _get(
   _contract_address,
   _contract_method,
   _contract_abi,
+  _contract_bytecode,
   _network_provider,
   _method_args) {
+  _contract = _contract_get(
+    contract_address,
+    _contract_method,
+    );
   _contract = new _ethers.BaseContract(
     _contract_address,
     _contract_abi,
