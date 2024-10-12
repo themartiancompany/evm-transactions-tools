@@ -14,10 +14,8 @@ _dirname = _libcrash._dirname;
 _file_read = _libcrash._file_read;
 _msg_info = _libcrash._msg_info;
 _msg_error = _libcrash._msg_error;
-const _wallet_get = require(
-  '../evm-wallet/wallet-get');
-const _network_provider = require(
-  '../evm-wallet/network-provider');
+const _contract_get = require(
+  '../evm-wallet/contract-get');
 
 function _global_variables() {
   method_args = [];
@@ -31,27 +29,27 @@ function _global_variables() {
   quiet = "";
 }
 
-async function _get(
-  _wallet,
+async function _set(
+  _wallet_seed,
+  _wallet_password,
+  _api_key_path,
+  _target_network,
   _contract_address,
-  _contract_method,
   _contract_abi,
   _contract_bytecode,
-  _network_provider,
+  _contract_method,
   _method_args) {
   _contract = _contract_get(
-    contract_address,
-    _contract_method,
-    );
-  _contract = new _ethers.BaseContract(
+    _wallet_seed,
+    _wallet_password,
+    _api_key_path,
+    _target_network,
     _contract_address,
     _contract_abi,
-    runner=_wallet
-    // runner=_network_provider
-  );
+    _contract_bytecode_path);
   _method = _contract.getFunction(
-  _contract_method);
-    _value = await _method.send.apply(
+    _contract_method);
+  _value = await _method.send.apply(
     null,
     _method_args);
   return _value;
@@ -60,40 +58,36 @@ async function _get(
 async function _contract_run(
   _wallet_seed,
   _wallet_password,
-  _contract_address,
-  _contract_method,
-  _contract_abi,
-  _target_network,
   _api_key_path,
+  _target_network,
+  _contract_address,
+  _contract_abi,
+  _contract_bytecode_path,
+  _contract_method,
   _method_args) {
-  _wallet_path = [
-    _dirname(
-      _wallet_seed),
-    "wallet.dat"].join("/");
-  _api_key = _file_read(
-    _api_key_path);
-  // _contract_abi = _file_read(
-  //   _contract_abi_path);
-  _provider = _network_provider._provider_get(
-    _target_network,
-    _api_key);
-  _msg = "provider {_provider} generated".replace(
-    "{_provider}",
-    _provider);
-  _msg_info(
-    _msg);
-  _wallet_get_opts=[
-    _wallet_path,
-    _wallet_password,
-    _wallet_seed,
-    _provider
-  ];
+  if ( wallet_password == "" ) {
+    _msg_info(
+      "wallet without password");
+  }
+  if ( wallet_path == "" ) {
+    _wallet_path = [
+      _dirname(
+        _wallet_seed),
+      "wallet.dat"].join("/");
+    _msg = "selecting '{_wallet_path}'".replace(
+      "{_wallet_path}",
+      _wallet_path));
+    _msg_info(
+      _msg);
+  }
   _tx = await _set(
-    _wallet,
+    _wallet_seed,
+    _wallet_password,
+    _api_key,
+    _target_network,
     _contract_address,
     _contract_method,
     _contract_abi,
-    _provider,
     _method_args);
   if ( _tx.hash != "" ) {
     _msg_info(
@@ -104,48 +98,45 @@ async function _contract_run(
 }
 
 function _config_show() {
-  _msg = "      Wallet seed: {wallet_seed}".replace(
-    "{wallet_seed}",
-    wallet_seed);
-  _msg_info(
-    _msg);
-  _msg = "  Wallet password: {wallet_password}".replace(
-    "{wallet_passward}",
-    wallet_password);
-  _msg_info(
-    _msg);
-  _msg = " Contract address: {contract_address}".replace(
+  _msgs = [];
+  _msg.push(
+    "      Wallet seed: {wallet_seed}".replace(
+      "{wallet_seed}",
+      wallet_seed));
+  _msgs.push(
+    "  Wallet password: {wallet_password}".replace(
+      "{wallet_passward}",
+      wallet_password));
+  _msgs.push(
+    "          API Key: {api_key}".replace(
+      "{api_key}",
+      api_key));
+  _msgs.push(
+    "   Target network: {target_network}".replace(
+      "{target_network}",
+      target_network));
+  _msgs.push(
+    " Contract address: {contract_address}".replace(
       "{contract_address}",
-      contract_address);
-  _msg_info(
-    _msg);
-  _msg = "  Contract method: {contract_method}".replace(
-    "{contract_method}",
-      contract_method);
-  _msg_info(
-    _msg);
-  // _msg = "     Contract ABI: {contract_abi}".replace(
-  //   "{contract_abi}",
-  //   contract_abi));
-  //  _msg_info(
-  //    _msg);
-  _msg = "   Target network: {target_network}".replace(
-    "{target_network}",
-    target_network);
-  _msg_info(
-    _msg);
-  _msg = "          API Key: {api_key}".replace(
-    "{api_key}",
-    api_key);
-  _msg_info(
-    _msg);
+      contract_address));
+  _msgs.push(
+    "  Contract method: {contract_method}".replace(
+      "{contract_method}",
+      contract_method));
+  _msgs.push(
+    "     Contract ABI: {contract_abi}".replace(
+      "{contract_abi}",
+      contract_abi.length));
   _method_args = method_args.join(
     " ");
-  _msg = "      Method args: {method_args}".replace(
-    "{method_args}",
-    _method_args);
-  _msg_info(
-    _msg);
+  _msgs.push(
+    "      Method args: {method_args}".replace(
+      "{method_args}",
+      _method_args));
+  for (_msg in _msgs)  { 
+    _msg_info(
+      _msg);
+  }
 }
 
 function _cmdline_parse() {
@@ -165,21 +156,24 @@ function _cmdline_parse() {
         wallet_password = _value;
       }
       if ( _index == 5 ) {
-        contract_address = _value;
-      }
-      if ( _index == 6 ) {
-        contract_method = _value;
-      }
-      if ( _index == 7 ) {
-        contract_abi = _value;
-      }
-      if ( _index == 8 ) {
-        target_network = _value;
-      }
-      if ( _index == 9 ) {
         api_key = _value;
       }
-      if ( 9 < _index ) {
+      if ( _index == 6 ) {
+        target_network = _value;
+      }
+      if ( _index == 7 ) {
+        contract_address = _value;
+      }
+      if ( _index == 8 ) {
+        contract_abi = _value;
+      }
+      if ( _index == 9 ) {
+        contract_bytecode_path = _value;
+      }
+      if ( _index == 10 ) {
+        contract_method = _value;
+      }
+      if ( 10 < _index ) {
         method_args.push(
 	  _value);
       }
@@ -193,10 +187,11 @@ function _cmdline_parse() {
       "    <quiet>",
       "    <wallet_seed>",
       "    <wallet_password>",
+      "    <api_key>"
+      "    <target_network>",
       "    <contract_address>",
       "    <contract_method>",
-      "    <target_network>",
-      "    <api_key>"
+      "    [contract_args]",
     ]
     for (let _line = 0; _line < _msg.length; _line++) {
       _msg_error(
