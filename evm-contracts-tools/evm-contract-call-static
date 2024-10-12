@@ -13,7 +13,7 @@ _msg_error = _libcrash._msg_error
 const _network_provider = require(
   '../evm-wallet/network-provider');
 
-async function _get(
+async function _contract_call_static(
   _api_key_path,
   _target_network,
   _contract_address,
@@ -43,36 +43,22 @@ async function _get(
   return _value;
 }
 
-async function _contract_run(
-  _api_key_path,
-  _target_network,
-  _contract_address,
-  _contract_abi,
-  _contract_method,
-  _method_args) {
-  _value = await _get(
-    _api_key_path,
-    _target_network,
-    _contract_address,
-    _contract_abi,
-    _contract_bytecode_path,
-    _contract_method,
-    _method_args);
-  console.log(
-    _value);
-}
-
 _usage() {
   _msgs = [
     "Usage:",
     "  evm-contract-call-static",
+    "    <quiet>",
     "    <api_key_path>",
     "    <target_network>",
     "    <contract_address>",
     "    <contract_abi>",
     "    <contract_bytecode_path>",
     "    <contract_method>",
-    "    <method_args>"];
+    "    <method_args>",
+    "",
+    "  Options:",
+    "    -h         This help."
+  ];
   for (_msg in _msgs) {
   _msg_info(
     _msg);
@@ -80,42 +66,49 @@ _usage() {
 }
 
 function _cmdline_parse() {
+  quiet = "y";
   process.argv.forEach(
     function (
       _value,
       _index,
       _array) {
       if ( _index == 2 ) {
-        api_key_path = _value;
+        quiet = _value;
       }
       if ( _index == 3 ) {
-        target_network = _value;
+        api_key_path = _value;
       }
       if ( _index == 4 ) {
-        contract_address = _value;
+        target_network = _value;
       }
       if ( _index == 5 ) {
-        contract_abi = _value;
+        contract_address = _value;
       }
       if ( _index == 6 ) {
-        contract_bytecode_path = _value;
+        contract_abi = _value;
       }
       if ( _index == 7 ) {
+        contract_bytecode_path = _value;
+      }
+      if ( _index == 8 ) {
         contract_method = _value;
       }
-      if ( 7 < _index ) {
+      if ( 8 < _index ) {
         method_args.push(
 	  _value);
       }
       if ( _value == "-h" || _value == "--help" ) {
         _usage();
       }
+      if ( _value == "-v" || _value == "--verbose" ) {
+        quiet = "n";
+      }
   });
 }
 
 method_args=[];
 _cmdline_parse();
-_contract_run(
+_contract_call_static(
   api_key_path,
   target_network,
   contract_address,

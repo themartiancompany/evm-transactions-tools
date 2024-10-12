@@ -144,11 +144,12 @@ _evm_contract_call() {
       "${_call_type}")"
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
+      "${_api_key_path}"
+      "${_network_backend}"
+      "${_abi}"
+      "${_bytecode_path}"
       "${_contract_address}"
       "${_contract_method}"
-      "${_abi}"
-      "${_network_backend}"
-      "${_api_key}"
       "${_method_args[@]}"
     )
   elif [[ "${_call_type}" == "dynamic" ]]; then
@@ -156,11 +157,12 @@ _evm_contract_call() {
       "${quiet}"
       "${_wallet_seed}"
       "${_wallet_password}"
-      "${_contract_address}"
-      "${_contract_method}"
-      "${_abi}"
-      "${_network_backend}"
       "${_api_key_path}"
+      "${_network_backend}"
+      "${_contract_address}"
+      "${_abi}"
+      "${_contract_bytecode_path}"
+      "${_contract_method}"
       "${_method_args[@]}"
     )
   fi
