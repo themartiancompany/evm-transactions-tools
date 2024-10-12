@@ -14,63 +14,69 @@ const _network_provider = require(
   '../evm-wallet/network-provider');
 
 async function _get(
+  _api_key_path,
+  _target_network,
   _contract_address,
-  _contract_method,
   _contract_abi,
-  _network_provider,
+  _contract_bytecode_path,
+  _contract_method,
   _method_args) {
-  _contract = new _ethers.BaseContract(
+  _wallet_seed=""
+  _wallet_password=""
+  _contract_get_opts=[
+    _wallet_seed,
+    _wallet_password,
+    _api_key_path,
+    _target_network,
     _contract_address,
     _contract_abi,
-    runner=_network_provider);
+    _contract_bytecode_path);
+  ];
+  _contract = await _contract_get.apply(
+    null,
+    _contract_key_opts);
   _method = _contract.getFunction(
     _contract_method);
-  _value = await _method.staticCall.apply(null, _method_args);
+  _value = await _method.staticCall.apply(
+    null,
+    _method_args);
   return _value;
 }
 
-function _get_provider(
-  _network,
-  _api_key) {
-  _provider_opts = {};
-  if ( _network == "gnosis" ) {
-    _rpc = "https://rpc.gnosischain.com" ;
-    _default_network = _rpc;
-  } 
-  if ( _network == "ethereum" ) {
-    _default_network = "etherscan";
-    _provider_opts = {
-     'etherscan': _api_key,
-      'exclusive': [
-        "etherscan",
-        "infura"
-      ]
-    };
-  }
-  _provider = _ethers.getDefaultProvider(
-    _default_network,
-    _provider_opts);
-  return _provider;
-}
-
 async function _contract_run(
-  _contract_address,
-  _contract_method,
-  _contract_abi,
+  _api_key_path,
   _target_network,
-  _api_key,
+  _contract_address,
+  _contract_abi,
+  _contract_method,
   _method_args) {
-  _provider = _network_provider._provider_get(
-    _target_network,
-    _api_key);
   _value = await _get(
+    _api_key_path,
+    _target_network,
     _contract_address,
-    _contract_method,
     _contract_abi,
-    _provider,
+    _contract_bytecode_path,
+    _contract_method,
     _method_args);
   console.log(
     _value);
+}
+
+_usage() {
+  _msgs = [
+    "Usage:",
+    "  evm-contract-call-static",
+    "    <api_key_path>",
+    "    <target_network>",
+    "    <contract_address>",
+    "    <contract_abi>",
+    "    <contract_bytecode_path>",
+    "    <contract_method>",
+    "    <method_args>"];
+  for (_msg in _msgs) {
+  _msg_info(
+    _msg);
+  }
 }
 
 function _cmdline_parse() {
@@ -80,23 +86,29 @@ function _cmdline_parse() {
       _index,
       _array) {
       if ( _index == 2 ) {
-        contract_address = _value;
+        api_key_path = _value;
       }
       if ( _index == 3 ) {
-        contract_method = _value;
-      }
-      if ( _index == 4 ) {
-        contract_abi = _value;
-      }
-      if ( _index == 5 ) {
         target_network = _value;
       }
-      if ( _index == 6 ) {
-        api_key = _value;
+      if ( _index == 4 ) {
+        contract_address = _value;
       }
-      if ( 6 < _index ) {
+      if ( _index == 5 ) {
+        contract_abi = _value;
+      }
+      if ( _index == 6 ) {
+        contract_bytecode_path = _value;
+      }
+      if ( _index == 7 ) {
+        contract_method = _value;
+      }
+      if ( 7 < _index ) {
         method_args.push(
 	  _value);
+      }
+      if ( _value == "-h" || _value == "--help" ) {
+        _usage();
       }
   });
 }
@@ -104,9 +116,10 @@ function _cmdline_parse() {
 method_args=[];
 _cmdline_parse();
 _contract_run(
-  contract_address,
-  contract_method,
-  contract_abi,
+  api_key_path,
   target_network,
-  api_key,
+  contract_address,
+  contract_abi,
+  contract_bytecode_path,
+  contract_method,
   method_args);
