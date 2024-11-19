@@ -4,83 +4,146 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
 
-const { ethers } = require(
-  "ethers");
-_ethers = ethers;
-const _libcrash = require(
-  '../libcrash-js/crash-js');
-_app_name_get = _libcrash._app_name_get;
-_dirname = _libcrash._dirname;
-_file_read = _libcrash._file_read;
-_msg_info = _libcrash._msg_info;
-_msg_error = _libcrash._msg_error;
-const _contract_get = require(
-  '../evm-wallet/contract-get');
+const
+  { ethers } =
+    require(
+      "ethers");
+_ethers =
+  ethers;
+const
+  _libcrash =
+    require(
+      '../libcrash-js/crash-js');
+_dirname =
+  _libcrash._dirname;
+_file_read =
+  _libcrash._file_read;
+_msg_info =
+  _libcrash._msg_info;
+_msg_error =
+  _libcrash._msg_error;
+_path_join =
+  _libcrash._path_join;
+const
+  _contract_get_module =
+    require(
+      '../evm-wallet/contract-get');
+_contract_get =
+  _contract_get_module._contract_get;
 
-function _global_variables() {
-  method_args = [];
-  wallet_seed = "";
-  wallet_password = "";
-  contract_address = "";
-  contract_method = "";
-  contract_abi = "";
-  target_network = "";
-  api_key = "";
-  quiet = "";
+
+function
+  _global_variables() {
+  app_name =
+    "evm-contract-call-dynamic";
+  wallet_seed =
+    "";
+  wallet_password =
+    "";
+  api_key_path =
+    "";
+  target_network =
+    "";
+  contract_address =
+    "";
+  contract_abi =
+    "";
+  contract_bytecode =
+    "";
+  contract_method =
+    "";
+  method_args =
+    [];
+  quiet =
+    "";
 }
 
-async function _contract_call_dynamic(
-  _wallet_seed,
-  _wallet_password,
-  _api_key_path,
-  _target_network,
-  _contract_address,
-  _contract_abi,
-  _contract_bytecode,
-  _contract_method,
-  _method_args) {
-  _contract = _contract_get(
+
+function
+  _msg_info_wallet_selected(
+    _wallet_path) {
+  let
+    _msg,
+    _template;
+  _template =
+    "selecting '{_wallet_path}'";
+  _msg =
+    _template.replaceAll(
+      "{_wallet_path}",
+      _wallet_path);
+  _msg_info(
+    _msg);
+}
+
+
+async function
+  _contract_call_dynamic(
     _wallet_seed,
     _wallet_password,
     _api_key_path,
     _target_network,
     _contract_address,
     _contract_abi,
-    _contract_bytecode_path);
-  _method = _contract.getFunction(
-    _contract_method);
-  _value = await _method.send.apply(
-    null,
-    _method_args);
+    _contract_bytecode,
+    _contract_method,
+    _method_args) {
+  let
+    _contract,
+    _method,
+    _value;
+  _contract =
+    _contract_get(
+      _wallet_seed,
+      _wallet_password,
+      _api_key_path,
+      _target_network,
+      _contract_address,
+      _contract_abi,
+      _contract_bytecode_path);
+  _method =
+    _contract.getFunction(
+      _contract_method);
+  _value = await
+    _method.send.apply(
+      null,
+      _method_args);
   return _value;
 }
 
-async function _contract_run(
-  _wallet_seed,
-  _wallet_password,
-  _api_key_path,
-  _target_network,
-  _contract_address,
-  _contract_abi,
-  _contract_bytecode_path,
-  _contract_method,
-  _method_args) {
-  if ( wallet_password == "" ) {
+async function
+  _contract_run(
+    _wallet_seed,
+    _wallet_password,
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi,
+    _contract_bytecode_path,
+    _contract_method,
+    _method_args) {
+  let
+    _tx,
+    _contract_call_dynamic_opts,
+    _wallet_path_list,
+    _wallet_path;
+  if ( _wallet_password == "" ) {
     _msg_info(
       "wallet without password");
   }
+  _wallet_path =
+    "";
   if ( wallet_path == "" ) {
-    _wallet_path = [
+    _wallet_path_list = [
       _dirname(
         _wallet_seed),
-      "wallet.dat"].join("/");
-    _msg = "selecting '{_wallet_path}'".replace(
-      "{_wallet_path}",
-      _wallet_path));
-    _msg_info(
-      _msg);
+      "wallet.dat"];
+    _wallet_path =
+      _path_join(
+        _wallet_path_list);
+      _msg_info_wallet_selected(
+        _wallet_path);
   }
-  _tx = await _contract_call_dynamic(
+  _contract_call_dynamic_opts = [
     _wallet_seed,
     _wallet_password,
     _api_key,
@@ -88,7 +151,12 @@ async function _contract_run(
     _contract_address,
     _contract_method,
     _contract_abi,
-    _method_args);
+    _method_args
+  ];
+  _tx = await
+    _contract_call_dynamic.apply(
+      null,
+      _contract_call_dynamic_opts);
   if ( _tx.hash != "" ) {
     _msg_info(
       _value);
@@ -97,12 +165,13 @@ async function _contract_run(
   }
 }
 
-function _usage() {
-  _msgs = [
+function
+  _usage() {
+  let
+    _text;
+  _text = [
     "Usage:",
-    "  {app_name}".replace(
-      "{app_name}",
-      app_name),
+    "  evm-contract-call-dynamic",
     "    <quiet>",
     "    <wallet_seed>",
     "    <wallet_password>",
@@ -112,114 +181,149 @@ function _usage() {
     "    <contract_method>",
     "    [contract_args]",
   ]
-  for (let _line = 0; _line < _msgs.length; _line++) {
-    _msg_error(
-      _msgs[_line],
-      0);
+  for (let
+         _line = 0;
+       _line < _text.length;
+       _line++) {
+    _msg_info(
+      _msgs[_line]);
   }
   process.exit();
 }
 
-function _config_show() {
-  _msgs = [];
-  _msg.push(
+function
+  _config_show() {
+  let
+    _line,
+    _method_args,
+    _text;
+  _text =
+    [];
+  _text.push(
     "      Wallet seed: {wallet_seed}".replace(
       "{wallet_seed}",
       wallet_seed));
-  _msgs.push(
+  _text.push(
     "  Wallet password: {wallet_password}".replace(
       "{wallet_passward}",
       wallet_password));
-  _msgs.push(
+  _text.push(
     "          API Key: {api_key_path}".replace(
       "{api_key}",
       api_key));
-  _msgs.push(
+  _text.push(
     "   Target network: {target_network}".replace(
       "{target_network}",
       target_network));
-  _msgs.push(
+  _text.push(
     " Contract address: {contract_address}".replace(
       "{contract_address}",
       contract_address));
-  _msgs.push(
+  _text.push(
     "     Contract ABI: {contract_abi}".replace(
       "{contract_abi}",
       contract_abi.length));
-  _msgs.push(
+  _text.push(
     "Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
       contract_bytecode_path.length));
-  _msgs.push(
+  _text.push(
     "  Contract method: {contract_method}".replace(
       "{contract_method}",
       contract_method));
-  _method_args = method_args.join(
+  _method_args =
+    method_args.join(
     " ");
-  _msgs.push(
+  _text.push(
     "      Method args: {method_args}".replace(
       "{method_args}",
       _method_args));
-  for (_msg in _msgs)  { 
+  for (_line in _text)  { 
     _msg_info(
-      _msg);
+      _line);
   }
 }
 
-function _cmdline_parse() {
-  quiet = "y";
+function
+  _cmdline_parse() {
+  quiet =
+    "y";
   process.argv.forEach(
     function (
       _value,
       _index,
       _array) {
       if ( _index == 2 ) {
-        quiet = _value;
+        quiet =
+          _value;
       }
       if ( _index == 3 ) {
-        wallet_seed = _value;
+        wallet_seed =
+          _value;
       }
       if ( _index == 4 ) {
-        wallet_password = _value;
+        wallet_password =
+          _value;
       }
       if ( _index == 5 ) {
-        api_key = _value;
+        api_key =
+          _value;
       }
       if ( _index == 6 ) {
-        target_network = _value;
+        target_network =
+          _value;
       }
       if ( _index == 7 ) {
-        contract_address = _value;
+        contract_address =
+          _value;
       }
       if ( _index == 8 ) {
-        contract_abi = _value;
+        contract_abi =
+          _value;
       }
       if ( _index == 9 ) {
-        contract_bytecode_path = _value;
+        contract_bytecode_path =
+          _value;
       }
       if ( _index == 10 ) {
-        contract_method = _value;
+        contract_method =
+          _value;
       }
       if ( 10 < _index ) {
         method_args.push(
 	  _value);
       }
   });
-  if ( contract_address == "" || _value == "-h" ) {
+  if ( contract_address == "" ||
+       _value == "-h" ) {
     _usage();
   }
 }
 
 _global_variables();
-app_name = _app_name_get();
-_cmdline_parse();
-_config_show();
-_contract_run(
-  wallet_seed,
-  wallet_password,
-  contract_address,
-  contract_method,
-  contract_abi,
-  target_network,
-  api_key,
-  method_args);
+
+if ( require.main == module ) {
+  _cmdline_parse();
+  _config_show();
+  app_opts = [
+    wallet_seed,
+    wallet_password,
+    api_key_path,
+    target_network,
+    contract_address,
+    contract_abi,
+    contract_bytecode_path,
+    contract_method,
+    method_args
+  ];
+  _contract_run.apply(
+    null,
+    app_opts);
+}
+
+module.exports = {
+  _contract_call_dynamic:
+    _contract_call_dynamic,
+  _contract_run:
+    _contract_run
+};

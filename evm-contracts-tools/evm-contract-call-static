@@ -1,50 +1,105 @@
 #!/usr/bin/env node
 
-const { ethers } = require(
-  "ethers");
-_ethers = ethers;
-const _libcrash = require(
-  '../libcrash-js/crash-js');
-const _contract_get_module = require(
-  './contract-get');
-_contract_get = _contract_get_module._contract_get
-_msg_info = _libcrash._msg_info
-_msg_error = _libcrash._msg_error
-const _network_provider = require(
-  '../evm-wallet/network-provider');
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//
 
-async function _contract_call_static(
-  _api_key_path,
-  _target_network,
-  _contract_address,
-  _contract_abi,
-  _contract_bytecode_path,
-  _contract_method,
-  _method_args) {
-  _wallet_seed=""
-  _wallet_password=""
-  _contract_get_opts=[
+const
+  { ethers } =
+    require(
+      "ethers");
+_ethers =
+  ethers;
+const
+  _libcrash =
+    require(
+      '../libcrash-js/crash-js');
+const
+  _contract_get_module =
+    require(
+      './contract-get');
+_contract_get =
+  _contract_get_module._contract_get
+_msg_info =
+  _libcrash._msg_info
+_msg_error =
+  _libcrash._msg_error
+const
+  _network_provider =
+    require(
+      '../evm-wallet/network-provider');
+
+function
+  _global_variables() {
+  app_name =
+    "evm-contract-call-static";
+  api_key_path =
+    '';
+  target_network =
+    '';
+  contract_address =
+    '';
+  contract_abi =
+    '';
+  contract_bytecode_path =
+    '';
+  contract_method =
+    '';
+  method_args =
+    [];
+  quiet =
+    '';
+}
+
+async function
+  _contract_call_static(
+    _api_key_path,
+    _target_network,
+    _contract_address,
+    _contract_abi,
+    _contract_bytecode_path,
+    _contract_method,
+    _method_args) {
+  let
+    _contract,
+    _contract_get_opts,
+    _method,
+    _value,
+    _wallet_password,
+    _wallet_seed;
+  _wallet_seed =
+    "";
+  _wallet_password =
+    "";
+  _contract_get_opts = [
     _wallet_seed,
     _wallet_password,
     _api_key_path,
     _target_network,
     _contract_address,
     _contract_abi,
-    _contract_bytecode_path);
+    _contract_bytecode_path
   ];
-  _contract = await _contract_get.apply(
-    null,
-    _contract_key_opts);
-  _method = _contract.getFunction(
-    _contract_method);
-  _value = await _method.staticCall.apply(
-    null,
-    _method_args);
+  _contract = await
+    _contract_get.apply(
+      null,
+      _contract_key_opts);
+  _method =
+    _contract.getFunction(
+      _contract_method);
+  _value = await
+    _method.staticCall.apply(
+      null,
+      _method_args);
   return _value;
 }
 
-function _usage() {
-  _msgs = [
+function
+  _usage() {
+  let
+    _line,
+    _text;
+  _text = [
     "Usage:",
     "  evm-contract-call-static",
     "    <quiet>",
@@ -59,60 +114,87 @@ function _usage() {
     "  Options:",
     "    -h         This help."
   ];
-  for (_msg in _msgs) {
-  _msg_info(
-    _msg);
+  for (_line in _text) {
+    _msg_info(
+      _line);
   }
 }
 
-function _cmdline_parse() {
-  quiet = "y";
+function
+  _cmdline_parse() {
+  quiet =
+    "y";
   process.argv.forEach(
     function (
       _value,
       _index,
       _array) {
       if ( _index == 2 ) {
-        quiet = _value;
+        quiet =
+          _value;
       }
       if ( _index == 3 ) {
-        api_key_path = _value;
+        api_key_path =
+          _value;
       }
       if ( _index == 4 ) {
-        target_network = _value;
+        target_network =
+          _value;
       }
       if ( _index == 5 ) {
-        contract_address = _value;
+        contract_address =
+          _value;
       }
       if ( _index == 6 ) {
-        contract_abi = _value;
+        contract_abi =
+          _value;
       }
       if ( _index == 7 ) {
-        contract_bytecode_path = _value;
+        contract_bytecode_path =
+          _value;
       }
       if ( _index == 8 ) {
-        contract_method = _value;
+        contract_method =
+          _value;
       }
       if ( 8 < _index ) {
         method_args.push(
-	  _value);
+          _value);
       }
-      if ( _value == "-h" || _value == "--help" ) {
+      if ( _value == "-h" ||
+           _value == "--help" ) {
         _usage();
       }
-      if ( _value == "-v" || _value == "--verbose" ) {
-        quiet = "n";
+      if ( _value == "-v" ||
+           _value == "--verbose" ) {
+        quiet =
+          "n";
       }
   });
 }
 
-method_args=[];
-_cmdline_parse();
-_contract_call_static(
-  api_key_path,
-  target_network,
-  contract_address,
-  contract_abi,
-  contract_bytecode_path,
-  contract_method,
-  method_args);
+
+_global_variables();
+
+if ( require.main == module ) {
+  _cmdline_parse();
+  _config_show();
+  app_opts = [
+    api_key_path,
+    target_network,
+    contract_address,
+    contract_abi,
+    contract_bytecode_path,
+    contract_method,
+    method_args
+  ];
+  _contract_call_static.apply(
+    null,
+    app_opts);
+}
+
+module.exports = {
+  _contract_call_static:
+    _contract_call_static,
+};
+
