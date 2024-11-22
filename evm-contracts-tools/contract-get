@@ -242,7 +242,7 @@ function
     "    <contract_abi>",
     "    <contract_bytecode>",
     "    (<target_network>)",
-    "    (<api_key>)"
+    "    (<api_key>)",
     "    (<verbose>)"];
   for ( _line in _text ) {
     _msg_info(

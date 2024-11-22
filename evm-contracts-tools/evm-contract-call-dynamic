@@ -89,17 +89,20 @@ async function
     _method_args) {
   let
     _contract,
+    _contract_get_opts,
     _method,
     _value;
+  _contract_get_opts = [
+    wallet_seed,
+    contract_abi,
+    contract_bytecode,
+    target_network,
+    api_key_path
+  ];
   _contract =
-    _contract_get(
-      _wallet_seed,
-      _wallet_password,
-      _api_key_path,
-      _target_network,
-      _contract_address,
-      _contract_abi,
-      _contract_bytecode_path);
+    _contract_get.apply(
+      null,
+      _contract_get_opts);
   _method =
     _contract.getFunction(
       _contract_method);
