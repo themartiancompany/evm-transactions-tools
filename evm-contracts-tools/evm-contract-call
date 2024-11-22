@@ -291,7 +291,7 @@ _contract_abi_auto_detect() {
       _msg_info \
         "obtained ABI from a network explorer"
     echo \
-      "${_abi}" >
+      "${_abi}" > \
       "${contract_abi}"
     else
       _msg_error \
