@@ -314,20 +314,24 @@ _set_overrides() {
     "$(_get_date_human)"
   _set_override \
     "contract" \
-    "abi" \
-    "${_data_dir}/${target_network}/${contract_address}.abi.json"
-  _set_override \
-    "contract" \
-    "bytecode" \
-    "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
+    "address" \
+    ""
+  if [[ "$(_get \
+             "contract" \
+             "address")" != "" ]]; then
+    _set_override \
+      "contract" \
+      "abi" \
+      "${_data_dir}/${target_network}/${contract_address}.abi.json"
+    _set_override \
+      "contract" \
+      "bytecode" \
+      "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
+  fi
   _set_override \
     "wallet" \
     "name" \
     "default"
-  _set_override \
-    "contract" \
-    "address" \
-    ""
   _set_override \
     "target" \
     "network" \
@@ -344,8 +348,12 @@ _set_overrides() {
          "$(_get \
               "target" \
               "network")")"
-  if [[ -n "contract_abi" ]]; then
-    _contract_abi_auto_detect
+  if [[ "$(_get \
+             "contract" \
+             "address")" != "" ]]; then
+    if [[ -n "contract_abi" ]]; then
+      _contract_abi_auto_detect
+    fi
   fi
   _set_override \
     "wallet" \
@@ -504,6 +512,8 @@ done
 shift \
   $(( \
     OPTIND - 1 ))
+_msg_info \
+  "args: $@"
 if (( $# < 1 )); then
   _msg_error \
     "no address given" \
