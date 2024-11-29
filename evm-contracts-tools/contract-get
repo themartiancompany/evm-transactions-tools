@@ -246,8 +246,8 @@ function
     "    <contract_abi>",
     "    <contract_bytecode>",
     "    (<target_network>)",
-    "    (<api_key>)",
-    "    (<verbose>)"];
+    "    (<api_key>)"
+  ];
   for ( _line in _text ) {
     _msg_info(
       _line);
