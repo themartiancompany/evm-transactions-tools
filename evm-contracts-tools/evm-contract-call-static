@@ -39,7 +39,7 @@ function
     '';
   contract_address =
     '';
-  contract_abi =
+  contract_abi_path =
     '';
   contract_bytecode_path =
     '';
@@ -55,7 +55,7 @@ async function
   _contract_call_static(
     _api_key_path,
     _target_network,
-    _contract_abi,
+    _contract_abi_path,
     _contract_bytecode_path,
     _contract_address,
     _contract_method,
@@ -73,7 +73,7 @@ async function
     "";
   _contract_get_opts = [
     wallet_seed,
-    contract_abi,
+    contract_abi_path,
     contract_bytecode,
     target_network,
     api_key_path,
@@ -109,9 +109,9 @@ function
       "{target_network}",
       target_network));
   _text.push(
-    "     Contract ABI: {contract_abi}".replace(
-      "{contract_abi}",
-      contract_abi.length));
+    "     Contract ABI: {contract_abi_path}".replace(
+      "{contract_abi_path}",
+      contract_abi_path.length));
   _text.push(
     "Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
@@ -134,6 +134,8 @@ function
   for (_line of _text)  { 
     _msg_info(
       _line);
+  }
+}
 
 function
   _usage() {
@@ -148,7 +150,7 @@ function
     "    <quiet>",
     "    <api_key_path>",
     "    <target_network>",
-    "    <contract_abi>",
+    "    <contract_abi_path>",
     "    <contract_bytecode_path>",
     "    <contract_address>",
     "    <contract_method>",
@@ -161,7 +163,7 @@ function
     "                            contract ABI provider service",
     "  <target_network>          Network on which the contract",
     "                            resides.",
-    "  <contract_abi>            Contract ABI (not the path)",
+    "  <contract_abi_path>       Path of the contract ABI",
     "  <contract_bytecode_path>  Path for the contract bytecode",
     "  <contract_address>        Address of the contract",
     "  <contract_method>         Contract method to execute",
@@ -170,7 +172,7 @@ function
     "  Options:",
     "    -h                      This help."
   ];
-  for (_line in _text) {
+  for (_line of _text) {
     _msg_info(
       _line);
   }
@@ -198,7 +200,7 @@ function
           _value;
       }
       if ( _index == 5 ) {
-        contract_abi =
+        contract_abi_path =
           _value;
       }
       if ( _index == 6 ) {
@@ -234,7 +236,7 @@ if ( require.main == module ) {
   app_opts = [
     api_key_path,
     target_network,
-    contract_abi,
+    contract_abi_path,
     contract_bytecode_path,
     contract_address,
     contract_method,
@@ -247,6 +249,6 @@ if ( require.main == module ) {
 
 module.exports = {
   _contract_call_static:
-    _contract_call_static,
+    _contract_call_static
 };
 

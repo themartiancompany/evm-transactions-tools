@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
 
+_json_parse =
+  JSON.parse;
 const
   { ethers } =
     require(
@@ -51,9 +53,9 @@ function
     "contract-get"
   wallet_seed =
     "";
-  contract_abi =
+  contract_abi_path =
     "";
-  contract_bytecode =
+  contract_bytecode_path =
     "";
   target_network =
     "";
@@ -98,10 +100,18 @@ function
 async function
   _contract_get_abi(
     _contract_address,
-    _contract_abi,
+    _contract_abi_path,
     _network_provider) {
   let
-    _contract;
+    _contract,
+    _contract_abi_str,
+    _contract_abi;
+  _contract_abi_str =
+    _file_read(
+      _contract_abi_path);
+  _contract_abi =
+    _json_parse(
+      _contract_abi_str);
   _contract = new
     _base_contract(
       _contract_address,
@@ -164,7 +174,7 @@ async function
     _wallet_seed,
     _wallet_password,
     _contract_address,
-    _contract_abi,
+    _contract_abi_path,
     _contract_bytecode_path,
     _target_network,
     _api_key_path) {
@@ -183,11 +193,11 @@ async function
       _api_key);
   _msg_info_provider_generated(
     _provider);
-  if ( _contract_abi != "" ) {
+  if ( _contract_abi_path != "" ) {
     _contract =
       _contract_get_abi(
         _contract_address,
-        _contract_abi,
+        _contract_abi_path,
         _provider);
   }
   else if ( _contract_bytecode_path != "" ) {
@@ -212,21 +222,21 @@ function
       "{wallet_seed}",
       wallet_seed));
   _text.push(
-    "     Contract ABI: {contract_abi}".replace(
-      "{contract_abi}",
-      contract_abi));
+    "Contract ABI path: {contract_abi_path}".replace(
+      "{contract_abi_path}",
+      contract_abi_path));
   _text.push(
     "   Target network: {target_network}".replace(
       "{target_network}",
       target_network));
   _text.push(
-    "          API Key: {api_key}".replace(
-      "{api_key}",
-      api_key));
+    "          API Key: {api_key_path}".replace(
+      "{api_key_path}",
+      api_key_path));
   _text.push(
-    "Contract bytecode: {contract_bytecode}".replace(
-      "{contract_bytecode}",
-      contract_bytecode));
+    "Contract bytecode: {contract_bytecode_path}".replace(
+      "{contract_bytecode_path}",
+      contract_bytecode_path));
   for ( _line in _text ) {
     _msg_info(
       _line);
@@ -243,10 +253,25 @@ function
     "  contract-get",
     "    <quiet>",
     "    <seed_path>",
-    "    <contract_abi>",
-    "    <contract_bytecode>",
+    "    <contract_abi_path>",
+    "    <contract_bytecode_path>",
     "    (<target_network>)",
-    "    (<api_key>)"
+    "    (<api_key_path>)"
+    "",
+    "Args:",
+    "  <quiet>                   Can be 'y' or 'n'",
+    "                            Default: y",
+    "  <seed_path>               Path of the seed phrase",
+    "  <api_key_path>            Path of the API key for the",
+    "                            contract ABI provider service",
+    "  <contract_abi_path>       Path of the contract ABI",
+    "  <target_network>          Network on which the contract",
+    "                            resides.",
+    "  <contract_bytecode_path>  Path for the contract bytecode",
+    "  <contract_address>        Address of the contract",
+    "  <contract_method>         Contract method to execute",
+    "  [method_args]             Arguments to pass to the method",
+
   ];
   for ( _line in _text ) {
     _msg_info(
@@ -271,11 +296,11 @@ function _cmdline_parse() {
           _value;
       }
       if ( _index == 4 ) {
-        contract_abi =
+        contract_abi_path =
           _value;
       }
       if ( _index == 5 ) {
-        contract_bytecode =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 6 ) {
@@ -288,7 +313,8 @@ function _cmdline_parse() {
       }
     }
   );
-  if ( contract_bytecode == "" ) {
+  if ( contract_abi_path == "" &&
+       contract_bytecode_path ) {
     _usage();
   }
 }
@@ -300,8 +326,8 @@ if ( require.main == module ) {
   _config_show();
   app_opts = [
     wallet_seed,
-    contract_abi,
-    contract_bytecode,
+    contract_abi_path,
+    contract_bytecode_path,
     target_network,
     api_key_path,
   ];

@@ -133,9 +133,9 @@ _evm_contract_call() {
   _method_args+=(
     "$@"
   )
-  _abi="$( \
+  _abi="\"$( \
     cat \
-      "${_contract_abi}")"
+      "${_contract_abi}")\""
   _api_key="$( \
     _api_key_read \
       "${_api_key_path}")"
