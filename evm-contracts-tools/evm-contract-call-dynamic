@@ -16,8 +16,6 @@ const
       '../libcrash-js/crash-js');
 _dirname =
   _libcrash._dirname;
-_file_read =
-  _libcrash._file_read;
 _msg_info =
   _libcrash._msg_info;
 _msg_error =
@@ -149,7 +147,7 @@ async function
   _contract_call_dynamic_opts = [
     _wallet_seed,
     _wallet_password,
-    _api_key,
+    _api_key_path,
     _target_network,
     _contract_address,
     _contract_method,
@@ -173,19 +171,39 @@ function
   let
     _text;
   _text = [
+    "Execute a dynamic call to an EVM network's contract method",
+    "",
     "Usage:",
     "  evm-contract-call-dynamic",
     "    <quiet>",
     "    <wallet_seed>",
     "    <wallet_password>",
-    "    <api_key>"
+    "    <api_key_path>"
     "    <target_network>",
+    "    <contract_abi>",
+    "    <contract_bytecode_path>",
     "    <contract_address>",
     "    <contract_method>",
-    "    [contract_args]",
+    "    [method_args]",
+    "",
+    "Args:",
+    "  <quiet>                   Can be 'y' or 'n'",
+    "                            Default: y",
+    "  <wallet_seed>             Can be 'y' or 'n'",
+    "  <wallet_password>         Password of the wallet",
+    "  <api_key_path>            Path of the API key for the",
+    "                            contract ABI provider service",
+    "  <target_network>          Network on which the contract",
+    "                            resides.",
+    "  <contract_abi>            Contract ABI (not the path)",
+    "  <contract_bytecode_path>  Path for the contract bytecode",
+    "  <contract_address>        Address of the contract",
+    "  <contract_method>         Contract method to execute",
+    "  [method_args]             Arguments to pass to the method",
   ]
   for (let
-         _line = 0;
+         _line =
+	   0;
        _line < _text.length;
        _line++) {
     _msg_info(
@@ -211,9 +229,9 @@ function
       "{wallet_passward}",
       wallet_password));
   _text.push(
-    "          API Key: {api_key_path}".replace(
-      "{api_key}",
-      api_key));
+    "     API Key path: {api_key_path}".replace(
+      "{api_key_path}",
+      api_key_path));
   _text.push(
     "   Target network: {target_network}".replace(
       "{target_network}",
@@ -241,7 +259,7 @@ function
     "      Method args: {method_args}".replace(
       "{method_args}",
       _method_args));
-  for (_line in _text)  { 
+  for (_line of _text)  { 
     _msg_info(
       _line);
   }
@@ -269,7 +287,7 @@ function
           _value;
       }
       if ( _index == 5 ) {
-        api_key =
+        api_key_path =
           _value;
       }
       if ( _index == 6 ) {

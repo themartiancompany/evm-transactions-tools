@@ -55,9 +55,9 @@ async function
   _contract_call_static(
     _api_key_path,
     _target_network,
-    _contract_address,
     _contract_abi,
     _contract_bytecode_path,
+    _contract_address,
     _contract_method,
     _method_args) {
   let
@@ -93,24 +93,82 @@ async function
 }
 
 function
+  _config_show() {
+  let
+    _line,
+    _method_args,
+    _text;
+  _text =
+    [];
+  _text.push(
+    "     API Key path: {api_key_path}".replace(
+      "{api_key_path}",
+      api_key_path));
+  _text.push(
+    "   Target network: {target_network}".replace(
+      "{target_network}",
+      target_network));
+  _text.push(
+    "     Contract ABI: {contract_abi}".replace(
+      "{contract_abi}",
+      contract_abi.length));
+  _text.push(
+    "Contract Bytecode: {contract_bytecode_path}".replace(
+      "{contract_bytecode_path}",
+      contract_bytecode_path.length));
+  _text.push(
+    " Contract address: {contract_address}".replace(
+      "{contract_address}",
+      contract_address));
+  _text.push(
+    "  Contract method: {contract_method}".replace(
+      "{contract_method}",
+      contract_method));
+  _method_args =
+    method_args.join(
+    " ");
+  _text.push(
+    "      Method args: {method_args}".replace(
+      "{method_args}",
+      _method_args));
+  for (_line of _text)  { 
+    _msg_info(
+      _line);
+
+function
   _usage() {
   let
     _line,
     _text;
   _text = [
+    "Execute a static call to an EVM network's contract method",
+    "",
     "Usage:",
     "  evm-contract-call-static",
     "    <quiet>",
     "    <api_key_path>",
     "    <target_network>",
-    "    <contract_address>",
     "    <contract_abi>",
     "    <contract_bytecode_path>",
+    "    <contract_address>",
     "    <contract_method>",
     "    <method_args>",
     "",
+    "Args:",
+    "  <quiet>                   Can be 'y' or 'n'",
+    "                            Default: y",
+    "  <api_key_path>            Path of the API key for the",
+    "                            contract ABI provider service",
+    "  <target_network>          Network on which the contract",
+    "                            resides.",
+    "  <contract_abi>            Contract ABI (not the path)",
+    "  <contract_bytecode_path>  Path for the contract bytecode",
+    "  <contract_address>        Address of the contract",
+    "  <contract_method>         Contract method to execute",
+    "  [method_args]             Arguments to pass to the method",
+    "",
     "  Options:",
-    "    -h         This help."
+    "    -h                      This help."
   ];
   for (_line in _text) {
     _msg_info(
@@ -140,15 +198,15 @@ function
           _value;
       }
       if ( _index == 5 ) {
-        contract_address =
-          _value;
-      }
-      if ( _index == 6 ) {
         contract_abi =
           _value;
       }
-      if ( _index == 7 ) {
+      if ( _index == 6 ) {
         contract_bytecode_path =
+          _value;
+      }
+      if ( _index == 7 ) {
+        contract_address =
           _value;
       }
       if ( _index == 8 ) {
@@ -160,13 +218,9 @@ function
           _value);
       }
       if ( _value == "-h" ||
-           _value == "--help" ) {
+           _value == "--help" ||
+           contract_address == "" ) {
         _usage();
-      }
-      if ( _value == "-v" ||
-           _value == "--verbose" ) {
-        quiet =
-          "n";
       }
   });
 }
@@ -180,9 +234,9 @@ if ( require.main == module ) {
   app_opts = [
     api_key_path,
     target_network,
-    contract_address,
     contract_abi,
     contract_bytecode_path,
+    contract_address,
     contract_method,
     method_args
   ];

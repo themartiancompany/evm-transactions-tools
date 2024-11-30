@@ -149,7 +149,7 @@ _evm_contract_call() {
       "${_api_key_path}"
       "${_network_backend}"
       "${_abi}"
-      "${_bytecode_path}"
+      "${_contract_bytecode_path}"
       "${_contract_address}"
       "${_contract_method}"
       "${_method_args[@]}"
@@ -261,7 +261,7 @@ _contract_abi_auto_detect() {
       "key")"
   if [ ! -e "${contract_abi}" ]; then
     _msg=(
-      "contract ABI '${_contract_abi}'"
+      "contract ABI '${contract_abi}'"
       "does not exist, obtaining from"
       "the network's contract ABI provider."
     )
@@ -276,8 +276,7 @@ _contract_abi_auto_detect() {
       )
       _msg_warning \
         "${_msg[*]}"
-      _contract_abi=""
-      break
+      contract_abi=""
     fi
     if [ -e "${_key}" ]; then
       _data_dir="$( \
@@ -337,18 +336,6 @@ _set_overrides() {
     "contract" \
     "address" \
     ""
-  if [[ "$(_get \
-             "contract" \
-             "address")" != "" ]]; then
-    _set_override \
-      "contract" \
-      "abi" \
-      "${_data_dir}/${target_network}/${contract_address}.abi.json"
-    _set_override \
-      "contract" \
-      "bytecode" \
-      "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
-  fi
   _set_override \
     "wallet" \
     "name" \
@@ -369,6 +356,18 @@ _set_overrides() {
          "$(_get \
               "target" \
               "network")")"
+  if [[ "$(_get \
+             "contract" \
+             "address")" != "" ]]; then
+    _set_override \
+      "contract" \
+      "abi" \
+      "${_data_dir}/${target_network}/${contract_address}.abi.json"
+    _set_override \
+      "contract" \
+      "bytecode" \
+      "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
+  fi
   if [[ "$(_get \
              "contract" \
              "address")" != "" ]]; then
