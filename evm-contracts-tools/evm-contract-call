@@ -145,6 +145,7 @@ _evm_contract_call() {
       "${_call_type}")"
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
+      "${quiet}"
       "${_api_key_path}"
       "${_network_backend}"
       "${_abi}"
@@ -239,12 +240,13 @@ _api_key_get() {
 
 _contract_abi_auto_detect() {
   local \
-    _data_dir \
-    _key \
-    _address \
-    _network \
     _abi \
-    _evm_contracts_abi_get_opts=()
+    _address \
+    _data_dir \
+    _evm_contracts_abi_get_opts=() \
+    _key \
+    _msg=() \
+    _network
   _network="$( \
     _get \
       "target" \
@@ -257,51 +259,70 @@ _contract_abi_auto_detect() {
     _get \
       "api" \
       "key")"
-  if [ ! -e "${_key}" ]; then
-    _msg_error \
-      "key '${_key}' not found" \
-      1
-  fi
   if [ ! -e "${contract_abi}" ]; then
-    _data_dir="$( \
-      dirname \
-        "${contract_abi}")"
-    _msg_info \
-      "abi '${contract_abi}' does not exist"
-    mkdir \
-      -p \
-      "${_data_dir}"
-    chmod \
-      700 \
-      "${_data_dir}"
-    _evm_contracts_abi_get_opts+=(
-      --network
-        "${_network}"
-      --key 
-        "${_key}"
+    _msg=(
+      "contract ABI '${_contract_abi}'"
+      "does not exist, obtaining from"
+      "the network's contract ABI provider."
     )
-    _abi="$( \
+    _msg_info \
+      "${_msg[*]}"
+    if [ ! -e "${_key}" ]; then
+      _msg=(
+        "contract ABI provider API"
+        "key '${_key}' not found,"
+        "won't fetch the ABI from the"
+        "internet."
+      )
+      _msg_warning \
+        "${_msg[*]}"
+      _contract_abi=""
+      break
+    fi
+    if [ -e "${_key}" ]; then
+      _data_dir="$( \
+        dirname \
+          "${contract_abi}")"
+      mkdir \
+        -p \
+        "${_data_dir}"
+      chmod \
+        700 \
+        "${_data_dir}"
+      if [[ "${quiet}" == "n" ]]; then
+        _evm_contracts_abi_get_opts+=(
+          --verbose
+        )
+      fi
+      _evm_contracts_abi_get_opts+=(
+        --network
+          "${_network}"
+        --key 
+          "${_key}"
+        --output-file
+          "${contract_abi}"
+      )
       evm-contracts-abi-get \
-        --network \
-          "${_network}" \
-        --key \
-          "${_key}" \
-        "${_address}")"
-    if [ $? -eq 0 ]; then
-      _msg_info \
-        "obtained ABI from a network explorer"
-    echo \
-      "${_abi}" > \
-      "${contract_abi}"
-    else
-      _msg_error \
-        "Couldn't obtain ABI from the internet"
+        "${_evm_contracts_abi_get_opts[@]}" \
+          "${_address}"
+      if [ $? -eq 0 ]; then
+        _msg_info \
+          "obtained ABI from a network explorer"
+      else
+        _msg=(
+          "Couldn't obtain contract ABI"
+          "from the provider."
+        )
+        _msg_error \
+          "${_msg[*]}" \
+          0
+      fi
     fi
   fi
   _set \
     "contract" \
     "abi" \
-    "${_contract_abi}"
+    "${contract_abi}"
 }
 
 _set_overrides() {
