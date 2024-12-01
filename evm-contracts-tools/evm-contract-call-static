@@ -73,6 +73,7 @@ async function
     "";
   _contract_get_opts = [
     wallet_seed,
+    _wallet_password,
     contract_abi_path,
     contract_bytecode_path,
     target_network,

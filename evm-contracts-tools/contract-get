@@ -45,13 +45,18 @@ const
     require(
       '../evm-wallet/network-provider');
 _provider_get =
-    _network_provider._provider_get;
+  _network_provider._provider_get;
+_msg_info_provider_generated =
+  _network_provider._msg_info_provider_generated;
+
 
 function
   _global_variables() {
   app_name =
     "contract-get"
   wallet_seed =
+    "";
+  wallet_password =
     "";
   contract_abi_path =
     "";
@@ -77,22 +82,6 @@ function
     _template.replaceAll(
       "{_wallet}",
       _wallet);
-  _msg_info(
-    _msg);
-}
-
-function
-  _msg_info_provider_generated(
-    _provider) {
-  let
-    _msg,
-    _template;
-  _template =
-    "provider '{_provider}' generated";
-  _msg =
-    _template.replaceAll(
-      "{_provider}",
-      _provider);
   _msg_info(
     _msg);
 }
@@ -172,6 +161,7 @@ async function
 async function
   _contract_get(
     _wallet_seed,
+    _wallet_password,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
@@ -180,7 +170,7 @@ async function
   let
     _api_key,
     _contract,
-    _provider; 
+    _provider;
   if ( _api_key_path != "" ) {
     _api_key =
       _file_read(
@@ -221,6 +211,10 @@ function
       "{wallet_seed}",
       wallet_seed));
   _text.push(
+    "  Wallet password: {wallet_password}".replace(
+      "{wallet_password}",
+      wallet_password));
+  _text.push(
     "Contract ABI path: {contract_abi_path}".replace(
       "{contract_abi_path}",
       contract_abi_path));
@@ -251,7 +245,8 @@ function
     "Usage:",
     "  contract-get",
     "    <quiet>",
-    "    <seed_path>",
+    "    <wallet_seed>",
+    "    <wallet_password>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
     "    (<target_network>)",
@@ -260,7 +255,8 @@ function
     "Args:",
     "  <quiet>                   Can be 'y' or 'n'",
     "                            Default: y",
-    "  <seed_path>               Path of the seed phrase.",
+    "  <walet_seed>              Path of the seed phrase.",
+    "  <wallet_password_path>    Wallet password path.",
     "  <contract_abi_path>       Path of the contract ABI.",
     "  <contract_bytecode_path>  Path for the contract bytecode.",
     "  <target_network>          Network on which the contract",
@@ -291,18 +287,22 @@ function _cmdline_parse() {
           _value;
       }
       if ( _index == 4 ) {
-        contract_abi_path =
+        wallet_password =
           _value;
       }
       if ( _index == 5 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 6 ) {
+        contract_bytecode_path =
+          _value;
+      }
+      if ( _index == 7 ) {
         target_network =
           _value;
       }
-      if ( _index ==  7 ) {
+      if ( _index ==  8 ) {
         api_key_path =
           _value;
       }
@@ -321,6 +321,7 @@ if ( require.main == module ) {
   _config_show();
   app_opts = [
     wallet_seed,
+    wallet_password,
     contract_abi_path,
     contract_bytecode_path,
     target_network,
