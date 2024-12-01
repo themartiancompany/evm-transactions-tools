@@ -256,24 +256,20 @@ function
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
     "    (<target_network>)",
-    "    (<api_key_path>)"
+    "    (<api_key_path>)",
     "",
     "Args:",
     "  <quiet>                   Can be 'y' or 'n'",
     "                            Default: y",
-    "  <seed_path>               Path of the seed phrase",
-    "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service",
-    "  <contract_abi_path>       Path of the contract ABI",
+    "  <seed_path>               Path of the seed phrase.",
+    "  <contract_abi_path>       Path of the contract ABI.",
+    "  <contract_bytecode_path>  Path for the contract bytecode.",
     "  <target_network>          Network on which the contract",
     "                            resides.",
-    "  <contract_bytecode_path>  Path for the contract bytecode",
-    "  <contract_address>        Address of the contract",
-    "  <contract_method>         Contract method to execute",
-    "  [method_args]             Arguments to pass to the method",
-
+    "  <api_key_path>            Path of the API key for the",
+    "                            contract ABI provider service.",
   ];
-  for ( _line in _text ) {
+  for ( _line of _text ) {
     _msg_info(
       _line);
   }

@@ -119,7 +119,7 @@ _evm_contract_call() {
     _api_key_path="${6}" \
     _network="${7}" \
     _contract_address="${8}" \
-    _contract_abi="${9}" \
+    _contract_abi_path="${9}" \
     _contract_bytecode_path="${10}" \
     _contract_method="${11}" \
     _method_args=() \
@@ -135,7 +135,7 @@ _evm_contract_call() {
   )
   _abi="\"$( \
     cat \
-      "${_contract_abi}")\""
+      "${_contract_abi_path}")\""
   _api_key="$( \
     _api_key_read \
       "${_api_key_path}")"
@@ -148,7 +148,7 @@ _evm_contract_call() {
       "${quiet}"
       "${_api_key_path}"
       "${_network_backend}"
-      "${_abi}"
+      "${_contract_abi_path}"
       "${_contract_bytecode_path}"
       "${_contract_address}"
       "${_contract_method}"
