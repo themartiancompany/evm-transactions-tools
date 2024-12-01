@@ -86,9 +86,9 @@ function
 
 async function
   _contract_get_abi(
+    _wallet,
     _contract_address,
-    _contract_abi_path,
-    _network_provider) {
+    _contract_abi_path) {
   let
     _contract,
     _contract_abi_str,
@@ -104,44 +104,18 @@ async function
       _contract_address,
       _contract_abi,
       runner =
-        _network_provider);
+        _wallet);
   return _contract;
 }
 
 async function
   contract_get_bytecode(
-    _wallet_seed,
-    _wallet_password,
-    _provider,
+    _wallet,
     _contract_bytecode_path) {
   let
     _contract,
     _contract_bytecode,
-    _factor,
-    _wallet,
-    _wallet_get_opts,
-    _wallet_path_list,
-    _wallet_path;
-  _wallet_path_list = [
-    _dirname(
-      _wallet_seed),
-    "wallet.dat"
-  ];
-  _wallet_path =
-    _path_join(
-      _wallet_path_list);
-  _wallet_get_opts = [
-    _wallet_path,
-    _wallet_password,
-    _wallet_seed,
-    _provider
-  ];
-  _wallet =
-    _wallet_get.apply(
-      null,
-      _wallet_get_opts);
-  _msg_info_wallet_selected(
-    _wallet);
+    _factory;
   _contract_bytecode =
     _file_read(
       _contract_bytecode_path);
@@ -168,31 +142,62 @@ async function
   let
     _api_key,
     _contract,
-    _provider;
+    _contract_get_opts,
+    _network_provider,
+    _wallet,
+    _wallet_get_opts,
+    _wallet_path_list,
+    _wallet_path;
   if ( _api_key_path != "" ) {
     _api_key =
       _file_read(
         _api_key_path);
   }
-  _provider =
+  _network_provider =
     _provider_get(
       _target_network,
       _api_key);
+  _wallet_path_list = [
+    _dirname(
+      _wallet_seed),
+    "wallet.dat"
+  ];
+  _wallet_path =
+    _path_join(
+      _wallet_path_list);
+  _wallet_get_opts = [
+    _wallet_path,
+    _wallet_password,
+    _wallet_seed,
+    _network_provider
+  ];
+  _wallet =
+    _wallet_get.apply(
+      null,
+      _wallet_get_opts);
+  _msg_info_wallet_selected(
+    _wallet);
+  _contract_get_opts = [
+    _wallet,
+  ];
   if ( _contract_abi_path != "" ) {
-    _contract =
-      _contract_get_abi(
-        _contract_address,
-        _contract_abi_path,
-        _provider);
+    _contract_get_opts.push(
+      _contract_address);
+    _contract_get_opts.push(
+      _contract_abi_path);
+    _contract_get_fun =
+      _contract_get_abi;
   }
   else if ( _contract_bytecode_path != "" ) {
-    _contract =
-      _contract_get_bytecode(
-        _wallet_seed,
-        _wallet_password,
-        _provider,
-        _contract_bytecode_path);
+    _contract_get_opts.push(
+      _contract_bytecode_path);
+    _contract_get_fun =
+      _contract_get_bytecode;
   }
+  _contract = await
+    _contract_get_fun.apply(
+      null,
+      _contract_get_opts);
   return _contract;
 }
 
