@@ -172,7 +172,6 @@ async function
 async function
   _contract_get(
     _wallet_seed,
-    _wallet_password,
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
