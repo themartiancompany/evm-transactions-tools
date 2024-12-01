@@ -25,7 +25,7 @@ _path_join =
 const
   _contract_get_module =
     require(
-      '../evm-wallet/contract-get');
+      './contract-get');
 _contract_get =
   _contract_get_module._contract_get;
 
@@ -91,11 +91,13 @@ async function
     _method,
     _value;
   _contract_get_opts = [
-    wallet_seed,
-    contract_abi,
-    contract_bytecode,
-    target_network,
-    api_key_path
+    _wallet_seed,
+    _wallet_password,
+    _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
+    _target_network,
+    _api_key_path,
   ];
   _contract =
     _contract_get.apply(
@@ -133,7 +135,7 @@ async function
   }
   _wallet_path =
     "";
-  if ( wallet_path == "" ) {
+  if ( _wallet_path == "" ) {
     _wallet_path_list = [
       _dirname(
         _wallet_seed),
@@ -314,9 +316,12 @@ function
         method_args.push(
 	  _value);
       }
+      if ( _value == "-h" ||
+           _value == "--help" ) {
+        _usage();
+      }
   });
-  if ( contract_address == "" ||
-       _value == "-h" ) {
+  if ( contract_address == "" ) {
     _usage();
   }
 }
