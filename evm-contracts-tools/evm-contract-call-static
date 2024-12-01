@@ -111,11 +111,11 @@ function
   _text.push(
     "     Contract ABI: {contract_abi_path}".replace(
       "{contract_abi_path}",
-      contract_abi_path.length));
+      contract_abi_path));
   _text.push(
     "Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
-      contract_bytecode_path.length));
+      contract_bytecode_path));
   _text.push(
     " Contract address: {contract_address}".replace(
       "{contract_address}",
@@ -220,11 +220,14 @@ function
           _value);
       }
       if ( _value == "-h" ||
-           _value == "--help" ||
-           contract_address == "" ) {
+           _value == "--help") {
+	console.log(_value);
         _usage();
       }
   });
+  if ( contract_address == "" ) {
+    _usage();
+  }
 }
 
 
