@@ -489,6 +489,17 @@ _display_flags() {
   done
 }
 
+_display_flags() {
+  local \
+    _flags=(
+      ${1}
+    )
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info "                              ${_flag}"
+  done
+}
+
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
@@ -505,7 +516,9 @@ _show_config() {
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
-  _msg_info "         Method arguments:   $(_get "method" "args")"
+  _msg_info "         Method arguments:   "
+  _display_flags                          "${method_args[*]}"
+
 }
 
 _globals

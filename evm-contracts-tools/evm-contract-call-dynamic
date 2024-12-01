@@ -73,6 +73,23 @@ function
     _msg);
 }
 
+function
+  _error_handle(
+    error) {
+  let
+    _message;
+  if ('error' in error) {
+    _message =
+      error['error']['message'];
+  }
+  else if ('shortMessage' in error) {
+    _message =
+      error['shortMessage'];
+  }
+  _msg_error(
+    _message,
+    1);
+}
 
 async function
   _contract_call_dynamic(
@@ -103,14 +120,18 @@ async function
     _contract_get.apply(
       null,
       _contract_get_opts);
-  console.log(_contract);
-  _method =
+  _method = await
     _contract.getFunction(
       _contract_method);
-  _value = await
-    _method.send.apply(
-      null,
-      _method_args);
+  try {
+    _value = await
+      _method.send.apply(
+        null,
+        _method_args)
+  } catch (error) {
+    _error_handle(
+      error)
+  };
   return _value;
 }
 
@@ -162,11 +183,13 @@ async function
     _contract_call_dynamic.apply(
       null,
       _contract_call_dynamic_opts);
-  if ( _tx.hash != "" ) {
-    _msg_info(
-      _value);
-    _msg_info(
-      "transaction sent");
+  if ( _tx != "" ) {
+    if ( _tx.hash != "" ) {
+      _msg_info(
+        _tx);
+      _msg_info(
+        "transaction sent");
+    }
   }
 }
 
@@ -231,7 +254,7 @@ function
       wallet_seed));
   _text.push(
     "  Wallet password: {wallet_password}".replace(
-      "{wallet_passward}",
+      "{wallet_password}",
       wallet_password));
   _text.push(
     "     API Key path: {api_key_path}".replace(
