@@ -46,8 +46,6 @@ const
       '../evm-wallet/network-provider');
 _provider_get =
   _network_provider._provider_get;
-_msg_info_provider_generated =
-  _network_provider._msg_info_provider_generated;
 
 
 function
@@ -180,8 +178,6 @@ async function
     _provider_get(
       _target_network,
       _api_key);
-  _msg_info_provider_generated(
-    _provider);
   if ( _contract_abi_path != "" ) {
     _contract =
       _contract_get_abi(

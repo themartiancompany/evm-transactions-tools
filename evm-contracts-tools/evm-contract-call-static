@@ -5,29 +5,20 @@
 //
 
 const
-  { ethers } =
-    require(
-      "ethers");
-_ethers =
-  ethers;
-const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
+_msg_info =
+  _libcrash._msg_info
+_msg_error =
+  _libcrash._msg_error
 const
   _contract_get_module =
     require(
       './contract-get');
 _contract_get =
   _contract_get_module._contract_get
-_msg_info =
-  _libcrash._msg_info
-_msg_error =
-  _libcrash._msg_error
-const
-  _network_provider =
-    require(
-      '../evm-wallet/network-provider');
+
 
 function
   _global_variables() {
@@ -80,7 +71,6 @@ async function
     _target_network,
     _api_key_path,
   ];
-  console.log(_contract_get_opts);
   _contract = await
     _contract_get.apply(
       null,
@@ -92,6 +82,8 @@ async function
     _method.staticCall.apply(
       null,
       _method_args);
+  console.log(
+    _value);
   return _value;
 }
 

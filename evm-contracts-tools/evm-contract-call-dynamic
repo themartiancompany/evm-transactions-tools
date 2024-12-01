@@ -178,7 +178,7 @@ function
     "    <quiet>",
     "    <wallet_seed>",
     "    <wallet_password>",
-    "    <api_key_path>"
+    "    <api_key_path>",
     "    <target_network>",
     "    <contract_abi>",
     "    <contract_bytecode_path>",
