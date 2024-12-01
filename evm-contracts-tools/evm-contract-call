@@ -446,7 +446,9 @@ Usage:
     quicknode
   options:
      -a <address>         Contract address.
-     -B <abi>             Contract ABI.
+     -A <abi>             Contract ABI path.
+                          Default: $(_get "contract" "abi")
+     -B <bytecode>        Contract Bytecode path.
                           Default: $(_get "contract" "bytecode")
      -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")

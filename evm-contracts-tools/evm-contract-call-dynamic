@@ -44,9 +44,9 @@ function
     "";
   contract_address =
     "";
-  contract_abi =
+  contract_abi_path =
     "";
-  contract_bytecode =
+  contract_bytecode_path =
     "";
   contract_method =
     "";
@@ -81,8 +81,8 @@ async function
     _api_key_path,
     _target_network,
     _contract_address,
-    _contract_abi,
-    _contract_bytecode,
+    _contract_abi_path,
+    _contract_bytecode_path,
     _contract_method,
     _method_args) {
   let
@@ -103,7 +103,7 @@ async function
     _contract_get.apply(
       null,
       _contract_get_opts);
-  _method =
+  _method = await
     _contract.getFunction(
       _contract_method);
   _value = await
@@ -120,7 +120,7 @@ async function
     _api_key_path,
     _target_network,
     _contract_address,
-    _contract_abi,
+    _contract_abi_path,
     _contract_bytecode_path,
     _contract_method,
     _method_args) {
@@ -152,8 +152,9 @@ async function
     _api_key_path,
     _target_network,
     _contract_address,
+    _contract_abi_path,
+    _contract_bytecode_path,
     _contract_method,
-    _contract_abi,
     _method_args
   ];
   _tx = await
@@ -182,7 +183,7 @@ function
     "    <wallet_password>",
     "    <api_key_path>",
     "    <target_network>",
-    "    <contract_abi>",
+    "    <contract_abi_path>",
     "    <contract_bytecode_path>",
     "    <contract_address>",
     "    <contract_method>",
@@ -191,17 +192,18 @@ function
     "Args:",
     "  <quiet>                   Can be 'y' or 'n'",
     "                            Default: y",
-    "  <wallet_seed>             Can be 'y' or 'n'",
-    "  <wallet_password>         Password of the wallet",
+    "  <wallet_seed>             Path of the file containing",
+    "                            the seed phrase.",
+    "  <wallet_password>         Password of the wallet.",
     "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service",
+    "                            contract ABI provider service.",
     "  <target_network>          Network on which the contract",
     "                            resides.",
-    "  <contract_abi>            Contract ABI (not the path)",
-    "  <contract_bytecode_path>  Path for the contract bytecode",
-    "  <contract_address>        Address of the contract",
-    "  <contract_method>         Contract method to execute",
-    "  [method_args]             Arguments to pass to the method",
+    "  <contract_abi_path>       Contract ABI path.",
+    "  <contract_bytecode_path>  Path for the contract bytecode.",
+    "  <contract_address>        Address of the contract.",
+    "  <contract_method>         Contract method to execute.",
+    "  [method_args]             Arguments to pass to the method.",
   ]
   for (let
          _line =
@@ -243,13 +245,13 @@ function
       "{contract_address}",
       contract_address));
   _text.push(
-    "     Contract ABI: {contract_abi}".replace(
-      "{contract_abi}",
-      contract_abi.length));
+    "     Contract ABI: {contract_abi_path}".replace(
+      "{contract_abi_path}",
+      contract_abi_path));
   _text.push(
     "Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
-      contract_bytecode_path.length));
+      contract_bytecode_path));
   _text.push(
     "  Contract method: {contract_method}".replace(
       "{contract_method}",
@@ -301,7 +303,7 @@ function
           _value;
       }
       if ( _index == 8 ) {
-        contract_abi =
+        contract_abi_path =
           _value;
       }
       if ( _index == 9 ) {
@@ -337,7 +339,7 @@ if ( require.main == module ) {
     api_key_path,
     target_network,
     contract_address,
-    contract_abi,
+    contract_abi_path,
     contract_bytecode_path,
     contract_method,
     method_args
