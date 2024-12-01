@@ -99,11 +99,11 @@ async function
     _target_network,
     _api_key_path,
   ];
-  _contract =
+  _contract = await
     _contract_get.apply(
       null,
       _contract_get_opts);
-  _method = await
+  _method =
     _contract.getFunction(
       _contract_method);
   _value = await

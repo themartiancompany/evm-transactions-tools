@@ -125,20 +125,12 @@ _evm_contract_call() {
     _method_args=() \
     _cmd \
     _args=() \
-    _abi \
-    _api_key \
     _network_backend
   shift \
     11
   _method_args+=(
     "$@"
   )
-  _abi="\"$( \
-    cat \
-      "${_contract_abi_path}")\""
-  _api_key="$( \
-    _api_key_read \
-      "${_api_key_path}")"
   _network_setup
   _cmd="$( \
     _evm_contract_call_type \
@@ -162,7 +154,7 @@ _evm_contract_call() {
       "${_api_key_path}"
       "${_network_backend}"
       "${_contract_address}"
-      "${_abi}"
+      "${_contract_abi_path}"
       "${_contract_bytecode_path}"
       "${_contract_method}"
       "${_method_args[@]}"
@@ -326,6 +318,8 @@ _contract_abi_auto_detect() {
 
 _set_overrides() {
   local \
+    _abi \
+    _bytecode \
     _data_dir
   _data_dir="${HOME}/.local/share/$(_get "app" "name")"
   _set_override \
@@ -359,14 +353,29 @@ _set_overrides() {
   if [[ "$(_get \
              "contract" \
              "address")" != "" ]]; then
+    _abi="${_data_dir}/$( \
+      _get \
+        "target" \
+        "network")/$(_get \
+                       "contract" \
+                       "address").abi.json"
     _set_override \
       "contract" \
       "abi" \
-      "${_data_dir}/${target_network}/${contract_address}.abi.json"
+      "${_abi}"
+    _bytecode="${_data_dir}/$( \
+      _get \
+        "target" \
+        "network")/$(_get \
+                       "contract" \
+                       "address").bytecode.json"
+    if [ ! -e "${_bytecode}" ]; then
+      _bytecode=""
+    fi
     _set_override \
       "contract" \
       "bytecode" \
-      "${_data_dir}/${target_network}/${contract_address}.bytecode.json"
+      "${_bytecode}"
   fi
   if [[ "$(_get \
              "contract" \
