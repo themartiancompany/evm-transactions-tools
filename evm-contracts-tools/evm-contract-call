@@ -440,8 +440,8 @@ Run a smart contract function
 Usage:
   $(_get "app" "name")
     [options]
-    <address>
-    <method>
+    <contract_address>
+    <contract_method>
     ([method_args])
   networks:
     alchemy
@@ -454,11 +454,18 @@ Usage:
     publicPolygon
     quicknode
   options:
-     -a <address>         Contract address.
      -A <abi>             Contract ABI path.
                           Default: $(_get "contract" "abi")
      -B <bytecode>        Contract Bytecode path.
                           Default: $(_get "contract" "bytecode")
+     -N <wallet_name>     EVM wallet name.
+                          Default: $(_get "wallet" "name")
+     -w <wallet_path>     EVM wallet file path.
+                          Default: $(_get "wallet" "path")
+     -p <wallet_path>     EVM wallet password file.
+                          Default: $(_get "wallet" "password")
+     -s <wallet_seed>     EVM wallet seed file.
+                          Default: $(_get "wallet" "seed")
      -n <network>         EVM network name ('mainnet', 'gnosis').
                           Default: $(_get "target" "network")
      -t <call_type>       Static or dynamic.
@@ -527,7 +534,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:N:w:p:s:a:n:t:k:cvh?' \
+    'A:B:N:w:p:s:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -537,7 +544,6 @@ while \
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
-    a) override_contract_address="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
     t) override_call_type="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
