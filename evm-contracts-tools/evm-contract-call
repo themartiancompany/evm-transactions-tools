@@ -97,18 +97,6 @@ _network_setup() {
   fi
 }
 
-_api_key_read() {
-  local \
-    _path="${1}"
-  if [ ! -e "${_path}" ]; then
-    _msg_error \
-      "service api key file '${_path}' not found" \
-      1
-  fi
-  cat \
-    "${_path}"
-}
-
 _evm_contract_call() {
   local \
     _call_type="${1}" \
