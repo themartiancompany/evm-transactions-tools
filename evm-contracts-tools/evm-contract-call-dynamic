@@ -5,12 +5,6 @@
 //
 
 const
-  { ethers } =
-    require(
-      "ethers");
-_ethers =
-  ethers;
-const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
@@ -191,6 +185,7 @@ async function
         "transaction sent");
     }
   }
+  return _tx;
 }
 
 function
@@ -368,7 +363,7 @@ if ( require.main == module ) {
     contract_method,
     method_args
   ];
-  _contract_run.apply(
+  await _contract_run.apply(
     null,
     app_opts);
 }
