@@ -240,9 +240,10 @@ if ( require.main == module ) {
     contract_method,
     method_args
   ];
-  _contract_call_static.apply(
-    null,
-    app_opts);
+  _value = await
+    _contract_call_static.apply(
+      null,
+      app_opts);
 }
 
 module.exports = {
