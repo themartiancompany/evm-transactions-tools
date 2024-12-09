@@ -27,7 +27,9 @@ _global_variables() {
 }
 
 _requirements() {
-  true
+  _check_cmd \
+    "evm-contract-deployments-dir" \
+    "evm-contract-tools"
 }
 
 _contract_address_get() {
@@ -79,7 +81,8 @@ _network_check() {
 
 _user_deployments_init() {
   local \
-    _app="${1}"
+    _app="${1}" \
+    _evm_contract_deployments_dir_opts=()
   mkdir \
     -p \
     "${_deployments_dir}"
@@ -88,9 +91,8 @@ _user_deployments_init() {
     "${_deployments_dir}"
   cp \
     -r \
-    "$(_default_deployments_dir_get \
-         "${_app}" \
-         "system")/"* \
+    "$(evm-contract-deployments-dir \
+         "${_app}")/"* \
     "${_deployments_dir}"
 }
 
@@ -141,9 +143,8 @@ _evm_contract_deployment_address() {
         1
     fi
     _system_deployments_dir="$( \
-      _default_deployments_dir_get \
-        "${_target_app}" \
-        "system")"
+      evm-contract-deployments-dir \
+        "${_target_app}")"
     if [[ "${_deployments_dir}" != "${_system_deployments_dir}" ]]; then
       _msg=(
         "to set a custom deployments directory path"
@@ -157,9 +158,9 @@ _evm_contract_deployment_address() {
   elif [[ "${_user_defined}" == "y" ]]; then
     if [[ "${_target_app}" != "" ]]; then
       _user_deployments_dir="$( \
-        _fs_deployments_dir_get \
-          "${_target_app}" \
-          "user")"
+        evm-contract-deployments-dir \
+          -u \
+          "${_target_app}")"
     fi
     if [[ "${_deployments_dir}" != "${_user_deployments_dir}" ]]; then
       _msg=(
@@ -181,21 +182,6 @@ _evm_contract_deployment_address() {
     "${_contract_address}"
 }
 
-_default_deployments_dir_get() {
-  local \
-    _app="${1}" \
-    _type="${2}" \
-    _conf_dir
-  if [[ "${_type}" == "system" ]]; then
-    _conf_dir="$( \
-      _get_lib)"
-  elif [[ "${_type}" == "user" ]]; then
-    _conf_dir="${HOME}/.config"
-  fi
-  echo \
-    "${_conf_dir}/${_app}/deployments"
-}
-
 _deployments_dir_auto_detect() {
   local \
     _app \
@@ -211,17 +197,15 @@ _deployments_dir_auto_detect() {
       _get \
         "user" \
         "defined")"
-    if [[ "${_user_defined}" == "n" ]]; then
-      _deployments="$( \
-        _default_deployments_dir_get \
-          "${_app}" \
-          "system")"
-    elif [[ "${_user_defined}" == "y" ]]; then
-      _deployments="$( \
-        _default_deployments_dir_get \
-          "${_app}" \
-          "system")"
+    if [[ "${_user_defined}" == "y" ]]; then
+      _evm_contracts_deployment_dir_opts+=(
+        -u
+      )
     fi
+    _deployments="$( \
+      evm-contract-deployments-dir \
+        "${_evm_contracts_deployments_dir_opts[@]}" \
+        "${_app}")"
   fi
   _set_override \
     "deployments" \
