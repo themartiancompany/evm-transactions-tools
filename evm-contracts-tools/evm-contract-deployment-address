@@ -21,6 +21,7 @@ _global_variables() {
   target_contract=""
   contract_version=""
   user_defined=""
+  deployments_dir=""
   color=""
   quiet=""
 }
@@ -45,7 +46,7 @@ _contract_address_get() {
     _msg=(
       "no '${_contract}' version '${_version}' contract"
       "deployment specified for network '${_network}'"
-      "at path '${_deployments}'"
+      "at directory path '${_deployments}'"
     )
     _msg_error \
       "${_msg[*]}" \
@@ -81,22 +82,22 @@ _user_deployments_init() {
     _app="${1}"
   mkdir \
     -p \
-    "${_deployments_path}"
+    "${_deployments_dir}"
   chmod \
     700 \
-    "${_deployments_path}"
+    "${_deployments_dir}"
   cp \
     -r \
-    "$(_default_deployments_path_get \
+    "$(_default_deployments_dir_get \
          "${_app}" \
          "system")/"* \
-    "${_deployments_path}"
+    "${_deployments_dir}"
 }
 
 _user_deployments_check() {
   local \
     _app="${1}"
-  if [[ ! -e "${_deployments_path}" ]]; then
+  if [[ ! -e "${_deployments_dir}" ]]; then
     _user_deployments_init \
       "${_app}"
   fi
@@ -110,9 +111,9 @@ _evm_contract_deployment_address() {
     _target_contract="${4}" \
     _contract_version="${5}" \
     _user_defined="${6}" \
-    _deployments_path="${7}" \
-    _system_deployments_path \
-    _user_deployments_path \
+    _deployments_dir="${7}" \
+    _system_deployments_dir \
+    _user_deployments_dir \
     _network_id \
     _contract_address \
     _args=() \
@@ -132,20 +133,20 @@ _evm_contract_deployment_address() {
         "be specified with option '-a'"
         "if not enabling user-defined"
         "deployments with '-u' and"
-        "specifying a deployments path"
-        "with '-d'"
+        "specifying a deployments directory"
+        "path with '-d'"
       )
       _msg_error \
         "${_msg[*]}" \
         1
     fi
-    _system_deployments_path="$( \
-      _default_deployments_path_get \
+    _system_deployments_dir="$( \
+      _default_deployments_dir_get \
         "${_target_app}" \
         "system")"
-    if [[ "${_deployments_path}" != "${_system_deployments_path}" ]]; then
+    if [[ "${_deployments_dir}" != "${_system_deployments_dir}" ]]; then
       _msg=(
-        "to set a custom deployments path"
+        "to set a custom deployments directory path"
         "you need to enable the user-defined"
         "deployments switch with '-u'"
       )
@@ -155,31 +156,31 @@ _evm_contract_deployment_address() {
     fi
   elif [[ "${_user_defined}" == "y" ]]; then
     if [[ "${_target_app}" != "" ]]; then
-      _user_deployments_path="$( \
-        _fs_deployments_path_get \
+      _user_deployments_dir="$( \
+        _fs_deployments_dir_get \
           "${_target_app}" \
           "user")"
     fi
-    if [[ "${_deployments_path}" != "${_user_deployments_path}" ]]; then
+    if [[ "${_deployments_dir}" != "${_user_deployments_dir}" ]]; then
       _msg=(
-        "using custom deployments path"
-        "'${_deployments_path}'"
+        "using custom deployments directory"
+        "path '${_deployments_dir}'"
       )
       _msg_info \
         "${_msg[*]}"
-    elif [[ "${_deployments_path}" == "${_user_deployments_path}" ]]; then
+    elif [[ "${_deployments_dir}" == "${_user_deployments_dir}" ]]; then
       _user_deployments_check
     fi
   fi
   _contract_address_get \
-    "${_deployments_path}" \
+    "${_deployments_dir}" \
     "${_target_network}" \
     "${_fs_version}"
   echo \
     "${_contract_address}"
 }
 
-_default_deployments_path_get() {
+_default_deployments_dir_get() {
   local \
     _app="${1}" \
     _type="${2}" \
@@ -194,11 +195,12 @@ _default_deployments_path_get() {
     "${_conf_dir}/${_app}/deployments"
 }
 
-_deployments_path_auto_detect() {
+_deployments_dir_auto_detect() {
   local \
     _app \
     _deployments \
     _user_defined
+  _deployments=""
   _app="$( \
     _get \
       "target" \
@@ -210,12 +212,13 @@ _deployments_path_auto_detect() {
         "defined")"
     if [[ "${_user_defined}" == "n" ]]; then
       _deployments="$( \
-        _fs_deployments_path \
+        _default_deployments_dir_get \
           "${_app}" \
           "system")"
     elif [[ "${_user_defined}" == "y" ]]; then
       _deployments="$( \
-        _fs_deployments_path \
+        _default_deployments_dir_get \
+          "${_app}" \
           "system")"
     fi
   fi
@@ -260,7 +263,7 @@ _set_overrides() {
     "user" \
     "defined" \
     "n"
-  _deployments_path_auto_detect
+  _deployments_dir_auto_detect
 }
 
 # Show help usage, with an exit status.
@@ -292,8 +295,8 @@ Usage:
      -i <network_id>        EVM network id.
                             Default: $(_get "network" "id")
      -a <target_app>        Application whose target
-                            contract is part of
-                            Default: $(_get "target" "application")
+                            contract is part of.
+                            Default: $(_get "target" "app")
      -V <contract_version>  Contract vesion.
                             Default: $(_get "contract" "version")
      -u                     Returns contract address for
@@ -301,8 +304,9 @@ Usage:
                             deployment instead of the
                             system one.
                             Default: $(_get "user" "defined")
-     -d                     Specify contracts deployments path
-                            Default: $(_get "deployments" "path")
+     -d                     Specify contracts deployments
+                            directory path.
+                            Default: $(_get "deployments" "dir")
 
 
      -h                     This message.
@@ -339,7 +343,7 @@ _show_config() {
   _msg_info "       Target application:   $(_get "target" "app")"
   _msg_info "         Contract version:   $(_get "contract" "version")"
   _msg_info "     User-defined address:   $(_get "user" "defined")"
-  _msg_info "         Deployments path:   $(_get "deployments" "path")"
+  _msg_info "         Deployments path:   $(_get "deployments" "dir")"
 }
 
 _globals
@@ -361,19 +365,18 @@ while \
     a) override_target_app="${OPTARG}" ;;
     V) override_contract_version="${OPTARG}" ;;
     u) override_user_defined="y" ;;
-    d) override_deployments_path="${OPTARG}" ;;
+    d) override_deployments_dir="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
          _usage \
            0 ;;
-    *)
-    _msg_error \
-      "Invalid argument '${arg}'" \
-      0
-    _usage \
-      1
-    ;;
+    *) _set_overrides && \
+       _msg_error \
+         "Invalid argument '${arg}'" \
+         0
+       _usage \
+         1 ;;
   esac
 done
 shift \
@@ -385,6 +388,7 @@ if (( $# < 1 )); then
     "a target contract"
     "must be specified"
   )
+  _set_overrides
   _msg_error \
     "${_msg[*]}" \
     0
@@ -430,7 +434,7 @@ app_opts=(
   "$( \
     _get \
       "deployments" \
-      "path")"
+      "dir")"
 )
 _evm_contract_deployment_address \
   "${app_opts[@]}"
