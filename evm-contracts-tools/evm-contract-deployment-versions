@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+# shellcheck disable=SC2034
+_global_variables() {
+  resolve_date=""
+  config_file=""
+  display_highest=""
+  display_lowest=""
+  color=""
+  quiet=""
+}
+
+_requirements() {
+  _check_cmd \
+    "sort" \
+    "coreutils"
+  true
+}
+
+_evm_contract_deployment_versions() {
+  local \
+    _config_file="${1}" \
+    _display_highest="${2}" \
+    _display_lowest="${3}" \
+    _versions=()
+  source \
+    "${_config_file}"
+  _versions=(
+    "${!contract_address[@]}"
+  )
+  _sorted=( $( \
+    printf \
+      '%s\n' \
+      "${_versions[@]}" | \
+      sort \
+        --version-sort \
+        --field-separator=".")
+  )
+  if [[ "${_display_lowest}" == "y" ]]; then
+    echo \
+      "${_sorted[0]}"
+  fi
+  if [[ "${_display_highest}" == "y" ]]; then
+    echo \
+      "${_sorted[-1]}"
+  fi
+  if [[ "${_display_lowest}" == "n" ]] && \
+     [[ "${_display_highest}" == "n" ]]; then
+    echo \
+      "${_sorted[*]}"
+  fi
+}
+
+_set_overrides() {
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  _set_override \
+    "resolve" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "display" \
+    "highest" \
+    "n"
+  _set_override \
+    "display" \
+    "lowest" \
+    "n"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+Returns available versions for contract deployments on a network
+
+Usage:
+
+  $(_get "app" "name")
+    [options]
+    <config_file>
+
+  options:
+     -H                     Display highest version available.
+                            Default: $(_get "display" "highest")
+     -L                     Display lowest version available.
+                            Default: $(_get "display" "lowest")
+
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_display_flags() {
+  local \
+    _flags=(
+      "${1}"
+    ) \
+    _flag
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info \
+    "                             ${_flag}"
+  done
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "             Resolve date:   $(_get "resolve" "date")"
+  _msg_info "       Configuration file:   $(_get "config" "file")"
+  _msg_info "          Display highest:   $(_get "display" "highest")"
+  _msg_info "           Display lowest:   $(_get "display" "lowest")"
+}
+
+_globals
+_global_variables
+_requirements
+_config_user_init \
+  "$(_get \
+       "app" \
+       "name")"
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'HLcvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    H) override_display_highest="y";;
+    L) override_display_lowest="y";;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+         _usage \
+           0 ;;
+    *) _set_overrides && \
+       _msg_error \
+         "Invalid argument '${arg}'" \
+         0
+       _usage \
+         1 ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+if (( $# < 1 )); then
+  _msg=(
+    "a target configuration"
+    "file must be specified"
+  )
+  _set_overrides
+  _msg_error \
+    "${_msg[*]}" \
+    0
+  _usage \
+    1
+fi
+_set \
+  "config" \
+  "file" \
+  "${1}"
+_set_overrides
+_config_user_init \
+  "$( \
+    _get \
+      "app" \
+      "name")"
+_show_config
+app_opts=(
+  "$( \
+    _get \
+      "config" \
+      "file")"
+  "$( \
+    _get \
+      "display" \
+      "highest")"
+  "$( \
+    _get \
+      "display" \
+      "lowest")"
+)
+_evm_contract_deployment_versions \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
