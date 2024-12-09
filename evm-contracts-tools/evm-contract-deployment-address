@@ -35,14 +35,14 @@ _contract_address_get() {
     _deployments="${1}" \
     _network="${2}" \
     _contract="${3}" \
-    _version="${3}" \
+    _version="${4}" \
     _config \
     _address
   _config="${_deployments}/${_contract}/${_network}/config.sh"
   source \
     "${_config}"
-  _address="${contract_address["${_version}"]}"
-  if [[ "${_address}" == "" ]]; then
+  _contract_address="${contract_address["${_version}"]}"
+  if [[ "${_contract_address}" == "" ]]; then
     _msg=(
       "no '${_contract}' version '${_version}' contract"
       "deployment specified for network '${_network}'"
@@ -175,7 +175,8 @@ _evm_contract_deployment_address() {
   _contract_address_get \
     "${_deployments_dir}" \
     "${_target_network}" \
-    "${_fs_version}"
+    "${_target_contract}" \
+    "${_contract_version}"
   echo \
     "${_contract_address}"
 }
