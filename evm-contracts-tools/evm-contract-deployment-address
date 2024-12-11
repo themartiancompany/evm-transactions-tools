@@ -58,9 +58,26 @@ _contract_address_get() {
 
 _network_check() {
   local \
-    _target_network="${1}" \
-    _target_network_id="${2}" \
-    _msg=()
+    _deployments="${1}" \
+    _contract="${2}" \
+    _target_network="${2}" \
+    _target_network_id="${3}" \
+    _msg=() \
+    _networks=()
+  _networks+=( $( \
+    evm-contract-deployment-networks \
+      -A \
+      "${_target_contract}")
+  )
+  if [[ " ${_networks[*]} " != *" ${_target_network} "* ]]; then
+    _msg=(
+      "the contract does not result deployed on"
+      "'${_target_network}' network"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
   if [[ "${_target_network}" == "gnosis" ]]; then
     _network_id="100"
   fi
@@ -125,9 +142,6 @@ _evm_contract_deployment_address() {
   _args+=(
     "$@"
   )
-  _network_check \
-    "${_target_network}" \
-    "${_target_network_id}"
   if [[ "${_user_defined}" == "n" ]]; then
     if [[ "${_target_app}" == "" ]]; then
       _msg=(
@@ -174,6 +188,11 @@ _evm_contract_deployment_address() {
       _user_deployments_check
     fi
   fi
+  _network_check \
+    "${_deployments_dir}" \
+    "${_target_contract}" \
+    "${_target_network}" \
+    "${_target_network_id}"
   _contract_address_get \
     "${_deployments_dir}" \
     "${_target_network}" \
@@ -225,19 +244,22 @@ _contract_version_auto_detect() {
     _get \
       "target" \
       "contract")"
-  _deployments="$( \
-    _get \
-      "deployments" \
-      "dir")"
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _config="${_deployments}/${_contract}/${_network}/config.sh"
-  _version="$( \
-    evm-contract-deployment-versions \
-      -H \
-      "${_config}")"
+  _version=""
+  if [[ "${_contract}" != "" ]]; then
+    _deployments="$( \
+      _get \
+        "deployments" \
+        "dir")"
+    _network="$( \
+      _get \
+        "target" \
+        "network")"
+    _config="${_deployments}/${_contract}/${_network}/config.sh"
+    _version="$( \
+      evm-contract-deployment-versions \
+        -H \
+        "${_config}")"
+  fi
   _set_override \
     "contract" \
     "version" \

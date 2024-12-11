@@ -111,7 +111,7 @@ Usage:
     <deployment_dir>
 
   options:
-     -a        Display all available networks
+     -A        Display all available networks
                for the deployment.
                Default: $(_get "display" "all")
      -S        Display safest network
@@ -164,11 +164,11 @@ _config_user_init \
 # shellcheck disable=SC2034
 while \
   getopts \
-    'aSCcvh?' \
+    'ASCcvh?' \
     arg; do
   case \
     "${arg}" in
-    a) override_display_all="y" ;;
+    A) override_display_all="y" ;;
     S) override_display_safest="y" ;;
     C) override_display_cheapest="y" ;;
     c) override_color="y" ;;
