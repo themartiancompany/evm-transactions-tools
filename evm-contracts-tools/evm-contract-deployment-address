@@ -35,8 +35,8 @@ _requirements() {
 _contract_address_get() {
   local \
     _deployments="${1}" \
-    _network="${2}" \
-    _contract="${3}" \
+    _contract="${2}" \
+    _network="${3}" \
     _version="${4}" \
     _config \
     _address
@@ -60,8 +60,8 @@ _network_check() {
   local \
     _deployments="${1}" \
     _contract="${2}" \
-    _target_network="${2}" \
-    _target_network_id="${3}" \
+    _target_network="${3}" \
+    _target_network_id="${4}" \
     _msg=() \
     _networks=()
   _networks+=( $( \
@@ -195,8 +195,8 @@ _evm_contract_deployment_address() {
     "${_target_network_id}"
   _contract_address_get \
     "${_deployments_dir}" \
-    "${_target_network}" \
     "${_target_contract}" \
+    "${_target_network}" \
     "${_contract_version}"
   echo \
     "${_contract_address}"
