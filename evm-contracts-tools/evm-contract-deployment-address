@@ -156,6 +156,7 @@ _evm_contract_deployment_address() {
         1
     fi
   elif [[ "${_user_defined}" == "y" ]]; then
+    _user_deployments_dir=""
     if [[ "${_target_app}" != "" ]]; then
       _user_deployments_dir="$( \
         evm-contract-deployments-dir \
@@ -213,6 +214,36 @@ _deployments_dir_auto_detect() {
     "${_deployments}"
 }
 
+_contract_version_auto_detect() {
+  local \
+    _config \
+    _contract \
+    _deployments \
+    _network \
+    _version
+  _contract="$( \
+    _get \
+      "target" \
+      "contract")"
+  _deployments="$( \
+    _get \
+      "deployments" \
+      "dir")"
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _config="${_deployments}/${_contract}/${_network}/config.sh"
+  _version="$( \
+    evm-contract-deployment-versions \
+      -H \
+      "${_config}")"
+  _set_override \
+    "contract" \
+    "version" \
+    "${_version}"
+}
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -241,14 +272,11 @@ _set_overrides() {
     "app" \
     ""
   _set_override \
-    "contract" \
-    "version" \
-    "1.0"
-  _set_override \
     "user" \
     "defined" \
     "n"
   _deployments_dir_auto_detect
+  _contract_version_auto_detect
 }
 
 # Show help usage, with an exit status.
@@ -282,7 +310,7 @@ Usage:
      -a <target_app>        Application whose target
                             contract is part of.
                             Default: $(_get "target" "app")
-     -V <contract_version>  Contract vesion.
+     -V <contract_version>  Contract version.
                             Default: $(_get "contract" "version")
      -u                     Returns contract address for
                             user-defined file system

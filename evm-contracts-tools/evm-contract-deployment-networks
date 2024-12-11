@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+# shellcheck disable=SC2034
+_global_variables() {
+  resolve_date=""
+  deployments_dir=""
+  display_all=""
+  display_safest=""
+  display_cheapest=""
+  color=""
+  quiet=""
+}
+
+_requirements() {
+  true
+}
+
+_evm_contract_deployment_networks() {
+  local \
+    _deployment_dir="${1}" \
+    _display_all="${2}" \
+    _display_safest="${3}" \
+    _display_cheapest="${4}" \
+    _networks=()
+  _networks=( $( \
+    find \
+      "${_deployment_dir}" \
+      -mindepth \
+        1 \
+      -maxdepth \
+        1 \
+      -type \
+        "d" \
+      -printf \
+        "%f")
+  )
+  if [[ "${_display_cheapest}" == "y" ]]; then
+    if [[ " ${_networks[*]} " == *" gnosis "* ]]; then
+      echo \
+        "gnosis"
+    fi
+  elif [[ "${_display_safest}" == "y" ]]; then
+    if [[ " ${_networks[*]} " == *" ethereum "* ]]; then
+      echo \
+        "ethereum"
+    fi
+  elif [[ "${_display_all}" == "y" ]]; then
+    echo \
+      "${_networks[*]}"
+  fi
+}
+
+_set_overrides() {
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  _set_override \
+    "resolve" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "display" \
+    "all" \
+    "y"
+  _set_override \
+    "display" \
+    "cheapest" \
+    "n"
+  _set_override \
+    "display" \
+    "safest" \
+    "n"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+Returns a contract's deployment available networks
+
+Usage:
+
+  $(_get "app" "name")
+    [options]
+    <deployment_dir>
+
+  options:
+     -a        Display all available networks
+               for the deployment.
+               Default: $(_get "display" "all")
+     -S        Display safest network
+               for the deployment.
+               Default: $(_get "display" "safest")
+     -C        Display cheapest network
+               for the deployment.
+               Default: $(_get "display" "cheapest")
+
+     -h        This message.
+     -c        Enable color output
+     -v        Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_display_flags() {
+  local \
+    _flags=(
+      "${1}"
+    ) \
+    _flag
+  for _flag \
+    in "${_flags[@]}"; do
+  _msg_info \
+    "                             ${_flag}"
+  done
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "             Resolve date:   $(_get "resolve" "date")"
+  _msg_info "              Display all:   $(_get "display" "all")"
+  _msg_info "           Display safest:   $(_get "display" "safest")"
+  _msg_info "         Display cheapest:   $(_get "display" "cheapest")"
+}
+
+_globals
+_global_variables
+_requirements
+_config_user_init \
+  "$(_get \
+       "app" \
+       "name")"
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'aSCcvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    a) override_display_all="y" ;;
+    S) override_display_safest="y" ;;
+    C) override_display_cheapest="y" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+         _usage \
+           0 ;;
+    *) _set_overrides && \
+       _msg_error \
+         "Invalid argument '${arg}'" \
+         0
+       _usage \
+         1 ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+if (( $# < 1 )); then
+  _msg=(
+    "a deployment directory"
+    "must be specified"
+  )
+  _set_overrides
+  _msg_error \
+    "${_msg[*]}" \
+    0
+  _usage \
+    1
+fi
+_set \
+  "deployment" \
+  "dir" \
+  "${1}"
+_set_overrides
+_config_user_init \
+  "$( \
+    _get \
+      "app" \
+      "name")"
+_show_config
+app_opts=(
+  "$( \
+    _get \
+      "deployment" \
+      "dir")"
+  "$( \
+    _get \
+      "display" \
+      "all")"
+  "$( \
+    _get \
+      "display" \
+      "safest")"
+ "$( \
+    _get \
+      "display" \
+      "cheapest")"
+)
+_evm_contract_deployment_networks \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
