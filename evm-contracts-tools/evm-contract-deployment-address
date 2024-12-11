@@ -67,7 +67,7 @@ _network_check() {
   _networks+=( $( \
     evm-contract-deployment-networks \
       -A \
-      "${_target_contract}")
+      "${_deployments}/${_contract}")
   )
   if [[ " ${_networks[*]} " != *" ${_target_network} "* ]]; then
     _msg=(
