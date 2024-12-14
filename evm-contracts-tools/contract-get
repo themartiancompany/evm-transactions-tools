@@ -131,8 +131,7 @@ async function
     _contract,
     _contract_abi,
     _contract_bytecode,
-    _factory,
-    _factory_opts;
+    _factory;
   if ( _contract_abi_path == "" ) {
     _contract_abi = [];
   }
@@ -144,15 +143,11 @@ async function
   _contract_bytecode =
     _file_read(
       _contract_bytecode_path);
-  _factory_opts = [
-    _contract_abi,
-    _contract_bytecode,
-    _wallet
-  ];
   _factory =
-    new _contract_factory.apply(
-      null,
-      _factory_opts);
+    new _contract_factory(
+      _contract_abi,
+      _contract_bytecode,
+      _wallet);
   // _factory =
   //   _factory.connect(
   //     _wallet);
