@@ -24,6 +24,8 @@ _dirname =
   _libcrash._dirname;
 _file_read =
   _libcrash._file_read;
+_json_parse =
+  _libcrash._json_parse;
 _path_join =
   _libcrash._path_join;
 _msg_info =
@@ -67,6 +69,23 @@ function
 }
 
 function
+  _msg_error_no_input_data() {
+  let
+    _msg,
+    _text;
+  _text = [
+    "You need to provide either",
+    "the bytecode or the data"
+  ];
+  _msg =
+    _text.join(
+      " ");
+  _msg_error(
+    _msg,
+    1);
+}
+
+function
   _msg_info_wallet_selected(
     _wallet) {
   let
@@ -89,14 +108,10 @@ async function
     _contract_abi_path) {
   let
     _contract,
-    _contract_abi_str,
     _contract_abi;
-  _contract_abi_str =
-    _file_read(
-      _contract_abi_path);
   _contract_abi =
-    _json_parse(
-      _contract_abi_str);
+    _json_read(
+      _contract_abi_path);
   _contract = new
     _base_contract(
       _contract_address,
@@ -110,20 +125,37 @@ async function
   _contract_get_bytecode(
     _wallet,
     _contract_address,
+    _contract_abi_path,
     _contract_bytecode_path) {
   let
     _contract,
+    _contract_abi,
     _contract_bytecode,
-    _factory;
+    _factory,
+    _factory_opts;
+  if ( _contract_abi_path == "" ) {
+    _contract_abi = [];
+  }
+  else if ( _contract_abi_path != "" ) {
+    _contract_abi =
+      _json_read(
+        _contract_abi_path);
+  }
   _contract_bytecode =
     _file_read(
       _contract_bytecode_path);
+  _factory_opts = [
+    _contract_abi,
+    _contract_bytecode,
+    _wallet
+  ];
   _factory =
-    _contract_factory.fromSolidity(
-      _contract_bytecode);
-  _factory =
-    _factory.connect(
-      _wallet);
+    new _contract_factory.apply(
+      null,
+      _factory_opts);
+  // _factory =
+  //   _factory.connect(
+  //     _wallet);
   if ( _contract_address != "" ) {
     _factory =
       _factory.attach(
@@ -193,17 +225,23 @@ async function
   }
   _contract_get_opts.push(
     _contract_address);
-  if ( _contract_abi_path != "" ) {
+  if ( _contract_bytecode_path != "" ) {
+    _contract_get_opts.push(
+      _contract_abi_path,
+      _contract_bytecode_path);
+    _contract_get_fun =
+      _contract_get_bytecode;
+  }
+  else if ( _contract_bytecode_path == "" ) &&
+	  ( _contract_abi_path != "" ) {
     _contract_get_opts.push(
       _contract_abi_path);
     _contract_get_fun =
       _contract_get_abi;
   }
-  else if ( _contract_bytecode_path != "" ) {
-    _contract_get_opts.push(
-      _contract_bytecode_path);
-    _contract_get_fun =
-      _contract_get_bytecode;
+  else if ( _contract_bytecode_path == "" ) &&
+	  ( _contract_abi_path == "" ) {
+    _msg_error_no_input_data();
   }
   _contract = await
     _contract_get_fun.apply(
