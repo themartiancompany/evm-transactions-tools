@@ -34,6 +34,8 @@ function
     '';
   contract_bytecode_path =
     '';
+  contract_compiler_output_path =
+    '';
   contract_method =
     '';
   method_args =
@@ -48,6 +50,7 @@ async function
     _target_network,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _contract_address,
     _contract_method,
     _method_args) {
@@ -68,6 +71,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _target_network,
     _api_key_path,
   ];
@@ -108,9 +112,13 @@ function
       "{contract_abi_path}",
       contract_abi_path));
   _text.push(
-    "Contract Bytecode: {contract_bytecode_path}".replace(
+    "Contract bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
       contract_bytecode_path));
+  _text.push(
+    "Contract compiler output: {contract_compiler_output_path}".replace(
+      "{contract_compiler_output_path}",
+      contract_compiler_output_path));
   _text.push(
     " Contract address: {contract_address}".replace(
       "{contract_address}",
@@ -147,25 +155,28 @@ function
     "    <target_network>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
+    "    <contract_compiler_output_path>",
     "    <contract_address>",
     "    <contract_method>",
     "    <method_args>",
     "",
     "Args:",
-    "  <quiet>                   Can be 'y' or 'n'",
-    "                            Default: y",
-    "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service",
-    "  <target_network>          Network on which the contract",
-    "                            resides.",
-    "  <contract_abi_path>       Path of the contract ABI",
-    "  <contract_bytecode_path>  Path for the contract bytecode",
-    "  <contract_address>        Address of the contract",
-    "  <contract_method>         Contract method to execute",
-    "  [method_args]             Arguments to pass to the method",
+    "  <quiet>                          Can be 'y' or 'n'",
+    "                                   Default: y",
+    "  <api_key_path>                   Path of the API key for the",
+    "                                   contract ABI provider service",
+    "  <target_network>                 Network on which the contract",
+    "                                   resides.",
+    "  <contract_abi_path>              Path of the contract ABI",
+    "  <contract_bytecode_path>         Path for the contract bytecode",
+    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "                                   output path (the hardhat artifact).",
+    "  <contract_address>               Address of the contract",
+    "  <contract_method>                Contract method to execute",
+    "  [method_args]                    Arguments to pass to the method",
     "",
     "  Options:",
-    "    -h                      This help."
+    "    -h                             This help."
   ];
   for (_line of _text) {
     _msg_info(
@@ -203,23 +214,27 @@ function
           _value;
       }
       if ( _index == 7 ) {
-        contract_address =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 8 ) {
+        contract_address =
+          _value;
+      }
+      if ( _index == 9 ) {
         contract_method =
           _value;
       }
-      if ( 8 < _index ) {
+      if ( 9 < _index ) {
         method_args.push(
           _value);
       }
       if ( _value == "-h" ||
-           _value == "--help") {
-	console.log(_value);
+           _value == "--help" ) {
         _usage();
       }
-  });
+    }
+  );
   if ( contract_address == "" ) {
     _usage();
   }
@@ -236,6 +251,7 @@ if ( require.main == module ) {
     target_network,
     contract_abi_path,
     contract_bytecode_path,
+    contract_compiler_output_path,
     contract_address,
     contract_method,
     method_args

@@ -25,6 +25,7 @@ _global_variables() {
   target_network=""
   contract_address=""
   contract_bytecode=""
+  contract_compiler_output=""
   contract_abi=""
   contract_method=""
   method_args=()
@@ -176,6 +177,7 @@ _evm_contract_call() {
     _contract_address="${8}" \
     _contract_abi_path="${9}" \
     _contract_bytecode_path="${10}" \
+    _contract_compiler_output_path="${10}" \
     _contract_method="${11}" \
     _method_args=() \
     _cmd \
@@ -199,6 +201,7 @@ _evm_contract_call() {
       "${_network_backend}"
       "${_contract_abi_path}"
       "${_contract_bytecode_path}"
+      "${_contract_compiler_output_path}"
       "${_contract_address}"
       "${_contract_method}"
       "${_method_args[@]}"
@@ -213,6 +216,7 @@ _evm_contract_call() {
       "${_contract_address}"
       "${_contract_abi_path}"
       "${_contract_bytecode_path}"
+      "${_contract_compiler_output_path}"
       "${_contract_method}"
       "${_method_args[@]}"
     )
@@ -302,25 +306,6 @@ _api_key_auto_detect() {
     "api" \
     "key" \
     "${_key}"
-}
-
-_api_key_get() {
-  local \
-    _name="${1}" \
-    _network="${2}" \
-    _conf_dir \
-    _service
-  if [[ "${_network}" == "ethereum" ]]; then
-    _service="etherscan"
-  elif [[ "${_network}" == "gnosis" ]]; then
-    _service="gnosisscan"
-  fi
-  _conf_dir="${HOME}/.config/${_service}"
-  mkdir \
-    -p \
-    "${_conf_dir}"
-  echo \
-    "${_conf_dir}/${_name}.txt"
 }
 
 _contract_abi_auto_detect() {
@@ -469,14 +454,24 @@ _set_overrides() {
         "target" \
         "network")/$(_get \
                        "contract" \
-                       "address").json"
-    if [ ! -e "${_bytecode}" ]; then
-      _bytecode=""
-    fi
+                       "address").bin"
     _set_override \
       "contract" \
       "bytecode" \
       "${_bytecode}"
+    _compiler_output="${_data_dir}/$( \
+      _get \
+        "target" \
+        "network")/$(_get \
+                       "contract" \
+                       "address").json"
+    if [ ! -e "${_compiler_output}" ]; then
+      _compiler_output=""
+    fi
+    _set_override \
+      "contract" \
+      "compiler_output" \
+      "${_compiler_output}"
   fi
   if [[ "$(_get \
              "contract" \
@@ -541,29 +536,32 @@ Usage:
     well as directly RPC address
 
   options:
-     -A <abi>             Contract ABI path.
-                          Default: $(_get "contract" "abi")
-     -B <bytecode>        Contract Bytecode path.
-                          Default: $(_get "contract" "bytecode")
-     -N <wallet_name>     EVM wallet name.
-                          Default: $(_get "wallet" "name")
-     -w <wallet_path>     EVM wallet file path.
-                          Default: $(_get "wallet" "path")
-     -p <wallet_path>     EVM wallet password file.
-                          Default: $(_get "wallet" "password")
-     -s <wallet_seed>     EVM wallet seed file.
-                          Default: $(_get "wallet" "seed")
-     -n <network>         EVM network name. Accepted values
-                          are all those supported by
-                          evm-chains-info and RPC addresses.
-                          Default: $(_get "target" "network")
-     -t <call_type>       Static or dynamic.
-                          Default: $(_get "call" "type")
-     -k <api_key>         Etherscan-like service key.
-                          Default: $(_get "api" "key")
-     -h                   This message.
-     -c                   Enable color output
-     -v                   Enable verbose output
+     -A <abi>               Contract ABI path.
+                            Default: $(_get "contract" "abi")
+     -B <bytecode>          Contract bytecode path.
+                            Default: $(_get "contract" "bytecode")
+     -C <compiler_output>   Contract compiler output
+                            path (the hardhat artifact).
+                            Default: $(_get "contract" "compiler_output")
+     -N <wallet_name>       EVM wallet name.
+                            Default: $(_get "wallet" "name")
+     -w <wallet_path>       EVM wallet file path.
+                            Default: $(_get "wallet" "path")
+     -p <wallet_path>       EVM wallet password file.
+                            Default: $(_get "wallet" "password")
+     -s <wallet_seed>       EVM wallet seed file.
+                            Default: $(_get "wallet" "seed")
+     -n <network>           EVM network name. Accepted values
+                            are all those supported by
+                            evm-chains-info and RPC addresses.
+                            Default: $(_get "target" "network")
+     -t <call_type>         Static or dynamic.
+                            Default: $(_get "call" "type")
+     -k <api_key>           Etherscan-like service key.
+                            Default: $(_get "api" "key")
+     -h                     This message.
+     -c                     Enable color output
+     -v                     Enable verbose output
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -611,6 +609,7 @@ _show_config() {
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
+  _msg_info " Contract compiler output:   $(_get "contract" "compiler_output")"
   _msg_info "          Contract method:   $(_get "contract" "method")"
   _msg_info "         Method arguments:   "
   _display_flags                          "${method_args[*]}"
@@ -623,12 +622,13 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:N:w:p:s:n:t:k:cvh?' \
+    'A:B:C:N:w:p:s:n:t:k:cvh?' \
     arg; do
   case \
     "${arg}" in
     A) override_contract_abi="${OPTARG}" ;;
     B) override_contract_bytecode="${OPTARG}" ;;
+    C) override_contract_compiler_output="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
@@ -734,6 +734,10 @@ app_opts=(
     _get \
       "contract" \
       "bytecode")"
+  "$( \
+    _get \
+      "contract" \
+      "compiler_output")"
   "$( \
     _get \
       "contract" \

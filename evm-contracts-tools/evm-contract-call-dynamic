@@ -42,6 +42,8 @@ function
     "";
   contract_bytecode_path =
     "";
+  contract_compiler_output_path =
+    "";
   contract_method =
     "";
   method_args =
@@ -94,6 +96,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _contract_method,
     _method_args) {
   let
@@ -107,6 +110,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _target_network,
     _api_key_path,
   ];
@@ -138,6 +142,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _contract_method,
     _method_args) {
   let
@@ -170,6 +175,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _contract_method,
     _method_args
   ];
@@ -205,24 +211,30 @@ function
     "    <contract_address>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
+    "    <contract_compiler_output_path>",
     "    <contract_method>",
     "    [method_args]",
     "",
     "Args:",
-    "  <quiet>                   Can be 'y' or 'n'",
-    "                            Default: y",
-    "  <wallet_seed>             Path of the file containing",
-    "                            the seed phrase.",
-    "  <wallet_password>         Password of the wallet.",
-    "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service.",
-    "  <target_network>          Network on which the contract",
-    "                            resides.",
-    "  <contract_address>        Address of the contract.",
-    "  <contract_abi_path>       Contract ABI path.",
-    "  <contract_bytecode_path>  Path for the contract bytecode.",
-    "  <contract_method>         Contract method to execute.",
-    "  [method_args]             Arguments to pass to the method.",
+    "  <quiet>                          Can be 'y' or 'n'",
+    "                                   Default: y",
+    "  <wallet_seed>                    Path of the file containing",
+    "                                   the seed phrase.",
+    "  <wallet_password>                Password of the wallet.",
+    "  <api_key_path>                   Path of the API key for the",
+    "                                   contract ABI provider service.",
+    "  <target_network>                 Network on which the contract",
+    "                                   resides.",
+    "  <contract_address>               Address of the contract.",
+    "  <contract_abi_path>              Contract ABI path.",
+    "  <contract_bytecode_path>         Path for the contract bytecode.",
+    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "                                   output path (the hardhat artifact).",
+    "  <contract_method>                Contract method to execute.",
+    "  [method_args]                    Arguments to pass to the method.",
+    "",
+    "  Options:",
+    "    -h (--help)                    This help."
   ]
   for (let
          _line =
@@ -271,6 +283,10 @@ function
     "Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
       contract_bytecode_path));
+  _text.push(
+    "Contract compiler output: {contract_compiler_output_path}".replace(
+      "{contract_compiler_output_path}",
+      contract_compiler_output_path));
   _text.push(
     "  Contract method: {contract_method}".replace(
       "{contract_method}",
@@ -330,10 +346,14 @@ function
           _value;
       }
       if ( _index == 10 ) {
+        contract_compiler_output_path =
+          _value;
+      }
+      if ( _index == 11 ) {
         contract_method =
           _value;
       }
-      if ( 10 < _index ) {
+      if ( 11 < _index ) {
         method_args.push(
 	  _value);
       }
@@ -360,6 +380,7 @@ if ( require.main == module ) {
     contract_address,
     contract_abi_path,
     contract_bytecode_path,
+    contract_compiler_output_path,
     contract_method,
     method_args
   ];

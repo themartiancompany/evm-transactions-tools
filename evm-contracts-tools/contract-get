@@ -60,6 +60,8 @@ function
     "";
   contract_bytecode_path =
     "";
+  contract_compiler_output_path =
+    "";
   target_network =
     "";
   api_key_path =
@@ -148,18 +150,46 @@ async function
       _contract_abi,
       _contract_bytecode,
       _wallet);
-  // _factory =
-  //   _factory.connect(
-  //     _wallet);
   if ( _contract_address != "" ) {
-    _factory =
+    _contract =
       _factory.attach(
         _contract_address);
   }
-  _contract = await
-    _factory.getDeployTransaction();
+  else if ( _contract_address == "" ) {
+    _contract = await
+      _factory.getDeployTransaction();
+  }
   return _contract;
 }
+
+async function
+  _contract_get_compiler_output(
+    _wallet,
+    _contract_address,
+    _contract_compiler_output_path) {
+  let
+    _contract,
+    _contract_compiler_output,
+    _factory;
+  _contract_compiler_output =
+    _file_read(
+      _contract_compiler_output_path);
+  _factory =
+    _contract_factory.fromSolidity(
+      _contract_compiler_output,
+      _wallet);
+  if ( _contract_address != "" ) {
+    _contract =
+      _factory.attach(
+        _contract_address);
+  }
+  else if ( _contract_address == "" ) {
+    _contract = await
+      _factory.getDeployTransaction();
+  }
+  return _contract;
+}
+
 
 async function
   _contract_get(
@@ -168,6 +198,7 @@ async function
     _contract_address,
     _contract_abi_path,
     _contract_bytecode_path,
+    _contract_compiler_output_path,
     _target_network,
     _api_key_path) {
   let
@@ -220,7 +251,13 @@ async function
   }
   _contract_get_opts.push(
     _contract_address);
-  if ( _contract_bytecode_path != "" ) {
+  if ( _contract_compiler_output_path != "" ) {
+    _contract_get_opts.push(
+      _contract_compiler_output_path);
+    _contract_get_fun =
+      _contract_get_compiler_output;
+  }
+  else if ( _contract_bytecode_path != "" ) {
     _contract_get_opts.push(
       _contract_abi_path,
       _contract_bytecode_path);
@@ -235,7 +272,8 @@ async function
       _contract_get_abi;
   }
   else if ( _contract_bytecode_path == "" &&
-	    _contract_abi_path == "" ) {
+	    _contract_abi_path == "" &&
+            _contract_compiler_output_path == "" ) {
     _msg_error_no_input_data();
   }
   _contract = await
@@ -272,6 +310,10 @@ function
       "{contract_bytecode_path}",
       contract_bytecode_path));
   _text.push(
+    "Contract compiler output: {contract_compiler_output_path}".replace(
+      "{contract_compiler_output_path}",
+      contract_compiler_output_path));
+  _text.push(
     "   Target network: {target_network}".replace(
       "{target_network}",
       target_network));
@@ -299,22 +341,28 @@ function
     "    <contract_address>",
     "    <contract_abi_path>",
     "    <contract_bytecode_path>",
+    "    <contract_compiler_output_path>",
     "    <target_network>",
     "    (<api_key_path>)",
     "",
     "Args:",
-    "  <quiet>                   Can be 'y' or 'n'",
-    "                            Default: y",
-    "  <wallet_seed>             Path of the seed phrase.",
-    "  <wallet_password_path>    Wallet password path.",
-    "  <contract_address>        Contract of the address one is",
-    "                            getting the contract of.",
-    "  <contract_abi_path>       Path of the contract ABI.",
-    "  <contract_bytecode_path>  Path for the contract bytecode.",
-    "  <target_network>          Network on which the contract",
-    "                            resides.",
-    "  <api_key_path>            Path of the API key for the",
-    "                            contract ABI provider service.",
+    "  <quiet>                          Can be 'y' or 'n'",
+    "                                   Default: y",
+    "  <wallet_seed>                    Path of the seed phrase.",
+    "  <wallet_password_path>           Wallet password path.",
+    "  <contract_address>               Contract of the address one is",
+    "                                   getting the contract of.",
+    "  <contract_abi_path>              Path of the contract ABI.",
+    "  <contract_bytecode_path>         Path for the contract bytecode.",
+    "  <contract_compiler_output_path>  Path for the contract compiler",
+    "                                   output path (the hardhat artifact).",
+    "  <target_network>                 Network on which the contract",
+    "                                   resides.",
+    "  <api_key_path>                   Path of the API key for the",
+    "                                   contract ABI provider service.",
+    "",
+    "  Options:",
+    "    -h                             This help."
   ];
   for ( _line of _text ) {
     _msg_info(
@@ -355,17 +403,26 @@ function _cmdline_parse() {
           _value;
       }
       if ( _index == 8 ) {
+        contract_compiler_output_path =
+          _value;
+      }
+      if ( _index == 9 ) {
         target_network =
           _value;
       }
-      if ( _index ==  9 ) {
+      if ( _index ==  10 ) {
         api_key_path =
           _value;
+      }
+      if ( _value == "-h" ||
+           _value == "--help" ) {
+        _usage();
       }
     }
   );
   if ( contract_abi_path == "" &&
-       contract_bytecode_path == "" ) {
+       contract_bytecode_path == "" && 
+       contract_compiler_output_path == ""  ) {
     _usage();
   }
 }
@@ -381,6 +438,7 @@ if ( require.main == module ) {
     contract_address,
     contract_abi_path,
     contract_bytecode_path,
+    contract_compiler_output_path,
     target_network,
     api_key_path,
   ];
