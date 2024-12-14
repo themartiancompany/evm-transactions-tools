@@ -431,7 +431,11 @@ _set_overrides() {
     "call" \
     "type" \
     "static"
-  _api_key_auto_detect
+  _api_key_auto_detect \
+    "default" \
+    "$(_get \
+         "target" \
+         "network")"
   if [[ "$(_get \
              "contract" \
              "address")" != "" ]]; then
