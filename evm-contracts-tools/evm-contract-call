@@ -183,7 +183,8 @@ _evm_contract_call() {
     _method_args=() \
     _cmd \
     _args=() \
-    _network_backend
+    _network_backend \
+    _msg=()
   shift \
     11
   _method_args+=(
@@ -219,6 +220,12 @@ _evm_contract_call() {
       "${_method_args[@]}"
     )
   fi
+  _msg=(
+    "calling evm-contract-call-${_call_type}"
+    "with options ${_args[@]}"
+  )
+  _msg_info \
+    "${_msg[*]}"
   _node_run \
     "${_cmd}" \
     "${_args[@]}"

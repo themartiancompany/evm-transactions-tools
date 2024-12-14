@@ -110,16 +110,16 @@ async function
     _target_network,
     _api_key_path,
   ];
-  _contract = await
-    _contract_get.apply(
+  _contract =
+    await _contract_get.apply(
       null,
       _contract_get_opts);
-  _method = await
-    _contract.getFunction(
+  _method =
+    await _contract.getFunction(
       _contract_method);
   try {
-    _value = await
-      _method.send.apply(
+    _value =
+      await _method.send.apply(
         null,
         _method_args)
   } catch (error) {
@@ -173,8 +173,8 @@ async function
     _contract_method,
     _method_args
   ];
-  _tx = await
-    _contract_call_dynamic.apply(
+  _tx =
+    await _contract_call_dynamic.apply(
       null,
       _contract_call_dynamic_opts);
   if ( _tx != "" ) {
@@ -363,8 +363,8 @@ if ( require.main == module ) {
     contract_method,
     method_args
   ];
-  _tx = await
-    _contract_run.apply(
+  _tx =
+    await _contract_run.apply(
       null,
       app_opts);
 }

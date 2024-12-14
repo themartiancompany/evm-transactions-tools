@@ -272,7 +272,7 @@ function
     "Args:",
     "  <quiet>                   Can be 'y' or 'n'",
     "                            Default: y",
-    "  <wallet_seed>              Path of the seed phrase.",
+    "  <wallet_seed>             Path of the seed phrase.",
     "  <wallet_password_path>    Wallet password path.",
     "  <contract_address>        Contract of the address one is",
     "                            getting the contract of.",
@@ -332,7 +332,7 @@ function _cmdline_parse() {
     }
   );
   if ( contract_abi_path == "" &&
-       contract_bytecode_path ) {
+       contract_bytecode_path == "" ) {
     _usage();
   }
 }
