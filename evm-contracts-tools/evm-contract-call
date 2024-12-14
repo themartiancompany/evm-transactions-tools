@@ -93,7 +93,7 @@ _network_setup() {
     _chain_id \
     _rpc \
     _msg=() \
-    _input_types=() \
+    _number \
     _input_type
   _input_types=(
     "id"
@@ -105,34 +105,31 @@ _network_setup() {
   )
   _msg_info \
     "${_msg[*]}"
-  for _input_type in "${_input_types[@]}"; do
-    _chain_id="$( \
+  _number='^[0-9]+$'
+  if [[ "${_chain}" =~ "${_number}" ]] ; then
+    _input_type="id"
+  elif [[ ! "${_chain}" =~ "${_number}" ]] ; then
+    _input_type="name"
+  fi
+  _chain_id="$( \
+    evm-chains-info \
+      -i \
+        "${_input_type}" \
+      -o \
+        "id" \
+      "${_chain}")"
+  if [[ "${_chain_id}" != "" ]]; then
+    _chain_name="$( \
       evm-chains-info \
         -i \
           "${_input_type}" \
         -o \
-          "id" \
-        "${_chain}" || \
+          "name" \
+        "${_chain}" 2>/dev/null || \
         true)"
-    if [[ "${_chain_id}" != "" ]]; then
-      _chain_name="$( \
-        evm-chains-info \
-          -i \
-            "${_input_type}" \
-          -o \
-            "name" \
-          "${_chain}")"
-      _msg=(
-        "Found blockchain '${_chain_name}'"
-        "with id '${_chain_id}'"
-      )
-      _msg_info \
-        "${_msg[*]}"
-      break
-    fi
-  done
-  if [[ "${_chain_id}" != "" ]]; then
     _msg=(
+      "Found blockchain '${_chain_name}'"
+      "with id '${_chain_id}'"
       "Selecting RPC address with"
       "criterion 'kirsh'"
     )
@@ -347,7 +344,8 @@ _contract_abi_auto_detect() {
     _get \
       "api" \
       "key")"
-  if [ ! -e "${contract_abi}" ]; then
+  if [[ ! -e "${contract_abi}" ]] && \
+     [[ ! -e "${contract_bytecode}" ]]; then
     _msg=(
       "contract ABI '${contract_abi}'"
       "does not exist, obtaining from"
@@ -417,6 +415,16 @@ _set_overrides() {
     _abi \
     _bytecode \
     _data_dir
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
   _data_dir="${HOME}/.local/share/$(_get "app" "name")"
   _set_override \
     "call" \
@@ -461,7 +469,7 @@ _set_overrides() {
         "target" \
         "network")/$(_get \
                        "contract" \
-                       "address").bytecode.json"
+                       "address").json"
     if [ ! -e "${_bytecode}" ]; then
       _bytecode=""
     fi
@@ -505,16 +513,6 @@ _set_overrides() {
          "$(_get \
               "wallet" \
               "name")")"
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
 }
 
 # Show help usage, with an exit status.

@@ -107,7 +107,7 @@ async function
 }
 
 async function
-  contract_get_bytecode(
+  _contract_get_bytecode(
     _wallet,
     _contract_address,
     _contract_bytecode_path) {
