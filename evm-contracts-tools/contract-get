@@ -232,15 +232,15 @@ async function
     _contract_get_fun =
       _contract_get_bytecode;
   }
-  else if ( _contract_bytecode_path == "" ) &&
-	  ( _contract_abi_path != "" ) {
+  else if ( _contract_bytecode_path == "" && 
+	    _contract_abi_path != "" ) {
     _contract_get_opts.push(
       _contract_abi_path);
     _contract_get_fun =
       _contract_get_abi;
   }
-  else if ( _contract_bytecode_path == "" ) &&
-	  ( _contract_abi_path == "" ) {
+  else if ( _contract_bytecode_path == "" &&
+	    _contract_abi_path == "" ) {
     _msg_error_no_input_data();
   }
   _contract = await
