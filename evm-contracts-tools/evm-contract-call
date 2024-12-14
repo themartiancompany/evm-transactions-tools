@@ -165,6 +165,25 @@ _network_setup() {
   _network_backend="${_rpc}"
 }
 
+_artifacts_check() {
+  local \
+    _contract_abi_path="${1}" \
+    _contract_compiler_output_path="${2}" \
+    _msg=()
+  if [[ "${_contract_abi_path}" == "" ]] && \
+     [[ "${_contract_compiler_output_path}" == "" ]]; then
+    _msg=(
+      "to perform an EVM contract call"
+      "you have to provide either"
+      "the contract abi, the contract abi"
+      "and the contract bytecode or"
+      "an hardhat compilation artifact"
+    )
+    _msg_error \
+      "${_msg[*]}"
+  fi
+}
+
 _evm_contract_call() {
   local \
     _call_type="${1}" \
@@ -177,15 +196,15 @@ _evm_contract_call() {
     _contract_address="${8}" \
     _contract_abi_path="${9}" \
     _contract_bytecode_path="${10}" \
-    _contract_compiler_output_path="${10}" \
-    _contract_method="${11}" \
+    _contract_compiler_output_path="${11}" \
+    _contract_method="${12}" \
     _method_args=() \
     _cmd \
     _args=() \
     _network_backend \
     _msg=()
   shift \
-    11
+    12
   _method_args+=(
     "$@"
   )
@@ -194,6 +213,9 @@ _evm_contract_call() {
   _cmd="$( \
     _evm_contract_call_type \
       "${_call_type}")"
+  _artifacts_check \
+    "${_contract_abi_path}" \
+    "${_contract_compiler_output_path}"
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
       "${quiet}"
@@ -383,9 +405,9 @@ _contract_abi_auto_detect() {
           "Couldn't obtain contract ABI"
           "from the provider."
         )
-        _msg_error \
-          "${_msg[*]}" \
-          0
+        _msg_info \
+          "${_msg[*]}"
+        contract_abi=""
       fi
     fi
   fi
