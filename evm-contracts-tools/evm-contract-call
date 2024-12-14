@@ -112,7 +112,8 @@ _network_setup() {
           "${_input_type}" \
         -o \
           "id" \
-        "${_chain}")"
+        "${_chain}" || \
+        true)"
     if [[ "${_chain_id}" != "" ]]; then
       _chain_name="$( \
         evm-chains-info \
@@ -142,7 +143,7 @@ _network_setup() {
         -i \
           "${_input_type}" \
         -o \
-          "${_rpc}" \
+          "rpc" \
         -s \
           "kirsh" \
         "${_chain}")"
@@ -395,7 +396,7 @@ _set_overrides() {
   _set_override \
     "target" \
     "network" \
-    "gnosis"
+    "Gnosis"
   _set_override \
     "call" \
     "type" \
@@ -504,7 +505,8 @@ Usage:
 
   networks:
     all those supported by
-    'evm-chains-info'
+    'evm-chains-info' as
+    well as directly RPC address
 
   options:
      -A <abi>             Contract ABI path.
