@@ -47,14 +47,14 @@ _evm_contract_deployment_networks() {
         "%f")
   )
   if [[ "${_display_cheapest}" == "y" ]]; then
-    if [[ " ${_networks[*]} " == *" gnosis "* ]]; then
+    if [[ " ${_networks[*]} " == *" 100 "* ]]; then
       echo \
-        "gnosis"
+        "100" # Gnosis
     fi
   elif [[ "${_display_safest}" == "y" ]]; then
-    if [[ " ${_networks[*]} " == *" ethereum "* ]]; then
+    if [[ " ${_networks[*]} " == *" 1 "* ]]; then
       echo \
-        "ethereum"
+        "1" # Ethereum
     fi
   elif [[ "${_display_all}" == "y" ]]; then
     echo \
