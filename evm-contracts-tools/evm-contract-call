@@ -270,6 +270,36 @@ _wallet_address_get() {
     "${_wallet_address}"
 }
 
+_api_key_auto_detect() {
+  local \
+    _name="${1}" \
+    _network="${2}" \
+    _conf_dir \
+    _service \
+    _key
+  if [[ "${_network}" == "Ethereum Mainnet" ]] || \
+     [[ "${_network}" == "1" ]]; then
+    _service="etherscan"
+  elif [[ "${_network}" == "Gnosis" ]] || \
+       [[ "${_network}" == "100" ]]; then
+    _service="gnosisscan"
+  fi
+  _conf_dir="${HOME}/.config/${_service}"
+  mkdir \
+    -p \
+    "${_conf_dir}"
+  _key="${_conf_dir}/${_name}.txt"
+  if [[ ! -e "${_key}" ]]; then
+    _msg_warning \
+      "key '${_key}' doesn't exists!"
+    _key=""
+  fi
+  _set_override \
+    "api" \
+    "key" \
+    "${_key}"
+}
+
 _api_key_get() {
   local \
     _name="${1}" \
@@ -401,14 +431,7 @@ _set_overrides() {
     "call" \
     "type" \
     "static"
-  _set_override \
-    "api" \
-    "key" \
-    "$(_api_key_get \
-         "default" \
-         "$(_get \
-              "target" \
-              "network")")"
+  _api_key_auto_detect
   if [[ "$(_get \
              "contract" \
              "address")" != "" ]]; then
