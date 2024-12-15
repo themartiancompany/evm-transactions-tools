@@ -173,14 +173,14 @@ _artifacts_check() {
   if [[ "${_contract_abi_path}" == "" ]] && \
      [[ "${_contract_compiler_output_path}" == "" ]]; then
     _msg=(
-      "to perform an EVM contract call"
+      "to safely perform an EVM contract call"
       "you have to provide either"
-      "the contract abi, the contract abi"
-      "and the contract bytecode or"
+      "the contract abi, ( or"
       "an hardhat compilation artifact"
     )
     _msg_error \
-      "${_msg[*]}"
+      "${_msg[*]}" \
+      1
   fi
 }
 
@@ -421,6 +421,7 @@ _set_overrides() {
   local \
     _abi \
     _bytecode \
+    _compiler_output \
     _data_dir
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -491,8 +492,8 @@ _set_overrides() {
       _compiler_output=""
     fi
     _set_override \
-      "contract" \
-      "compiler_output" \
+      "contract_compiler" \
+      "output" \
       "${_compiler_output}"
   fi
   if [[ "$(_get \
@@ -564,7 +565,7 @@ Usage:
                             Default: $(_get "contract" "bytecode")
      -C <compiler_output>   Contract compiler output
                             path (the hardhat artifact).
-                            Default: $(_get "contract" "compiler_output")
+                            Default: $(_get "contract_compiler" "output")
      -N <wallet_name>       EVM wallet name.
                             Default: $(_get "wallet" "name")
      -w <wallet_path>       EVM wallet file path.
@@ -758,8 +759,8 @@ app_opts=(
       "bytecode")"
   "$( \
     _get \
-      "contract" \
-      "compiler_output")"
+      "contract_compiler" \
+      "output")"
   "$( \
     _get \
       "contract" \
@@ -768,4 +769,5 @@ app_opts=(
 )
 _evm_contract_call \
   "${app_opts[@]}"
+
 # vim:set sw=2 sts=-1 et:
