@@ -435,11 +435,6 @@ _set \
   "contract" \
   "${1}"
 _set_overrides
-_config_user_init \
-  "$( \
-    _get \
-      "app" \
-      "name")"
 _show_config
 app_opts=(
   "$( \
