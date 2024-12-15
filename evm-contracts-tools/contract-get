@@ -288,23 +288,23 @@ function
     _text;
   _text = [];
   _text.push(
-    "      Wallet seed: {wallet_seed}".replace(
+    "             Wallet seed: {wallet_seed}".replace(
       "{wallet_seed}",
       wallet_seed));
   _text.push(
-    "  Wallet password: {wallet_password_path}".replace(
+    "         Wallet password: {wallet_password_path}".replace(
       "{wallet_password_path}",
       wallet_password_path));
   _text.push(
-    " Contract address: {contract_address}".replace(
+    "        Contract address: {contract_address}".replace(
       "{contract_address}",
       contract_address));
   _text.push(
-    "Contract ABI path: {contract_abi_path}".replace(
+    "       Contract ABI path: {contract_abi_path}".replace(
       "{contract_abi_path}",
       contract_abi_path));
   _text.push(
-    "Contract bytecode: {contract_bytecode_path}".replace(
+    "       Contract bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
       contract_bytecode_path));
   _text.push(
@@ -312,14 +312,14 @@ function
       "{contract_compiler_output_path}",
       contract_compiler_output_path));
   _text.push(
-    "   Target network: {target_network}".replace(
+    "          Target network: {target_network}".replace(
       "{target_network}",
       target_network));
   _text.push(
-    "          API Key: {api_key_path}".replace(
+    "                 API Key: {api_key_path}".replace(
       "{api_key_path}",
       api_key_path));
-  for ( _line in _text ) {
+  for ( _line of _text ) {
     _msg_info(
       _line);
   }

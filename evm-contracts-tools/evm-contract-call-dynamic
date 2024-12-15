@@ -256,31 +256,31 @@ function
   _text =
     [];
   _text.push(
-    "      Wallet seed: {wallet_seed}".replace(
+    "             Wallet seed: {wallet_seed}".replace(
       "{wallet_seed}",
       wallet_seed));
   _text.push(
-    "  Wallet password: {wallet_password}".replace(
+    "         Wallet password: {wallet_password}".replace(
       "{wallet_password}",
       wallet_password));
   _text.push(
-    "     API Key path: {api_key_path}".replace(
+    "            API Key path: {api_key_path}".replace(
       "{api_key_path}",
       api_key_path));
   _text.push(
-    "   Target network: {target_network}".replace(
+    "          Target network: {target_network}".replace(
       "{target_network}",
       target_network));
   _text.push(
-    " Contract address: {contract_address}".replace(
+    "        Contract address: {contract_address}".replace(
       "{contract_address}",
       contract_address));
   _text.push(
-    "     Contract ABI: {contract_abi_path}".replace(
+    "            Contract ABI: {contract_abi_path}".replace(
       "{contract_abi_path}",
       contract_abi_path));
   _text.push(
-    "Contract Bytecode: {contract_bytecode_path}".replace(
+    "       Contract Bytecode: {contract_bytecode_path}".replace(
       "{contract_bytecode_path}",
       contract_bytecode_path));
   _text.push(
@@ -288,14 +288,14 @@ function
       "{contract_compiler_output_path}",
       contract_compiler_output_path));
   _text.push(
-    "  Contract method: {contract_method}".replace(
+    "         Contract method: {contract_method}".replace(
       "{contract_method}",
       contract_method));
   _method_args =
     method_args.join(
     " ");
   _text.push(
-    "      Method args: {method_args}".replace(
+    "             Method args: {method_args}".replace(
       "{method_args}",
       _method_args));
   for (_line of _text)  { 

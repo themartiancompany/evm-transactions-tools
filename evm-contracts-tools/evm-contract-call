@@ -165,13 +165,41 @@ _network_setup() {
   _network_backend="${_rpc}"
 }
 
+_artifact_missing_reset() {
+  local \
+    _type="${1}" \
+    _artifact \
+    _msg=()
+  _artifact="$( \
+    _get \
+      "_contract" \
+      "${_type}")"
+  if [[ ! -e "${_artifact}" ]]; then
+    _msg=(
+      "contract '${_type//_/ }' at"
+      "'${_artifact}' does not"
+      "exist."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+    _set \
+      "_contract" \
+      "${_type}" \
+      ""
+  fi
+}
+
 _artifacts_check() {
   local \
-    _contract_abi_path="${1}" \
-    _contract_compiler_output_path="${2}" \
     _msg=()
-  if [[ "${_contract_abi_path}" == "" ]] && \
-     [[ "${_contract_compiler_output_path}" == "" ]]; then
+  _artifact_missing_reset \
+    "abi_path"
+  _artifact_missing_reset \
+    "bytecode_path"
+  _artifact_missing_reset \
+    "compiler_output_path"
+  if [[ "${_contract_compiler_output_path}" == "" ]] && \
+     [[ "${_contract_abi_path}" == "" ]]; then
     _msg=(
       "to safely perform an EVM contract call"
       "you have to provide either"
@@ -213,9 +241,7 @@ _evm_contract_call() {
   _cmd="$( \
     _evm_contract_call_type \
       "${_call_type}")"
-  _artifacts_check \
-    "${_contract_abi_path}" \
-    "${_contract_compiler_output_path}"
+  _artifacts_check
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
       "${quiet}"
@@ -334,6 +360,7 @@ _contract_abi_auto_detect() {
   local \
     _abi \
     _address \
+    _compiler_output \
     _data_dir \
     _evm_contracts_abi_get_opts=() \
     _key \
@@ -351,15 +378,45 @@ _contract_abi_auto_detect() {
     _get \
       "api" \
       "key")"
-  if [[ ! -e "${contract_abi}" ]] && \
-     [[ ! -e "${contract_bytecode}" ]]; then
+  _abi="$( \
+    _get \
+      "contract" \
+      "abi")"
+  _compiler_output="$( \
+    _get \
+      "contract" \
+      "compiler_output")"
+  if [[ ! -e "${_abi}" ]] && \
+     [[ ! -e "${_compiler_output}" ]]; then
     _msg=(
-      "contract ABI '${contract_abi}'"
+      "contract ABI '${_abi}'"
       "does not exist, obtaining from"
       "the network's contract ABI provider."
     )
     _msg_info \
       "${_msg[*]}"
+    _data_dir="$( \
+      dirname \
+        "${contract_abi}")"
+    mkdir \
+      -p \
+      "${_data_dir}"
+    chmod \
+      700 \
+      "${_data_dir}"
+    if [[ "${quiet}" == "n" ]]; then
+      _evm_contracts_abi_get_opts+=(
+        --verbose
+      )
+    fi
+    _evm_contracts_abi_get_opts+=(
+      --network
+        "${_network}"
+      --key 
+        "${_key}"
+      --output-file
+        "${_abi}"
+    )
     if [ ! -e "${_key}" ]; then
       _msg=(
         "contract ABI provider API"
@@ -369,52 +426,92 @@ _contract_abi_auto_detect() {
       )
       _msg_warning \
         "${_msg[*]}"
-      contract_abi=""
-    fi
-    if [ -e "${_key}" ]; then
-      _data_dir="$( \
-        dirname \
-          "${contract_abi}")"
-      mkdir \
-        -p \
-        "${_data_dir}"
-      chmod \
-        700 \
-        "${_data_dir}"
-      if [[ "${quiet}" == "n" ]]; then
-        _evm_contracts_abi_get_opts+=(
-          --verbose
-        )
-      fi
+    elif [ -e "${_key}" ]; then
       _evm_contracts_abi_get_opts+=(
-        --network
-          "${_network}"
         --key 
           "${_key}"
-        --output-file
-          "${contract_abi}"
       )
-      evm-contracts-abi-get \
-        "${_evm_contracts_abi_get_opts[@]}" \
-          "${_address}"
-      if [ $? -eq 0 ]; then
-        _msg_info \
-          "obtained ABI from a network explorer"
-      else
-        _msg=(
-          "Couldn't obtain contract ABI"
-          "from the provider."
-        )
-        _msg_info \
-          "${_msg[*]}"
-        contract_abi=""
-      fi
+    fi
+    evm-contracts-abi-get \
+      "${_evm_contracts_abi_get_opts[@]}" \
+        "${_address}"
+    if [ $? -eq 0 ]; then
+      _msg_info \
+        "obtained ABI from a network explorer"
+    else
+      _msg=(
+        "Couldn't obtain contract ABI"
+        "from the provider."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _abi=""
     fi
   fi
   _set \
     "contract" \
     "abi" \
-    "${contract_abi}"
+    "${_abi}"
+}
+
+_default_artifact_path_get() {
+  local \
+    _type="${1}" \
+    _address \
+    _app \
+    _artifact \
+    _data_dir \
+    _network
+  _network="$( \
+    _get \
+      "target" \
+      "network")"
+  _address="$( \
+    _get \
+      "contract" \
+      "address")"
+  _app="$( \
+    _get \
+      "app" \
+      "name")"
+  _data_dir="${HOME}/.local/share/${_app}"
+  if [[ "${_type}" == "abi" ]]; then
+    _artifact="${_data_dir}/${_network}/${_address}.abi.json"
+  elif [[ "${_type}" == "bytecode" ]]; then
+    _artifact="${_data_dir}/${_network}/${_address}.bin"
+  elif [[ "${_type}" == "compiler_output" ]]; then
+    _artifact="${_data_dir}/${_network}/${_address}.json"
+  fi
+  echo \
+    "${_artifact}"
+}
+
+_contract_bytecode_auto_detect() {
+  local \
+    _bytecode
+  _bytecode="$( \
+    _default_artifact_path_get \
+      "bytecode")"
+  if [[ ! -e "${_bytecode}" ]]; then
+    _bytecode=""
+  fi
+  _set_override \
+    "contract" \
+    "bytecode"
+    "${_bytecode}"
+}
+
+_artifact_local_auto_detect() {
+  local \
+    _type="${1}" \
+    _artifact
+  _artifact="$( \
+    _default_artifact_path_get \
+      "${_type}")"
+  _set_override \
+    "contract" \
+    "${_type}" \
+    "${_artifact}"
 }
 
 _set_overrides() {
@@ -462,44 +559,18 @@ _set_overrides() {
   if [[ "$(_get \
              "contract" \
              "address")" != "" ]]; then
-    _abi="${_data_dir}/$( \
-      _get \
-        "target" \
-        "network")/$(_get \
-                       "contract" \
-                       "address").abi.json"
     _set_override \
       "contract" \
       "abi" \
-      "${_abi}"
-    _bytecode="${_data_dir}/$( \
-      _get \
-        "target" \
-        "network")/$(_get \
-                       "contract" \
-                       "address").bin"
-    _set_override \
-      "contract" \
-      "bytecode" \
-      "${_bytecode}"
-    _compiler_output="${_data_dir}/$( \
-      _get \
-        "target" \
-        "network")/$(_get \
-                       "contract" \
-                       "address").json"
-    if [ ! -e "${_compiler_output}" ]; then
-      _compiler_output=""
-    fi
-    _set_override \
-      "contract_compiler" \
-      "output" \
-      "${_compiler_output}"
-  fi
-  if [[ "$(_get \
-             "contract" \
-             "address")" != "" ]]; then
-    if [[ -n "contract_abi" ]]; then
+      "$(_default_artifact_path_get \
+           "abi")"
+    _artifact_local_auto_detect \
+      "bytecode"
+    _artifact_local_auto_detect \
+      "compiler_output"
+    if [[ "${contract_abi}" == "" ]] || 
+       [[ "$(_default_artifact_path_get \
+               "abi")" == "${contract_abi}" ]]; then
       _contract_abi_auto_detect
     fi
   fi
