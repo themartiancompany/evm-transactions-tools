@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
 
-_json_parse =
-  JSON.parse;
 const
   { ethers } =
     require(
@@ -24,8 +22,8 @@ _dirname =
   _libcrash._dirname;
 _file_read =
   _libcrash._file_read;
-_json_parse =
-  _libcrash._json_parse;
+_json_read =
+  _libcrash._json_read;
 _path_join =
   _libcrash._path_join;
 _msg_info =

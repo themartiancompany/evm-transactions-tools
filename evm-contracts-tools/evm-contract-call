@@ -107,7 +107,7 @@ _network_setup() {
   _msg_info \
     "${_msg[*]}"
   _number='^[0-9]+$'
-  if [[ "${_chain}" =~ "${_number}" ]] ; then
+  if [[ "${_chain}" =~ ${_number} ]] ; then
     _input_type="id"
   elif [[ ! "${_chain}" =~ "${_number}" ]] ; then
     _input_type="name"
@@ -175,7 +175,7 @@ _artifacts_check() {
     _msg=(
       "to safely perform an EVM contract call"
       "you have to provide either"
-      "the contract abi, ( or"
+      "the contract abi or"
       "an hardhat compilation artifact"
     )
     _msg_error \
