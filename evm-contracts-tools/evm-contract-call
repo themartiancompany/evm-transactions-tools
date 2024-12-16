@@ -326,13 +326,12 @@ _api_key_auto_detect() {
         'kirsh' \
       get \
         keys)"
-  _msg_info "${_key}"
   _chain_name="$( \
     evm-chains-info \
       -o \
         "name" \
       "${_chain}")"
-  if [[ "${_key}" == "" ]]; then
+  if [[ ! -e "${_key}" ]]; then
     _msg=(
       "Found no provider services"
       "keys for chain '${_chain_name}'."
@@ -381,18 +380,25 @@ _contract_abi_auto_detect() {
     _get \
       "contract" \
       "compiler_output")"
+  _abi_target="${_abi}"
+  if [[ "${_abi_target}" == "" ]]; then
+     _abi_target="$( \
+      _default_artifact_path_get \
+        "abi")"
+  fi
   if [[ ! -e "${_abi}" ]] && \
      [[ ! -e "${_compiler_output}" ]]; then
     _msg=(
-      "contract ABI '${_abi}'"
-      "does not exist, obtaining from"
-      "the network's contract ABI provider."
+      "no contract ABI or compiler output"
+      "available, attempting to obtain it from"
+      "a network's contracts ABI provider"
+      "at path '${_abi_target}'"
     )
     _msg_info \
       "${_msg[*]}"
     _data_dir="$( \
       dirname \
-        "${contract_abi}")"
+        "${_abi}")"
     mkdir \
       -p \
       "${_data_dir}"
@@ -410,16 +416,16 @@ _contract_abi_auto_detect() {
       --key 
         "${_key}"
       --output-file
-        "${_abi}"
+        "${_abi_target}"
     )
     if [ ! -e "${_key}" ]; then
       _msg=(
         "contract ABI provider API"
         "key '${_key}' not found,"
-        "won't fetch the ABI from the"
-        "internet."
+        "fetch the ABI from the"
+        "provider may not work."
       )
-      _msg_warning \
+      _msg_info \
         "${_msg[*]}"
     elif [ -e "${_key}" ]; then
       _evm_contracts_abi_get_opts+=(
@@ -431,12 +437,17 @@ _contract_abi_auto_detect() {
       "${_evm_contracts_abi_get_opts[@]}" \
         "${_address}"
     if [ $? -eq 0 ]; then
+      _msg=(
+        "obtained ABI from a network explorer,"
+        "setting contract ABI value to '${_abi_target}'"
+      )
       _msg_info \
-        "obtained ABI from a network explorer"
+        "${_msg[*]}"
+      _abi="${_abi_target}"
     else
       _msg=(
         "Couldn't obtain contract ABI"
-        "from the provider."
+        "from the provider, blanking contract ABI value."
       )
       _msg_info \
         "${_msg[*]}"

@@ -100,6 +100,8 @@ function
   _text =
     [];
   _text.push(
+    "  evm-contract-call-static configuration:");
+  _text.push(
     "            API Key path: {api_key_path}".replace(
       "{api_key_path}",
       api_key_path));
