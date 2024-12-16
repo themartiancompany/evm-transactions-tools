@@ -35,6 +35,10 @@ _global_variables() {
 
 _requirements() {
   _check_cmd \
+    "evm-chains-explorers"
+  _check_cmd \
+    "evm-chains-info"
+  _check_cmd \
     'evm-contracts-abi-get'
   _check_cmd \
     'evm-wallet'
