@@ -350,15 +350,84 @@ _api_key_auto_detect() {
     "${_key}"
 }
 
+_contract_abi_retrieve() {
+  local \
+    _evm_contracts_abi_get_opts=() \
+    _msg=() \
+    _data_dir
+  _msg=(
+    "no contract ABI or compiler output"
+    "available, attempting to obtain it from"
+    "a network's contracts ABI provider"
+    "at path '${_abi_target}'"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _data_dir="$( \
+    dirname \
+      "${_abi}")"
+  mkdir \
+    -p \
+    "${_data_dir}"
+  chmod \
+    700 \
+    "${_data_dir}"
+  if [[ "${quiet}" == "n" ]]; then
+    _evm_contracts_abi_get_opts+=(
+      --verbose
+    )
+  fi
+  _evm_contracts_abi_get_opts+=(
+    --network
+      "${_network}"
+    --key 
+      "${_key}"
+    --output-file
+      "${_abi_target}"
+  )
+  if [ ! -e "${_key}" ]; then
+    _msg=(
+      "contract ABI provider API"
+      "key '${_key}' not found,"
+      "fetch the ABI from the"
+      "provider may not work."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  elif [ -e "${_key}" ]; then
+    _evm_contracts_abi_get_opts+=(
+      --key 
+        "${_key}"
+    )
+  fi
+  evm-contracts-abi-get \
+    "${_evm_contracts_abi_get_opts[@]}" \
+      "${_address}"
+  if [ $? -eq 0 ]; then
+    _msg=(
+      "obtained ABI from a network explorer,"
+      "setting contract ABI value to '${_abi_target}'"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _abi="${_abi_target}"
+  else
+    _msg=(
+      "Couldn't obtain contract ABI"
+      "from the provider, blanking contract ABI value."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _abi=""
+  fi
+}
+
 _contract_abi_auto_detect() {
   local \
     _abi \
     _address \
     _compiler_output \
-    _data_dir \
-    _evm_contracts_abi_get_opts=() \
     _key \
-    _msg=() \
     _network
   _network="$( \
     _get \
@@ -388,70 +457,10 @@ _contract_abi_auto_detect() {
   fi
   if [[ ! -e "${_abi}" ]] && \
      [[ ! -e "${_compiler_output}" ]]; then
-    _msg=(
-      "no contract ABI or compiler output"
-      "available, attempting to obtain it from"
-      "a network's contracts ABI provider"
-      "at path '${_abi_target}'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _data_dir="$( \
-      dirname \
-        "${_abi}")"
-    mkdir \
-      -p \
-      "${_data_dir}"
-    chmod \
-      700 \
-      "${_data_dir}"
-    if [[ "${quiet}" == "n" ]]; then
-      _evm_contracts_abi_get_opts+=(
-        --verbose
-      )
-    fi
-    _evm_contracts_abi_get_opts+=(
-      --network
-        "${_network}"
-      --key 
-        "${_key}"
-      --output-file
-        "${_abi_target}"
-    )
-    if [ ! -e "${_key}" ]; then
-      _msg=(
-        "contract ABI provider API"
-        "key '${_key}' not found,"
-        "fetch the ABI from the"
-        "provider may not work."
-      )
-      _msg_info \
-        "${_msg[*]}"
-    elif [ -e "${_key}" ]; then
-      _evm_contracts_abi_get_opts+=(
-        --key 
-          "${_key}"
-      )
-    fi
-    evm-contracts-abi-get \
-      "${_evm_contracts_abi_get_opts[@]}" \
-        "${_address}"
-    if [ $? -eq 0 ]; then
-      _msg=(
-        "obtained ABI from a network explorer,"
-        "setting contract ABI value to '${_abi_target}'"
-      )
-      _msg_info \
-        "${_msg[*]}"
+    if [[ -e "${_abi_target}" ]]; then
       _abi="${_abi_target}"
-    else
-      _msg=(
-        "Couldn't obtain contract ABI"
-        "from the provider, blanking contract ABI value."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _abi=""
+    elif [[ ! -e "${_abi_target}" ]]; then
+      _contract_abi_retrieve
     fi
   fi
   _set \
