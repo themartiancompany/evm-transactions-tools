@@ -759,8 +759,6 @@ done
 shift \
   $(( \
     OPTIND - 1 ))
-_msg_info \
-  "args: $@"
 if (( $# < 1 )); then
   _msg_error \
     "no address given" \
