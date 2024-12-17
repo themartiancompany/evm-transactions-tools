@@ -384,10 +384,9 @@ if ( require.main == module ) {
     contract_method,
     method_args
   ];
-  _tx =
-    await _contract_run.apply(
-      null,
-      app_opts);
+  _contract_run.apply(
+    null,
+    app_opts);
 }
 
 module.exports = {
