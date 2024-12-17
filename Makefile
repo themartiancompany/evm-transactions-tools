@@ -25,7 +25,7 @@ install-scripts:
 
 	install -vDm 755 "$(_PROJECT)/evm-contract-call-dynamic" "$(LIB_DIR)/$(_PROJECT)/evm-contract-call-dynamic"
 	install -vDm 755 "$(_PROJECT)/evm-contract-call-static" "$(LIB_DIR)/$(_PROJECT)/evm-contract-call-static"
-	install -vDm 755 "$(_PROJECT)/contract-get" "$(LIB_DIR)/$(_PROJECT)/evm-contract-call-static"
+	install -vDm 755 "$(_PROJECT)/contract-get" "$(LIB_DIR)/$(_PROJECT)/contract-get"
 	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-address" "$(BIN_DIR)/evm-contract-deployment-address"
 	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-networks" "$(BIN_DIR)/evm-contract-deployment-networks"
 	install -vDm 755 $(_PROJECT)/evm-contract-deployment-versions "$(BIN_DIR)/evm-contract-deployment-versions"
