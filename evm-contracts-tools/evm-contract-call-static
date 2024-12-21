@@ -86,7 +86,7 @@ async function
     await _method.staticCall.apply(
       null,
       _method_args);
-  console.log(
+  process.stdout.write(
     _value);
   return _value;
 }
