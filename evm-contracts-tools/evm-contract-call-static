@@ -87,7 +87,7 @@ async function
       null,
       _method_args);
   process.stdout.write(
-    _value);
+    _value.toString());
   return _value;
 }
 
