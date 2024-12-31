@@ -86,8 +86,6 @@ async function
     await _method.staticCall.apply(
       null,
       _method_args);
-  process.stdout.write(
-    _value.toString());
   return _value;
 }
 
@@ -242,6 +240,16 @@ function
   }
 }
 
+async function
+  _contract_call_static_cmdline(
+    _app_opts) {
+  _value = 
+    await _contract_call_static.apply(
+      null,
+      _app_opts);
+  process.stdout.write(
+    _value.toString());
+}
 
 _global_variables();
 
@@ -258,8 +266,7 @@ if ( require.main == module ) {
     contract_method,
     method_args
   ];
-  _contract_call_static.apply(
-    null,
+  _contract_call_static_cmdline(
     app_opts);
 }
 

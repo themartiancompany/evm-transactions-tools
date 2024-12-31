@@ -29,6 +29,8 @@ _global_variables() {
   contract_abi=""
   contract_method=""
   method_args=()
+  msg_value=""
+  measure_unit=""
   color=""
   quiet=""
 }
@@ -206,19 +208,21 @@ _evm_contract_call() {
     _wallet_password="${4}" \
     _wallet_seed="${5}" \
     _api_key_path="${6}" \
-    _network="${7}" \
-    _contract_address="${8}" \
-    _contract_abi_path="${9}" \
-    _contract_bytecode_path="${10}" \
-    _contract_compiler_output_path="${11}" \
-    _contract_method="${12}" \
+    _msg_value="${7}" \
+    _measure_unit="${8}" \
+    _network="${9}" \
+    _contract_address="${10}" \
+    _contract_abi_path="${11}" \
+    _contract_bytecode_path="${12}" \
+    _contract_compiler_output_path="${13}" \
+    _contract_method="${14}" \
     _method_args=() \
     _cmd \
     _args=() \
     _network_backend \
     _msg=()
   shift \
-    12
+    14
   _method_args+=(
     "$@"
   )
@@ -246,6 +250,8 @@ _evm_contract_call() {
       "${_wallet_seed}"
       "${_wallet_password}"
       "${_api_key_path}"
+      "${_msg_value}"
+      "${_measure_unit}"
       "${_network_backend}"
       "${_contract_address}"
       "${_contract_abi_path}"
@@ -616,6 +622,14 @@ _set_overrides() {
          "$(_get \
               "wallet" \
               "name")")"
+  _set_override \
+    "measure" \
+    "unit" \
+    "ether"
+  _set_override \
+    "msg" \
+    "value" \
+    "0"
 }
 
 # Show help usage, with an exit status.
@@ -667,6 +681,13 @@ Usage:
                             Default: $(_get "call" "type")
      -k <api_key>           Etherscan-like service key.
                             Default: $(_get "api" "key")
+     -V <msg_value>         How much <measure_unit> attach to the
+                            transaction.
+                            Default: $(_get "msg" "value")
+     -m <measure_unit>      Measure unit for the transaction
+                            value. It can be 'ether' or 'wei'.
+                            Default: $(_get "measure" "unit")
+
      -h                     This message.
      -c                     Enable color output
      -v                     Enable verbose output
@@ -713,6 +734,8 @@ _show_config() {
   _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
   _msg_info "                  API key:   $(_get "api" "key")"
   _msg_info "           Wallet address:   $(_get "wallet" "address")"
+  _msg_info "            Message value:   $(_get "msg" "value")"
+  _msg_info "             Measure unit:   $(_get "measure" "unit")"
   _msg_info "           Target network:   $(_get "target" "network")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
@@ -730,7 +753,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:C:N:w:p:s:n:t:k:cvh?' \
+    'A:B:C:N:w:p:s:n:t:k:V:u:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -744,6 +767,8 @@ while \
     n) override_target_network="${OPTARG}" ;;
     t) override_call_type="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
+    V) override_msg_value="${OPTARG}" ;;
+    u) override_measure_unit="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -819,6 +844,14 @@ app_opts=(
     _get \
       "api" \
       "key")"
+  "$( \
+    _get \
+      "msg" \
+      "value")"
+  "$( \
+    _get \
+      "measure" \
+      "unit")"
   "$( \
     _get \
       "target" \
