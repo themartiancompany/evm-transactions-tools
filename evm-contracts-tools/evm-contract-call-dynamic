@@ -248,7 +248,7 @@ async function
   return _tx;
 }
 
-fuction
+function
   _overrides_set() {
   if ( msg_value == "" ) {
     msg_value =
