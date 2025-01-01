@@ -27,6 +27,37 @@ _requirements() {
   true
 }
 
+_networks_find() {
+  local \
+    _deployment_dir="${1}" \
+    _deployments=() \
+    _find_opts=() \
+    _deployment
+  _find_opts+=(
+    -mindepth
+      1
+    -maxdepth
+      1
+    -type
+      "d"
+    -print0
+  )
+  mapfile \
+    -d \
+    $'\0' \
+    _deployments < \
+    <(find \
+        "${_deployment_dir}" \
+        "${_find_opts[@]}" 2>/dev/null || \
+      true)
+  for _deployment in "${_deployments[@]}"; do
+    _networks+=(
+      "$(basename \
+           "${_deployment}")"
+    )
+  done
+}
+
 _evm_contract_deployment_networks() {
   local \
     _deployment_dir="${1}" \
@@ -34,18 +65,8 @@ _evm_contract_deployment_networks() {
     _display_safest="${3}" \
     _display_cheapest="${4}" \
     _networks=()
-  _networks=( $( \
-    find \
-      "${_deployment_dir}" \
-      -mindepth \
-        1 \
-      -maxdepth \
-        1 \
-      -type \
-        "d" \
-      -printf \
-        "%f")
-  )
+  _networks_find \
+    "${_deployment_dir}"
   if [[ "${_display_cheapest}" == "y" ]]; then
     if [[ " ${_networks[*]} " == *" 100 "* ]]; then
       echo \
