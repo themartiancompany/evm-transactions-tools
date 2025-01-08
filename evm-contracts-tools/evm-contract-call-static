@@ -44,6 +44,26 @@ function
     '';
 }
 
+function
+  _error_handle(
+    error) {
+  let
+    _message;
+  if ('error' in error) {
+    if ( 'message' in error['error'] ) {
+      _message =
+        error['error']['message'];
+    }
+  }
+  else if ('shortMessage' in error) {
+    _message =
+      error['shortMessage'];
+  }
+  _msg_error(
+    _message,
+    1);
+}
+
 async function
   _contract_call_static(
     _api_key_path,
@@ -82,10 +102,15 @@ async function
   _method =
     _contract.getFunction(
       _contract_method);
-  _value =
-    await _method.staticCall.apply(
-      null,
-      _method_args);
+  try {
+    _value =
+      await _method.staticCall.apply(
+        null,
+        _method_args);
+  } catch (error) {
+    _error_handle(
+      error)
+  };
   return _value;
 }
 
