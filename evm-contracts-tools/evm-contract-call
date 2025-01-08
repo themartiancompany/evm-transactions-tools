@@ -31,6 +31,7 @@ _global_variables() {
   method_args=()
   msg_value=""
   measure_unit=""
+  retries_max=""
   color=""
   quiet=""
 }
@@ -72,25 +73,45 @@ _evm_contract_call_type() {
 
 _node_run() {
   local \
-    _cmd="${1}" \
+    _retries_max="${1}" \
+    _cmd="${2}" \
     _args=() \
     _node_path \
-    _lib
+    _lib \
+    _retry \
+    _msg=()
   shift \
-    1
+    2
   _args=(
     "$@"
   )
+  _retry=
   _lib="$( \
     _get_lib)"
   _node_path="${_lib}/node_modules" 
   export \
     NODE_PATH="${_node_path}"
-  NODE_PATH="${_node_path}" \
-  node \
-    "${_cmd}" \
-      "${_args[@]}" || \
-    true
+  for _retry \
+    in $(seq "${_retries_max}"); do
+    NODE_PATH="${_node_path}" \
+    node \
+      "${_cmd}" \
+        "${_args[@]}"
+    if [ $? -eq 0 ]; then
+      return
+    else
+      _msg=(
+        "contract calling error,"
+        "retry '${_retry}' out of"
+        "'${_retries_max}'"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        "0"
+    fi
+  done
+  return \
+    1
 }
 
 _network_setup() {
@@ -210,19 +231,20 @@ _evm_contract_call() {
     _api_key_path="${6}" \
     _msg_value="${7}" \
     _measure_unit="${8}" \
-    _network="${9}" \
-    _contract_address="${10}" \
-    _contract_abi_path="${11}" \
-    _contract_bytecode_path="${12}" \
-    _contract_compiler_output_path="${13}" \
-    _contract_method="${14}" \
+    _retries_max="${9}" \
+    _network="${10}" \
+    _contract_address="${11}" \
+    _contract_abi_path="${12}" \
+    _contract_bytecode_path="${13}" \
+    _contract_compiler_output_path="${14}" \
+    _contract_method="${15}" \
     _method_args=() \
     _cmd \
     _args=() \
     _network_backend \
     _msg=()
   shift \
-    14
+    15
   _method_args+=(
     "$@"
   )
@@ -268,6 +290,7 @@ _evm_contract_call() {
   _msg_info \
     "${_msg[*]}"
   _node_run \
+    "${_retries_max}" \
     "${_cmd}" \
     "${_args[@]}"
 }
@@ -557,6 +580,10 @@ _set_overrides() {
     "date" \
     "$(_get_date_human)"
   _set_override \
+    "retries" \
+    "max" \
+    "3"
+  _set_override \
     "contract" \
     "address" \
     ""
@@ -687,6 +714,10 @@ Usage:
      -m <measure_unit>      Measure unit for the transaction
                             value. It can be 'ether' or 'wei'.
                             Default: $(_get "measure" "unit")
+     -r <retries_max>       Maximum number of retries before
+                            declaring the call failed.
+                            Default: $(_get "retries" "max")
+
 
      -h                     This message.
      -c                     Enable color output
@@ -728,6 +759,7 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "                Call date:   $(_get "call" "date")"
   _msg_info "                Call type:   $(_get "call" "type")"
+  _msg_info "              Max retries:   $(_get "retries" "max")"
   _msg_info "              Wallet name:   $(_get "wallet" "name")"
   _msg_info "              Wallet path:   $(_get "wallet" "path")"
   _msg_info "          Wallet password:   $(_get "wallet" "password")"
@@ -753,7 +785,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:C:N:w:p:s:n:t:k:V:u:cvh?' \
+    'A:B:C:N:w:p:s:n:t:k:V:u:r:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -769,6 +801,7 @@ while \
     k) override_api_key="${OPTARG}" ;;
     V) override_msg_value="${OPTARG}" ;;
     u) override_measure_unit="${OPTARG}" ;;
+    r) override_retries_max="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -852,6 +885,10 @@ app_opts=(
     _get \
       "measure" \
       "unit")"
+  "$( \
+    _get \
+      "retries" \
+      "max")"
   "$( \
     _get \
       "target" \
