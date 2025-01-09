@@ -94,10 +94,9 @@ _node_run() {
   for _retry \
     in $(seq "${_retries_max}"); do
     NODE_PATH="${_node_path}" \
-    node \
-      "${_cmd}" \
-        "${_args[@]}"
-    if [ $? -eq 0 ]; then
+    if node \
+         "${_cmd}" \
+         "${_args[@]}"; then
       return
     else
       _msg=(
