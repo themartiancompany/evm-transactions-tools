@@ -88,11 +88,13 @@ function
     error) {
   let
     _message;
-  if ('error' in error) {
+  if ( 'error' in error && 
+       error['error'] != undefined &&
+       'message' in error['error'] ) {
     _message =
       error['error']['message'];
   }
-  else if ('shortMessage' in error) {
+  else if ( 'shortMessage' in error ) {
     _message =
       error['shortMessage'];
   }
