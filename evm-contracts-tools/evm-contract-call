@@ -581,7 +581,7 @@ _set_overrides() {
   _set_override \
     "retries" \
     "max" \
-    "3"
+    "300"
   _set_override \
     "contract" \
     "address" \
