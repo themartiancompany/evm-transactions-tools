@@ -85,7 +85,7 @@ _node_run() {
   _args=(
     "$@"
   )
-  _retry=
+  _retry=1
   _lib="$( \
     _get_lib)"
   _node_path="${_lib}/node_modules" 
@@ -256,6 +256,7 @@ _evm_contract_call() {
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
       "${quiet}"
+      "${_retries_max}"
       "${_api_key_path}"
       "${_network_backend}"
       "${_contract_abi_path}"
