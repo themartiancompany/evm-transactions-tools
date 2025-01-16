@@ -23,6 +23,7 @@ _global_variables() {
   wallet_seed=""
   api_key=""
   target_network=""
+  rpc_selection=""
   contract_address=""
   contract_bytecode=""
   contract_compiler_output=""
@@ -116,6 +117,7 @@ _node_run() {
 _network_setup() {
   local \
     _chain="${1}" \
+    _rpc_selection="${2}" \
     _chain_name \
     _chain_id \
     _rpc \
@@ -139,10 +141,10 @@ _network_setup() {
         "${_chain}" 2>/dev/null || \
         true)"
     _msg=(
-      "Found blockchain '${_chain_name}'"
-      "with id '${_chain_id}'"
-      "Selecting RPC address with"
-      "criterion 'kirsh'"
+      "found blockchain '${_chain_name}'"
+      "with id '${_chain_id}',"
+      "selecting RPC address with"
+      "criterion '${_rpc_selection}'."
     )
     _msg_info \
       "${_msg[*]}"
@@ -151,7 +153,7 @@ _network_setup() {
         -o \
           "rpc" \
         -s \
-          "kirsh" \
+          "${_rpc_selection}" \
         "${_chain}")"
   elif [[ "${_chain_id}" == "" ]]; then
     _msg=(
@@ -232,23 +234,25 @@ _evm_contract_call() {
     _measure_unit="${8}" \
     _retries_max="${9}" \
     _network="${10}" \
-    _contract_address="${11}" \
-    _contract_abi_path="${12}" \
-    _contract_bytecode_path="${13}" \
-    _contract_compiler_output_path="${14}" \
-    _contract_method="${15}" \
+    _rpc_selection="${11}" \
+    _contract_address="${12}" \
+    _contract_abi_path="${13}" \
+    _contract_bytecode_path="${14}" \
+    _contract_compiler_output_path="${15}" \
+    _contract_method="${16}" \
     _method_args=() \
     _cmd \
     _args=() \
     _network_backend \
     _msg=()
   shift \
-    15
+    16
   _method_args+=(
     "$@"
   )
   _network_setup \
-    "${_network}"
+    "${_network}" \
+    "${_rpc_selection}"
   _cmd="$( \
     _evm_contract_call_type \
       "${_call_type}")"
@@ -596,6 +600,10 @@ _set_overrides() {
     "network" \
     "Gnosis"
   _set_override \
+    "rpc" \
+    "selection" \
+    "kirsh"
+  _set_override \
     "call" \
     "type" \
     "static"
@@ -717,7 +725,9 @@ Usage:
      -r <retries_max>       Maximum number of retries before
                             declaring the call failed.
                             Default: $(_get "retries" "max")
-
+     -S <rpc_selection>     RPC selection method. It can be
+                            'kirsh' or 'random'.
+                            Default: $(_get "rpc" "selection")
 
      -h                     This message.
      -c                     Enable color output
@@ -769,6 +779,7 @@ _show_config() {
   _msg_info "            Message value:   $(_get "msg" "value")"
   _msg_info "             Measure unit:   $(_get "measure" "unit")"
   _msg_info "           Target network:   $(_get "target" "network")"
+  _msg_info "     RPC selection method:   $(_get "rpc" "selection")"
   _msg_info "         Contract address:   $(_get "contract" "address")"
   _msg_info "             Contract ABI:   $(_get "contract" "abi")"
   _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
@@ -785,7 +796,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:C:N:w:p:s:n:t:k:V:u:r:cvh?' \
+    'A:B:C:N:w:p:s:n:t:k:V:u:r:S:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -802,6 +813,7 @@ while \
     V) override_msg_value="${OPTARG}" ;;
     u) override_measure_unit="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
+    S) override_rpc_selection="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -893,6 +905,10 @@ app_opts=(
     _get \
       "target" \
       "network")"
+  "$( \
+    _get \
+      "rpc" \
+      "selection")"
   "$( \
     _get \
       "contract" \
