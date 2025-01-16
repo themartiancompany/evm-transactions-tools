@@ -140,9 +140,11 @@ async function
       _json_read(
         _contract_abi_path);
   }
-  _contract_bytecode =
-    _file_read(
-      _contract_bytecode_path);
+  if ( _contract_bytecode_path != "" ) {
+    _contract_bytecode =
+      _file_read(
+        _contract_bytecode_path);
+  }
   _factory =
     new _contract_factory(
       _contract_abi,
@@ -249,18 +251,18 @@ async function
   }
   _contract_get_opts.push(
     _contract_address);
-  if ( _contract_compiler_output_path != "" ) {
-    _contract_get_opts.push(
-      _contract_compiler_output_path);
-    _contract_get_fun =
-      _contract_get_compiler_output;
-  }
-  else if ( _contract_bytecode_path != "" ) {
+  if ( _contract_bytecode_path != "" ) {
     _contract_get_opts.push(
       _contract_abi_path,
       _contract_bytecode_path);
     _contract_get_fun =
       _contract_get_bytecode;
+  }
+  else if ( _contract_compiler_output_path != "" ) {
+    _contract_get_opts.push(
+      _contract_compiler_output_path);
+    _contract_get_fun =
+      _contract_get_compiler_output;
   }
   else if ( _contract_bytecode_path == "" && 
 	    _contract_abi_path != "" ) {
