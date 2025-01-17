@@ -24,6 +24,8 @@ function
   _global_variables() {
   app_name =
     "evm-contract-call-static";
+  wallet_seed =
+    '';
   retries_max =
     '';
   api_key_path =
@@ -74,6 +76,7 @@ function
 
 async function
   _contract_call_static(
+    _wallet_seed,
     _retries_max,
     _api_key_path,
     _target_network,
@@ -89,12 +92,9 @@ async function
     _method,
     _passed,
     _value,
-    _wallet_password,
-    _wallet_seed;
+    _wallet_password;
   _retry =
     1;
-  _wallet_seed =
-    "";
   _wallet_password =
     "";
   _contract_get_opts = [
@@ -164,6 +164,10 @@ function
   _text.push(
     "  evm-contract-call-static configuration:");
   _text.push(
+    "             Wallet seed: {wallet_seed}".replace(
+      "{wallet_seed}",
+      wallet_seed));
+  _text.push(
     "             Max retries: {retries_max}".replace(
       "{retries_max}",
       retries_max));
@@ -220,6 +224,7 @@ function
     "Usage:",
     "  evm-contract-call-static",
     "    <quiet>",
+    "    <wallet_seed>",
     "    <retries_max>",
     "    <api_key_path>",
     "    <target_network>",
@@ -233,6 +238,8 @@ function
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
+    "  <wallet_seed>                    Path of the file containing",
+    "                                   the seed phrase.",
     "  <retries_max>                    Maximum number of retries before",
     "                                   failing.",
     "  <api_key_path>                   Path of the API key for the",
@@ -280,49 +287,55 @@ function
           _value;
       }
       if ( _index == 3 ) {
-        retries_max =
+        wallet_seed =
           _value;
       }
       if ( _index == 4 ) {
-        api_key_path =
+        retries_max =
           _value;
       }
       if ( _index == 5 ) {
-        target_network =
+        api_key_path =
           _value;
       }
       if ( _index == 6 ) {
-        contract_abi_path =
+        target_network =
           _value;
       }
       if ( _index == 7 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 8 ) {
-        contract_compiler_output_path =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 9 ) {
-        contract_address =
+        contract_compiler_output_path =
           _value;
       }
       if ( _index == 10 ) {
+        contract_address =
+          _value;
+      }
+      if ( _index == 11 ) {
         contract_method =
           _value;
       }
-      if ( 10 < _index ) {
+      if ( 11 < _index ) {
         method_args.push(
           _value);
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
-        _usage(0);
+        _usage(
+          0);
       }
     }
   );
   if ( contract_address == "" ) {
-    _usage(1);
+    _usage(
+      1);
   }
 }
 
@@ -344,6 +357,7 @@ if ( require.main == module ) {
   _overrides_set();
   _config_show();
   app_opts = [
+    wallet_seed,
     retries_max,
     api_key_path,
     target_network,

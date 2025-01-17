@@ -260,6 +260,7 @@ _evm_contract_call() {
   if [[ "${_call_type}" == "static" ]]; then
     _args+=(
       "${quiet}"
+      "${_wallet_seed}"
       "${_retries_max}"
       "${_api_key_path}"
       "${_network_backend}"
