@@ -719,7 +719,7 @@ Usage:
      -V <msg_value>         How much <measure_unit> attach to the
                             transaction.
                             Default: $(_get "msg" "value")
-     -m <measure_unit>      Measure unit for the transaction
+     -u <measure_unit>      Measure unit for the transaction
                             value. It can be 'ether' or 'wei'.
                             Default: $(_get "measure" "unit")
      -r <retries_max>       Maximum number of retries before
