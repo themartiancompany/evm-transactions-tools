@@ -50,21 +50,24 @@ function
 
 function
   _error_handle(
-    error) {
+    _error) {
   let
     _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
+  if ( 'error' in _error && 
+       _error['error'] != undefined &&
+       'message' in _error['error'] ) {
     _message =
-      error['error']['message'];
+      _error['error']['message'];
   }
-  else if ( 'shortMessage' in error ) {
+  else if ( 'shortMessage' in _error ) {
     _message =
-      error['shortMessage'];
+      _error['shortMessage'];
   }
   _msg_error(
     _message,
+    0);
+  _msg_error(
+    error,
     0);
 }
 
