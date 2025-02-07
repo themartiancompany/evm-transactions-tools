@@ -712,23 +712,23 @@ Usage:
      -n <network>           EVM network name. Accepted values
                             are all those supported by
                             evm-chains-info and RPC addresses.
-                            Default: $(_get "target" "network")
+                            Default: ${target_network}
      -t <call_type>         Static or dynamic.
-                            Default: $(_get "call" "type")
+                            Default: ${call_type}
      -k <api_key>           Etherscan-like service key.
-                            Default: $(_get "api" "key")
+                            Default: ${api_key}
      -V <msg_value>         How much <measure_unit> attach to the
                             transaction.
-                            Default: $(_get "msg" "value")
+                            Default: ${msg_value}
      -u <measure_unit>      Measure unit for the transaction
                             value. It can be 'ether' or 'wei'.
-                            Default: $(_get "measure" "unit")
+                            Default: ${measure_unit}
      -r <retries_max>       Maximum number of retries before
                             declaring the call failed.
-                            Default: $(_get "retries" "max")
+                            Default: ${retries_max}
      -S <rpc_selection>     RPC selection method. It can be
                             'kirsh' or 'random'.
-                            Default: $(_get "rpc" "selection")
+                            Default: ${rpc_selection}
 
      -h                     This message.
      -c                     Enable color output
