@@ -695,20 +695,20 @@ Usage:
 
   options:
      -A <abi>               Contract ABI path.
-                            Default: $(_get "contract" "abi")
+                            Default: ${contract_abi}
      -B <bytecode>          Contract bytecode path.
-                            Default: $(_get "contract" "bytecode")
+                            Default: ${contract_bytecode}
      -C <compiler_output>   Contract compiler output
                             path (the hardhat artifact).
-                            Default: $(_get "contract_compiler" "output")
+                            Default: ${contract_compiler_output}
      -N <wallet_name>       EVM wallet name.
-                            Default: $(_get "wallet" "name")
+                            Default: ${wallet_name}
      -w <wallet_path>       EVM wallet file path.
-                            Default: $(_get "wallet" "path")
+                            Default: ${wallet_path}
      -p <wallet_path>       EVM wallet password file.
-                            Default: $(_get "wallet" "password")
+                            Default: ${wallet_password}
      -s <wallet_seed>       EVM wallet seed file.
-                            Default: $(_get "wallet" "seed")
+                            Default: ${wallet_seed}
      -n <network>           EVM network name. Accepted values
                             are all those supported by
                             evm-chains-info and RPC addresses.
@@ -768,24 +768,24 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   $(_get "call" "date")"
-  _msg_info "                Call type:   $(_get "call" "type")"
-  _msg_info "              Max retries:   $(_get "retries" "max")"
-  _msg_info "              Wallet name:   $(_get "wallet" "name")"
-  _msg_info "              Wallet path:   $(_get "wallet" "path")"
-  _msg_info "          Wallet password:   $(_get "wallet" "password")"
-  _msg_info "              Wallet seed:   $(_get "wallet" "seed")"
-  _msg_info "                  API key:   $(_get "api" "key")"
-  _msg_info "           Wallet address:   $(_get "wallet" "address")"
-  _msg_info "            Message value:   $(_get "msg" "value")"
-  _msg_info "             Measure unit:   $(_get "measure" "unit")"
-  _msg_info "           Target network:   $(_get "target" "network")"
-  _msg_info "     RPC selection method:   $(_get "rpc" "selection")"
-  _msg_info "         Contract address:   $(_get "contract" "address")"
-  _msg_info "             Contract ABI:   $(_get "contract" "abi")"
-  _msg_info "        Contract bytecode:   $(_get "contract" "bytecode")"
-  _msg_info " Contract compiler output:   $(_get "contract" "compiler_output")"
-  _msg_info "          Contract method:   $(_get "contract" "method")"
+  _msg_info "                Call date:   ${call_date}"
+  _msg_info "                Call type:   ${call_type}"
+  _msg_info "              Max retries:   ${retries_max}"
+  _msg_info "              Wallet name:   ${wallet_name}"
+  _msg_info "              Wallet path:   ${wallet_path}"
+  _msg_info "          Wallet password:   ${wallet_password}"
+  _msg_info "              Wallet seed:   ${wallet_seed}"
+  _msg_info "                  API key:   ${api_key}"
+  _msg_info "           Wallet address:   ${wallet_address}"
+  _msg_info "            Message value:   ${msg_value}"
+  _msg_info "             Measure unit:   ${measure_unit}"
+  _msg_info "           Target network:   ${target_network}"
+  _msg_info "     RPC selection method:   ${rpc_selection}"
+  _msg_info "         Contract address:   ${contract_address}"
+  _msg_info "             Contract ABI:   ${contract_abi}"
+  _msg_info "        Contract bytecode:   ${contract_bytecode}"
+  _msg_info " Contract compiler output:   ${contract_compiler_output}"
+  _msg_info "          Contract method:   ${contract_method}"
   _msg_info "         Method arguments:   "
   _display_flags                          "${method_args[*]}"
 
@@ -866,70 +866,22 @@ method_args=(
 _set_overrides
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "call" \
-      "type")"
-  "$( \
-    _get \
-      "wallet" \
-      "name")"
-  "$( \
-    _get \
-      "wallet" \
-      "path")"
-  "$( \
-    _get \
-      "wallet" \
-      "password")"
-  "$( \
-    _get \
-      "wallet" \
-      "seed")"
-  "$( \
-    _get \
-      "api" \
-      "key")"
-  "$( \
-    _get \
-      "msg" \
-      "value")"
-  "$( \
-    _get \
-      "measure" \
-      "unit")"
-  "$( \
-    _get \
-      "retries" \
-      "max")"
-  "$( \
-    _get \
-      "target" \
-      "network")"
-  "$( \
-    _get \
-      "rpc" \
-      "selection")"
-  "$( \
-    _get \
-      "contract" \
-      "address")"
-  "$( \
-    _get \
-      "contract" \
-      "abi")"
-  "$( \
-    _get \
-      "contract" \
-      "bytecode")"
-  "$( \
-    _get \
-      "contract_compiler" \
-      "output")"
-  "$( \
-    _get \
-      "contract" \
-      "method")"
+  "${call_type}"
+  "${wallet_name}"
+  "${wallet_path}"
+  "${wallet_password}"
+  "${wallet_seed}"
+  "${api_key}"
+  "${msg_value}"
+  "${measure_unit}"
+  "${retries_max}"
+  "${target_network}"
+  "${rpc_selection}"
+  "${contract_address}"
+  "${contract_abi}"
+  "${contract_bytecode}"
+  "${contract_compiler_output}"
+  "${contract_method}"
   "${method_args[@]}"
 )
 _evm_contract_call \
