@@ -134,13 +134,13 @@ Usage:
   options:
      -A        Display all available networks
                for the deployment.
-               Default: $(_get "display" "all")
+               Default: ${display_all}
      -S        Display safest network
                for the deployment.
-               Default: $(_get "display" "safest")
+               Default: ${display_safest}
      -C        Display cheapest network
                for the deployment.
-               Default: $(_get "display" "cheapest")
+               Default: ${display_cheapest}
 
      -h        This message.
      -c        Enable color output
@@ -169,10 +169,10 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Resolve date:   $(_get "resolve" "date")"
-  _msg_info "              Display all:   $(_get "display" "all")"
-  _msg_info "           Display safest:   $(_get "display" "safest")"
-  _msg_info "         Display cheapest:   $(_get "display" "cheapest")"
+  _msg_info "             Resolve date:   ${resolve_date}"
+  _msg_info "              Display all:   ${display_all}"
+  _msg_info "           Display safest:   ${display_safest}"
+  _msg_info "         Display cheapest:   ${display_cheapest}"
 }
 
 _globals
@@ -228,22 +228,10 @@ _set \
 _set_overrides
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "deployment" \
-      "dir")"
-  "$( \
-    _get \
-      "display" \
-      "all")"
-  "$( \
-    _get \
-      "display" \
-      "safest")"
- "$( \
-    _get \
-      "display" \
-      "cheapest")"
+  "${deployment_dir}"
+  "${display_all}"
+  "${display_safest}"
+  "${display_cheapest}"
 )
 _evm_contract_deployment_networks \
   "${app_opts[@]}"

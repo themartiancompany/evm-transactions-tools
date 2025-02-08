@@ -326,23 +326,22 @@ Usage:
 
   options:
      -n <network>           EVM network name.
-                            Default: $(_get "target" "network")
+                            Default: ${target_network}
      -i <network_id>        EVM network id.
-                            Default: $(_get "network" "id")
+                            Default: ${network_id}
      -a <target_app>        Application whose target
                             contract is part of.
-                            Default: $(_get "target" "app")
+                            Default: ${target_app}
      -V <contract_version>  Contract version.
-                            Default: $(_get "contract" "version")
+                            Default: ${contract_version}
      -u                     Returns contract address for
                             user-defined file system
                             deployment instead of the
                             system one.
-                            Default: $(_get "user" "defined")
+                            Default: ${user_defined}
      -d                     Specify contracts deployments
                             directory path.
-                            Default: $(_get "deployments" "dir")
-
+                            Default: ${deployments_dir}
 
      -h                     This message.
      -c                     Enable color output
@@ -371,14 +370,14 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Resolve date:   $(_get "resolve" "date")"
-  _msg_info "           Target network:   $(_get "target" "network")"
-  _msg_info "               Network ID:   $(_get "network" "id")"
-  _msg_info "          Target contract:   $(_get "target" "contract")"
-  _msg_info "       Target application:   $(_get "target" "app")"
-  _msg_info "         Contract version:   $(_get "contract" "version")"
-  _msg_info "     User-defined address:   $(_get "user" "defined")"
-  _msg_info "         Deployments path:   $(_get "deployments" "dir")"
+  _msg_info "             Resolve date:   ${resolve_date}"
+  _msg_info "           Target network:   ${target_network}"
+  _msg_info "               Network ID:   ${network_id}"
+  _msg_info "          Target contract:   ${target_contract}"
+  _msg_info "       Target application:   ${target_app}"
+  _msg_info "         Contract version:   ${contract_version}"
+  _msg_info "     User-defined address:   ${user_defined}"
+  _msg_info "         Deployments path:   ${deployments_dir}"
 }
 
 _globals
@@ -437,34 +436,13 @@ _set \
 _set_overrides
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "target" \
-      "network")"
-  "$( \
-    _get \
-      "network" \
-      "id")"
-  "$( \
-    _get \
-      "target" \
-      "app")"
-  "$( \
-    _get \
-      "target" \
-      "contract")"
-  "$( \
-    _get \
-      "contract" \
-      "version")"
-  "$( \
-    _get \
-      "user" \
-      "defined")"
-  "$( \
-    _get \
-      "deployments" \
-      "dir")"
+  "${target_network}"
+  "${network_id}"
+  "${target_app}"
+  "${target_contract}"
+  "${contract_version}"
+  "${user_defined}"
+  "${deployments_dir}"
 )
 _evm_contract_deployment_address \
   "${app_opts[@]}"

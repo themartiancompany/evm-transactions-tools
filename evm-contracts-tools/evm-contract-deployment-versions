@@ -109,9 +109,9 @@ Usage:
 
   options:
      -H                     Display highest version available.
-                            Default: $(_get "display" "highest")
+                            Default: ${display_highest}
      -L                     Display lowest version available.
-                            Default: $(_get "display" "lowest")
+                            Default: ${display_lowest}
 
      -h                     This message.
      -c                     Enable color output
@@ -140,10 +140,10 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Resolve date:   $(_get "resolve" "date")"
-  _msg_info "       Configuration file:   $(_get "config" "file")"
-  _msg_info "          Display highest:   $(_get "display" "highest")"
-  _msg_info "           Display lowest:   $(_get "display" "lowest")"
+  _msg_info "             Resolve date:   ${resolve_date}"
+  _msg_info "       Configuration file:   ${config_file}"
+  _msg_info "          Display highest:   ${display_highest}"
+  _msg_info "           Display lowest:   ${display_lowest}"
 }
 
 _globals
@@ -198,18 +198,9 @@ _set \
 _set_overrides
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "config" \
-      "file")"
-  "$( \
-    _get \
-      "display" \
-      "highest")"
-  "$( \
-    _get \
-      "display" \
-      "lowest")"
+  "${config_file}"
+  "${display_highest}"
+  "${display_lowest}"
 )
 _evm_contract_deployment_versions \
   "${app_opts[@]}"
