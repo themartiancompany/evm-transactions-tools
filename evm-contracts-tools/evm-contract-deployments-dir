@@ -46,15 +46,8 @@ _evm_contract_deployments_dir() {
     _user_level="${2}" \
     _deployments \
   _deployments=""
-  _app="$( \
-    _get \
-      "target" \
-      "app")"
   if [[ "${_app}" != "" ]]; then
-    _user_level="$( \
-      _get \
-        "user" \
-        "level")"
+    _user_level="${user_level}"
     if [[ "${_user_level}" == "n" ]]; then
       _deployments="$( \
         _default_deployments_dir_get \
@@ -114,7 +107,7 @@ Usage:
   options:
      -u                     Returns user-level location for
                             an application deployments.
-                            Default: $(_get "user" "level")
+                            Default: ${user_level}
 
      -h                     This message.
      -c                     Enable color output
@@ -143,9 +136,9 @@ _display_flags() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "             Resolve date:   $(_get "resolve" "date")"
-  _msg_info "       Target application:   $(_get "target" "app")"
-  _msg_info "     User-level directory:   $(_get "user" "level")"
+  _msg_info "             Resolve date:   ${resolve_date}"
+  _msg_info "       Target application:   ${target_app}"
+  _msg_info "     User-level directory:   ${user_level}"
 }
 
 _globals
@@ -199,14 +192,8 @@ _set \
 _set_overrides
 _show_config
 app_opts=(
-  "$( \
-    _get \
-      "target" \
-      "app")"
-  "$( \
-    _get \
-      "user" \
-      "level")"
+  "${target_app}"
+  "${user_level}"
 )
 _evm_contract_deployments_dir \
   "${app_opts[@]}"
