@@ -86,15 +86,14 @@ _network_check() {
     _target_network="${3}" \
     _target_network_id="${4}" \
     _msg=() \
-    _networks=()
+    _networks=() \
+    _network_id
   _networks+=( $( \
     evm-contract-deployment-networks \
       -A \
       "${_deployments}/${_contract}")
   )
   if [[ "${_target_network_id}" != "" ]]; then
-    echo "${_networks[@]}"
-    echo "${_target_network_id}"
     if [[ " ${_networks[*]} " != *" ${_target_network_id} "* ]]; then
       _msg=(
         "the contract does not result deployed on"
@@ -124,19 +123,21 @@ _network_check() {
       1
   fi
   if [[ "${_target_network_id}" == "" ]]; then
-    evm-chains-info \
-      -i \
-        'name' \
-      -o \
-        'id' \
-      "${_target_network}"
+    _network_id="$( \
+      evm-chains-info \
+        -o \
+          'id' \
+        "${_target_network}" || \
+        true)"
   elif [[ "${_target_network}" == "" ]]; then
-    evm-chains-info \
-      -i \
-        'id' \
-      -o \
-        'name' \
-      "${_target_network_id}"
+    _network_id="${_target_network_id}"
+    _target_network="$( \
+      evm-chains-info \
+        -i \
+          'id' \
+        -o \
+          'name' \
+        "${_target_network_id}")"
   fi
   if [[ "${_target_network_id}" != "" ]]; then
     if [[ "${_target_network_id}" != "${_network_id}" ]]; then
