@@ -30,6 +30,8 @@ _requirements() {
   _check_cmd \
     "evm-contract-deployments-dir" \
     "evm-contract-tools"
+  _check_cmd \
+    "evm-chains-info"
 }
 
 _contract_address_get() {
@@ -37,10 +39,31 @@ _contract_address_get() {
     _deployments="${1}" \
     _contract="${2}" \
     _network="${3}" \
-    _version="${4}" \
+    _network_id="${4}" \
+    _version="${5}" \
     _config \
-    _address
-  _config="${_deployments}/${_contract}/${_network}/config.sh"
+    _address \
+    _found
+  _found="false"
+  for _net \
+    in "${_network}" \
+       "${_network_id}"; do
+    _config="${_deployments}/${_contract}/${_net}/config.sh"
+    if [[ -e "${_config}" ]]; then
+      _found="true"
+      break
+    fi
+  done
+  if [[ "${_found}" == "false" ]]; then
+    _msg=(
+      "no network '${_network}' deployment"
+      "configuration for '${_contract}'"
+      "found at path '${_deployments}'."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
   source \
     "${_config}"
   _contract_address="${contract_address["${_version}"]}"
@@ -69,17 +92,51 @@ _network_check() {
       -A \
       "${_deployments}/${_contract}")
   )
-  if [[ " ${_networks[*]} " != *" ${_target_network} "* ]]; then
+  if [[ "${_target_network_id}" != "" ]]; then
+    echo "${_networks[@]}"
+    echo "${_target_network_id}"
+    if [[ " ${_networks[*]} " != *" ${_target_network_id} "* ]]; then
+      _msg=(
+        "the contract does not result deployed on"
+        "'${_target_network_id}' network"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  elif [[ "${_target_network}" != "" ]]; then
+    if [[ " ${_networks[*]} " != *" ${_target_network} "* ]]; then
+      _msg=(
+        "the contract does not result deployed on"
+        "'${_target_network}' network"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  else
     _msg=(
-      "the contract does not result deployed on"
-      "'${_target_network}' network"
+      "Provide one between a target network"
+      "name or ID."
     )
     _msg_error \
       "${_msg[*]}" \
       1
   fi
-  if [[ "${_target_network}" == "gnosis" ]]; then
-    _network_id="100"
+  if [[ "${_target_network_id}" == "" ]]; then
+    evm-chains-info \
+      -i \
+        'name' \
+      -o \
+        'id' \
+      "${_target_network}"
+  if [[ "${_target_network}" == "" ]]; then
+    evm-chains-info \
+      -i \
+        'id' \
+      -o \
+        'name' \
+      "${_target_network_id}"
   fi
   if [[ "${_target_network_id}" != "" ]]; then
     if [[ "${_target_network_id}" != "${_network_id}" ]]; then
@@ -197,6 +254,7 @@ _evm_contract_deployment_address() {
     "${_deployments_dir}" \
     "${_target_contract}" \
     "${_target_network}" \
+    "${_target_network_id}" \
     "${_contract_version}"
   echo \
     "${_contract_address}"
@@ -239,22 +297,37 @@ _contract_version_auto_detect() {
     _contract \
     _deployments \
     _network \
-    _version
-  _contract="$( \
-    _get \
-      "target" \
-      "contract")"
+    _version \
+    _net \
+    _found \
+    _msg=()
+  _contract="${target_contract}"
   _version=""
+  _found="false"
   if [[ "${_contract}" != "" ]]; then
-    _deployments="$( \
-      _get \
-        "deployments" \
-        "dir")"
-    _network="$( \
-      _get \
-        "target" \
-        "network")"
-    _config="${_deployments}/${_contract}/${_network}/config.sh"
+    _deployments="${deployments_dir}"
+    _network="${target_network}"
+    _network_id="${network_id}"
+    for _net \
+      in "${_network}" \
+         "${_network_id}"; do
+      _config="${_deployments}/${_contract}/${_net}/config.sh"
+      if [[ -e "${_config}" ]]; then
+        _found="true"
+        break
+      fi
+    done
+    if [[ "${_found}" == "false" ]]; then
+      _msg=(
+        "No deployment configuration"
+        "file found for network"
+        "'${_network}' with ID"
+        "'${_network_id}'"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
     _version="$( \
       evm-contract-deployment-versions \
         -H \
@@ -284,7 +357,7 @@ _set_overrides() {
   _set_override \
     "target" \
     "network" \
-    "gnosis"
+    ""
   _set_override \
     "network" \
     "id" \
