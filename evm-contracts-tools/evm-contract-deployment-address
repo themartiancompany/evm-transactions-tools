@@ -130,7 +130,7 @@ _network_check() {
       -o \
         'id' \
       "${_target_network}"
-  if [[ "${_target_network}" == "" ]]; then
+  elif [[ "${_target_network}" == "" ]]; then
     evm-chains-info \
       -i \
         'id' \
