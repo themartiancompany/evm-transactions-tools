@@ -57,6 +57,8 @@ function
   _global_variables() {
   app_name =
     "evm-contract-call-dynamic";
+  retries_max =
+    "";
   wallet_seed =
     "";
   wallet_password =
@@ -85,7 +87,6 @@ function
     "";
 }
 
-
 function
   _msg_info_wallet_selected(
     _wallet_path) {
@@ -93,7 +94,7 @@ function
     _msg,
     _template;
   _template =
-    "selecting '{_wallet_path}'";
+    "Selecting '{_wallet_path}'.";
   _msg =
     _template.replaceAll(
       "{_wallet_path}",
@@ -103,23 +104,75 @@ function
 }
 
 function
-  _error_handle(
-    error) {
+  _msg_error_transaction_undefined(
+    _attempt) {
   let
-    _message;
-  if ( 'error' in error && 
-       error['error'] != undefined &&
-       'message' in error['error'] ) {
-    _message =
-      error['error']['message'];
+    _msg,
+    _template;
+  _template =
+    "Transaction undefined at attempt '{_attempt}'.";
+  _msg =
+    _template.replaceAll(
+      "{_attempt}",
+      _attempt);
+  _msg_error(
+    _msg,
+    0);
+}
+
+function
+  _msg_error_transaction_failed(
+    _attempt) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Transaction failed at attempt '{_attempt}'.";
+  _msg =
+    _template.replaceAll(
+      "{_attempt}",
+      _attempt);
+  _msg_error(
+    _msg,
+    0);
+}
+
+function
+  _delay(
+    _time) {
+  return new Promise(resolve => setTimeout(resolve, _time));
+}
+
+
+function
+  _error_handle(
+    _error) {
+  let
+    _msg;
+  if ( _error == undefined ) {
+    _msg =
+      "Error undefined."
   }
-  else if ( 'shortMessage' in error ) {
-    _message =
-      error['shortMessage'];
+  else if ( 'error' in _error && 
+       _error['error'] != undefined &&
+       'message' in _error['error'] ) {
+    _msg =
+      _error['error']['message'];
+  }
+  else if ( 'shortMessage' in _error ) {
+    _msg =
+      _error['shortMessage'];
+  }
+  else {
+    msg_error(
+      error,
+      0);
+    _msg =
+      "Unknown Error";
   }
   _msg_error(
-    _message,
-    1);
+    _msg,
+    0);
 }
 
 function
@@ -194,6 +247,7 @@ async function
 
 async function
   _contract_run(
+    _retries_max,
     _wallet_seed,
     _wallet_password,
     _api_key_path,
@@ -211,6 +265,10 @@ async function
     _contract_call_dynamic_opts,
     _wallet_path_list,
     _wallet_path;
+  if ( _retries_max == "" ) {
+    _retries_max =
+      100;
+  }
   if ( _msg_value == "" ) {
     _msg_info(
       "setting transaction value '0'");
@@ -254,16 +312,43 @@ async function
     _contract_method,
     _method_args
   ];
-  _tx =
-    await _contract_call_dynamic.apply(
-      null,
-      _contract_call_dynamic_opts);
-  if ( _tx != "" ) {
-    if ( _tx.hash != "" ) {
-      _msg_info(
-        _tx);
-      _msg_info(
-        "transaction sent");
+  _attempt =
+    1;
+  while ( _attempt <= _retries_max ) {
+    _tx =
+      await _contract_call_dynamic.apply(
+        null,
+        _contract_call_dynamic_opts);
+    console.log(
+      _tx);
+    if ( _tx == undefined ) {
+      _msg_error_transaction_undefined(
+        _attempt);
+      console.log(
+        "Waiting 3 seconds before retrying.");
+      await _delay(
+        3000);
+      _attempt =
+        _attempt + 1;
+    }
+    else if ( _tx != "" ) {
+      if ( _tx.hash != "" ) {
+        _msg_info(
+          _tx);
+        _msg_info(
+          "Transaction sent.");
+	break;
+      }
+      else if ( _tx.hash != "" ) {
+      _msg_error_transaction_failed(
+        _attempt);
+      console.log(
+        "Waiting 3 seconds before retrying.");
+      await _delay(
+        3000);
+        _attempt =
+          _attempt + 1;
+      }
     }
   }
   return _tx;
@@ -282,7 +367,8 @@ function
 }
 
 function
-  _usage() {
+  _usage(
+    _exit_code) {
   let
     _text;
   _text = [
@@ -291,6 +377,7 @@ function
     "Usage:",
     "  evm-contract-call-dynamic",
     "    <quiet>",
+    "    <retries_max>",
     "    <wallet_seed>",
     "    <wallet_password>",
     "    <api_key_path>",
@@ -331,15 +418,17 @@ function
     "  Options:",
     "    -h (--help)                    This help."
   ]
-  for (let
-         _line =
-	   0;
-       _line < _text.length;
-       _line++) {
+  for ( let
+          _line =
+            0;
+        _line < _text.length;
+        _line++ ) {
     _msg_info(
-      _msgs[_line]);
+      _msgs[
+        _line]);
   }
-  process.exit();
+  process.exit(
+    _exit_code);
 }
 
 function
@@ -421,63 +510,72 @@ function
           _value;
       }
       if ( _index == 3 ) {
-        wallet_seed =
+        retries_max =
           _value;
       }
       if ( _index == 4 ) {
-        wallet_password =
+        wallet_seed =
           _value;
       }
       if ( _index == 5 ) {
-        api_key_path =
+        wallet_password =
           _value;
       }
       if ( _index == 6 ) {
-        msg_value =
+        api_key_path =
           _value;
       }
       if ( _index == 7 ) {
-        measure_unit =
+        msg_value =
           _value;
       }
       if ( _index == 8 ) {
-        target_network =
+        measure_unit =
           _value;
       }
       if ( _index == 9 ) {
-        contract_address =
+        target_network =
           _value;
       }
       if ( _index == 10 ) {
-        contract_abi_path =
+        contract_address =
           _value;
       }
       if ( _index == 11 ) {
-        contract_bytecode_path =
+        contract_abi_path =
           _value;
       }
       if ( _index == 12 ) {
-        contract_compiler_output_path =
+        contract_bytecode_path =
           _value;
       }
       if ( _index == 13 ) {
+        contract_compiler_output_path =
+          _value;
+      }
+      if ( _index == 14 ) {
         contract_method =
           _value;
       }
-      if ( 13 < _index ) {
+      if ( 14 < _index ) {
         method_args.push(
 	  _value);
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
-        _usage();
+        quiet =
+          "n";
+        _usage(
+          0);
       }
   });
   if ( contract_address == "" ) {
-    _usage();
+    quiet =
+      "n";
+    _usage(
+      1);
   }
 }
-
 
 if ( _cmdline_check(
        "evm-contract-call-dynamic") ) {
@@ -486,6 +584,7 @@ if ( _cmdline_check(
   _config_show();
   _overrides_set();
   app_opts = [
+    retries_max,
     wallet_seed,
     wallet_password,
     api_key_path,

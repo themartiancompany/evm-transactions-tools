@@ -293,6 +293,7 @@ _evm_contract_call() {
   elif [[ "${_call_type}" == "dynamic" ]]; then
     _args+=(
       "${quiet}"
+      "${_retries_max}"
       "${_wallet_seed}"
       "${_wallet_password}"
       "${_api_key_path}"
