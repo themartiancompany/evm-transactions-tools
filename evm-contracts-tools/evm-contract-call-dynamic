@@ -394,6 +394,8 @@ function
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
+    "  <retries_max>                    Maximum number of retries before",
+    "                                   failing.",
     "  <wallet_seed>                    Path of the file containing",
     "                                   the seed phrase.",
     "  <wallet_password>                Password of the wallet.",
@@ -439,6 +441,12 @@ function
     _text;
   _text =
     [];
+  _text.push(
+    "Dynamic call configuration:");
+  _text.push(
+    "             Max retries: {retries_max}".replace(
+      "{retries_max}",
+      retries_max));
   _text.push(
     "             Wallet seed: {wallet_seed}".replace(
       "{wallet_seed}",

@@ -184,6 +184,8 @@ function
   _text =
     [];
   _text.push(
+    "Static call configuration:");
+  _text.push(
     "  evm-contract-call-static configuration:");
   _text.push(
     "             Wallet seed: {wallet_seed}".replace(
