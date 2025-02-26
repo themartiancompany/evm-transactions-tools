@@ -35,6 +35,8 @@ const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _dirname =
   _libcrash._dirname;
 _file_read =
@@ -444,9 +446,9 @@ function _cmdline_parse() {
   }
 }
 
-_global_variables();
-
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "contract-get") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [
