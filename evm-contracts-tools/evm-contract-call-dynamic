@@ -25,6 +25,8 @@ const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _dirname =
   _libcrash._dirname;
 _msg_info =
@@ -476,9 +478,10 @@ function
   }
 }
 
-_global_variables();
 
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "evm-contract-call-dynamic") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   _overrides_set();

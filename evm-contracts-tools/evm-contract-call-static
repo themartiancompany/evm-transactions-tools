@@ -25,6 +25,8 @@ const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _msg_info =
   _libcrash._msg_info
 _msg_error =
@@ -370,9 +372,10 @@ async function
     _value.toString());
 }
 
-_global_variables();
 
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "evm-contract-call-static") ) {
+  _global_variables();
   _cmdline_parse();
   _overrides_set();
   _config_show();
