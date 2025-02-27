@@ -111,7 +111,7 @@ function
     _msg,
     _template;
   _template =
-    "wallet is '{_wallet}'";
+    "Wallet is '{_wallet}'.";
   _msg =
     _template.replaceAll(
       "{_wallet}",
@@ -175,8 +175,13 @@ async function
         _contract_address);
   }
   else if ( _contract_address == "" ) {
-    _contract = await
-      _factory.getDeployTransaction();
+    try {
+      _contract = await
+        _factory.getDeployTransaction();
+    } catch (e) {
+      console.error(
+        e);
+    }
   }
   return _contract;
 }
@@ -295,10 +300,15 @@ async function
             _contract_compiler_output_path == "" ) {
     _msg_error_no_input_data();
   }
-  _contract = await
-    _contract_get_fun.apply(
-      null,
-      _contract_get_opts);
+  try {
+    _contract = await
+      _contract_get_fun.apply(
+        null,
+        _contract_get_opts);
+  } catch (e) {
+    console.error(
+      e);
+  }
   return _contract;
 }
 

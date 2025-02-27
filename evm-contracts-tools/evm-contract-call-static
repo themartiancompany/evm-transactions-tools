@@ -98,6 +98,22 @@ function
   return new Promise(resolve => setTimeout(resolve, _time));
 }
 
+function
+  _msg_info_contract_generated(
+    _contract) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Contract '{_contract}' generated.";
+  _msg =
+    _template.replaceAll(
+      "{_contract}",
+      _contract);
+  _msg_info(
+    _msg);
+}
+
 async function
   _contract_call_static(
     _wallet_seed,
@@ -140,6 +156,8 @@ async function
         await _contract_get.apply(
           null,
           _contract_get_opts);
+      _msg_info_contract_generated(
+        _contract);
       _method =
         await _contract.getFunction(
           _contract_method);
