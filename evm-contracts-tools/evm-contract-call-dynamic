@@ -214,26 +214,26 @@ async function
     _target_network,
     _api_key_path,
   ];
-  _contract =
-    await _contract_get.apply(
-      null,
-      _contract_get_opts);
-  _method =
-    await _contract.getFunction(
-      _contract_method);
-  if ( _msg_value > 0 ) {
-    if ( _measure_unit == "ether" ) {
-      _amount =
-        _ethers_to_wei(
-          _msg_value);
-    }
-    _send_opts = {
-      "value": _msg_value
-    };
-    _method_args.push(
-      _send_opts);
-  }
   try {
+    _contract =
+      await _contract_get.apply(
+        null,
+        _contract_get_opts);
+    _method =
+      await _contract.getFunction(
+        _contract_method);
+    if ( _msg_value > 0 ) {
+      if ( _measure_unit == "ether" ) {
+        _amount =
+          _ethers_to_wei(
+            _msg_value);
+      }
+      _send_opts = {
+        "value": _msg_value
+      };
+      _method_args.push(
+        _send_opts);
+    }
     _value =
       await _method.send.apply(
         null,
