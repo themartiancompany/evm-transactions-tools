@@ -152,8 +152,7 @@ async function
           true;
       }
       else if ( _value == undefined ) {
-        throw
-          "Value undefined, unknown error";
+        throw "Value undefined, unknown error";
       }
     } catch (error) {
       console.error(
