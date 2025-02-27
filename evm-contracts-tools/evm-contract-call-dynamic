@@ -242,6 +242,11 @@ async function
     _error_handle(
       error)
   };
+  if ( _value == undefined ) {
+    _msg_error(
+      "Undefined transaction value.",
+      0);
+  }
   return _value;
 }
 
