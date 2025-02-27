@@ -339,7 +339,8 @@ async function
           "Transaction sent.");
 	break;
       }
-      else if ( _tx.hash != "" ) {
+      else if ( _tx.hash != "" ||
+                _tx.hash == undefined ) {
       _msg_error_transaction_failed(
         _attempt);
       console.log(
