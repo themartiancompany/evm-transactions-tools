@@ -99,13 +99,13 @@ function
 }
 
 function
-  _msg_info_contract_generated(
+  _msg_info_contract_obtained(
     _contract) {
   let
     _msg,
     _template;
   _template =
-    "Contract '{_contract}' generated.";
+    "Contract '{_contract}' obtained.";
   _msg =
     _template.replaceAll(
       "{_contract}",
@@ -113,6 +113,23 @@ function
   _msg_info(
     _msg);
 }
+
+function
+  _msg_info_method_obtained(
+    _method) {
+  let
+    _msg,
+    _template;
+  _template =
+    "Method '{_method}' obtained.";
+  _msg =
+    _template.replaceAll(
+      "{_method}",
+      _method);
+  _msg_info(
+    _msg);
+}
+
 
 async function
   _contract_call_static(
@@ -156,11 +173,13 @@ async function
         await _contract_get.apply(
           null,
           _contract_get_opts);
-      _msg_info_contract_generated(
+      _msg_info_contract_obtained(
         _contract);
       _method =
         await _contract.getFunction(
           _contract_method);
+      _msg_info_method_obtained(
+        _method);
       _value =
         await _method.staticCall.apply(
           null,
