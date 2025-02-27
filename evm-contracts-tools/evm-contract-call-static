@@ -118,16 +118,13 @@ function
   _msg_info_method_obtained(
     _method) {
   let
-    _msg,
-    _template;
-  _template =
-    "Method '{_method}' obtained.";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_method}",
-      _method);
+    "Method obtained:";
   _msg_info(
     _msg);
+  _msg_info(
+    _method);
 }
 
 
