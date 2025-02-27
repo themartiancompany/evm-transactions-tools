@@ -331,7 +331,7 @@ async function
       _attempt =
         _attempt + 1;
     }
-    else if ( _tx != "" ) {
+    else if ( _tx != undefined ) {
       if ( _tx.hash != "" ) {
         _msg_info(
           _tx);
@@ -343,7 +343,20 @@ async function
                 _tx.hash == undefined ) {
       _msg_error_transaction_failed(
         _attempt);
-      console.log(
+      _msg_info(
+        "Waiting 3 seconds before retrying.");
+      await _delay(
+        3000);
+        _attempt =
+          _attempt + 1;
+      }
+      else {
+      _msg_error_transaction_failed(
+        _attempt);
+      _msg_error(
+        "Unknown transaction error.",
+	0);
+      _msg_info(
         "Waiting 3 seconds before retrying.");
       await _delay(
         3000);

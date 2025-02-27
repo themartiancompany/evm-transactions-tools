@@ -147,8 +147,14 @@ async function
         await _method.staticCall.apply(
           null,
           _method_args);
-      _passed =
-        true;
+      if ( _value != undefined ) {
+        _passed =
+          true;
+      }
+      else if ( _value == undefined ) {
+        throw
+          "Value undefined, unknown error";
+      }
     } catch (error) {
       console.error(
         error);
