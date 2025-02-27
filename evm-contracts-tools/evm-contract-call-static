@@ -120,11 +120,9 @@ async function
   let
     _msg;
   _msg =
-    "Method obtained:";
+    "Method obtained.";
   _msg_info(
     _msg);
-  console.log(
-    _method);
 }
 
 
