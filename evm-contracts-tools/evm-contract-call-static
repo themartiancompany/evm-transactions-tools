@@ -21,8 +21,6 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-_printf =
-  process.stdout.write;
 const
   _libcrash =
     require(
@@ -33,6 +31,8 @@ _msg_info =
   _libcrash._msg_info
 _msg_error =
   _libcrash._msg_error
+_printf =
+  _libcrash._printf
 const
   _contract_get_module =
     require(
@@ -114,7 +114,7 @@ function
     _msg);
 }
 
-async function
+function
   _msg_info_method_obtained(
     _method) {
   let
@@ -173,7 +173,7 @@ async function
       _method =
         await _contract.getFunction(
           _contract_method);
-      await _msg_info_method_obtained(
+      _msg_info_method_obtained(
         _method);
       _value =
         await _method.staticCall.apply(
@@ -405,12 +405,22 @@ function
 async function
   _contract_call_static_cmdline(
     _app_opts) {
-  _value = 
-    await _contract_call_static.apply(
-      null,
-      _app_opts);
-  _printf(
-    _value.toString());
+  try {
+    _value = 
+      await _contract_call_static.apply(
+        null,
+        _app_opts);
+    if ( _value != undefined ) {
+      _printf(
+        _value.toString());
+    }
+    else {
+      throw "Static contract call returned undefined value."
+    }
+  } catch (e) {
+    console.error(
+      e);
+  }
 }
 
 
