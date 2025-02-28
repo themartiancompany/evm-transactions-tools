@@ -176,7 +176,7 @@ async function
   }
   else if ( _contract_address == "" ) {
     try {
-      _contract = await
+      _contract =
         _factory.getDeployTransaction();
     } catch (e) {
       console.error(

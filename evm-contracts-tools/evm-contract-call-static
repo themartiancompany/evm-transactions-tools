@@ -84,6 +84,10 @@ function
     _message =
       _error['shortMessage'];
   }
+  else {
+    _message =
+      _error;
+  }
   _msg_error(
     _message,
     0);
@@ -178,14 +182,24 @@ async function
         await _method.staticCall.apply(
           null,
           _method_args);
+      _method =
+        null;
+      _contract =
+        null;
       if ( _value != undefined ) {
         _passed =
           true;
       }
       else if ( _value == undefined ) {
+	console.error(
+          "Value undefined, unknown error");
         throw "Value undefined, unknown error";
       }
     } catch (error) {
+      console.error(
+        "something crashed");
+      _retry =
+        _retry + 1;
       console.error(
         error);
       _error_handle(
@@ -200,15 +214,10 @@ async function
     }
   }
   if ( _retry > _retries_max ) {
-    _msg_error(
-      "Maximum number of retries reached.",
-      1)
+    throw "Maximum number of retries reached.";
   }
   if ( _value == undefined ) {
-    _msg_error(
-      "static call error",
-      1
-    );
+    throw "Undefined value, static call error";
   }
   return _value;
 }
