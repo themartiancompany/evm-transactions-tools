@@ -125,7 +125,6 @@ function
     _msg);
 }
 
-
 async function
   _contract_call_static(
     _wallet_seed,

@@ -119,18 +119,13 @@ async function
     _msg);
 }
 
-async function
+function
   _msg_info_method_obtained(
     _method) {
   let
-    _msg,
-    _template;
-  _template =
-    "Method object '{_method}' obtained.";
+    _msg;
   _msg =
-    _template.replaceAll(
-      "{_method}",
-      _method);
+    "Method obtained.";
   _msg_info(
     _msg);
 }
@@ -256,7 +251,7 @@ async function
     _method =
       await _contract.getFunction(
         _contract_method);
-    await _msg_info_method_obtained(
+    _msg_info_method_obtained(
       _method);
     if ( _msg_value > 0 ) {
       if ( _measure_unit == "ether" ) {
