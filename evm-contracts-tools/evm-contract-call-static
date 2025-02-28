@@ -91,9 +91,6 @@ function
   _msg_error(
     _message,
     0);
-  _msg_error(
-    error,
-    0);
 }
 
 function
@@ -182,26 +179,14 @@ async function
         await _method.staticCall.apply(
           null,
           _method_args);
-      _method =
-        null;
-      _contract =
-        null;
       if ( _value != undefined ) {
         _passed =
           true;
       }
       else if ( _value == undefined ) {
-	console.error(
-          "Value undefined, unknown error");
-        throw "Value undefined, unknown error";
+        throw "Value undefined, static call error";
       }
     } catch (error) {
-      console.error(
-        "something crashed");
-      _retry =
-        _retry + 1;
-      console.error(
-        error);
       _error_handle(
         error);
       _retry =
@@ -215,9 +200,6 @@ async function
   }
   if ( _retry > _retries_max ) {
     throw "Maximum number of retries reached.";
-  }
-  if ( _value == undefined ) {
-    throw "Undefined value, static call error";
   }
   return _value;
 }
@@ -425,9 +407,10 @@ async function
     else {
       throw "Static contract call returned undefined value."
     }
-  } catch (e) {
-    console.error(
-      e);
+  } catch (error) {
+    _msg_error(
+      error,
+      1);
   }
 }
 
