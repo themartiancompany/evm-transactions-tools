@@ -260,7 +260,8 @@ async function
             _msg_value);
       }
       _send_opts = {
-        "value": _msg_value
+        "value":
+	  _msg_value
       };
       _method_args.push(
         _send_opts);
