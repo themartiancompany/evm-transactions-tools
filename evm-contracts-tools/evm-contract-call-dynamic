@@ -193,13 +193,10 @@ function
       _error['shortMessage'];
   }
   else {
-    console.log(
-      error);
-    _msg_error(
-      error,
-      0);
     _msg =
-      "Unknown Error";
+      "Unknown error.";
+    console.error(
+      _error);
   }
   _msg_error(
     _msg,
@@ -234,7 +231,7 @@ async function
     _contract_get_opts,
     _method,
     _send_opts,
-    _value;
+    _tx;
   _contract_get_opts = [
     _wallet_seed,
     _wallet_password,
@@ -265,38 +262,25 @@ async function
       }
       _send_opts = {
         "value":
-	  _msg_value
+          _msg_value
       };
       _method_args.push(
         _send_opts);
     }
-    _value =
+    _tx =
       await _method.send.apply(
         null,
         _method_args)
-    _method =
-      null;
-    _contract =
-      null;
+    if ( _tx == undefined ) {
+      throw "Transaction response undefined."
+    }
   } catch (error) {
     console.log(
-      "method.send crashed");
-    console.log(
-      error);
-    console.error(
-      error);
+      "Dynamic contract call crashed.");
     _error_handle(
       error)
     throw error;
   };
-  if ( _value == undefined ) {
-    console.log(
-      "Undefined transaction value.")
-    _msg_error(
-      "Undefined transaction value.",
-      0);
-    return;
-  }
   return _value;
 }
 
@@ -375,8 +359,6 @@ async function
         await _contract_call_dynamic.apply(
           null,
           _contract_call_dynamic_opts);
-      console.log(
-        _tx);
       if ( _tx == undefined ) {
         _msg_error_transaction_undefined(
           _attempt);
@@ -388,9 +370,9 @@ async function
           _attempt + 1;
       }
       else if ( _tx != undefined ) {
+        console.log(
+          _tx);
         if ( _tx.hash != undefined ) {
-          _msg_info(
-            _tx);
           _msg_info(
             "Transaction sent.");
           break;
@@ -420,12 +402,6 @@ async function
         }
       }
     } catch (e) {
-      console.log(
-        _tx);
-      console.log(
-        e);
-      console.error(
-        e);
       _error_handle(
         e);
       _msg_info(
