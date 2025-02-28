@@ -191,7 +191,9 @@ function
       _error['shortMessage'];
   }
   else {
-    msg_error(
+    console.log(
+      error);
+    _msg_error(
       error,
       0);
     _msg =
@@ -271,6 +273,10 @@ async function
         null,
         _method_args)
   } catch (error) {
+    console.log(
+      error);
+    console.error(
+      error);
     _error_handle(
       error)
   };
@@ -403,7 +409,11 @@ async function
         }
       }
     } catch (e) {
+      console.log(
+        e);
       console.error(
+        e);
+      _error_handle(
         e);
     }
   }
