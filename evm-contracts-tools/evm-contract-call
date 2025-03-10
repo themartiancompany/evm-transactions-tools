@@ -761,27 +761,17 @@ ENDUSAGETEXT
     "${1}"
 }
 
-_display_flags() {
+_display_array() {
   local \
-    _flags=(
-      "${1}"
-    ) \
-    _flag
-  for _flag \
-    in "${_flags[@]}"; do
+    _array=() \
+    _item
+  _array+=(
+    "$@"
+  )
+  for _item \
+    in "${_array[@]}"; do
   _msg_info \
-    "                             ${_flag}"
-  done
-}
-
-_display_flags() {
-  local \
-    _flags=(
-      ${1}
-    )
-  for _flag \
-    in "${_flags[@]}"; do
-  _msg_info "                              ${_flag}"
+    "                            ${_item}"
   done
 }
 
@@ -807,7 +797,7 @@ _show_config() {
   _msg_info " Contract compiler output:   ${contract_compiler_output}"
   _msg_info "          Contract method:   ${contract_method}"
   _msg_info "         Method arguments:   "
-  _display_flags                          "${method_args[*]}"
+  _display_array                          "${method_args[@]}"
 
 }
 
