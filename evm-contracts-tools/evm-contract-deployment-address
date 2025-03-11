@@ -15,8 +15,11 @@ source \
 # shellcheck disable=SC2034
 _global_variables() {
   resolve_date=""
-  target_network=""
-  network_id=""
+  networks_amount=""
+  target_networks=()
+  network_ids_amount=""
+  network_ids=()
+  networks_all=""
   target_app=""
   target_contract=""
   contract_version=""
@@ -96,8 +99,8 @@ _network_check() {
   if [[ "${_target_network_id}" != "" ]]; then
     if [[ " ${_networks[*]} " != *" ${_target_network_id} "* ]]; then
       _msg=(
-        "the contract does not result deployed on"
-        "'${_target_network_id}' network"
+        "The contract does not result deployed on"
+        "'${_target_network_id}' network."
       )
       _msg_error \
         "${_msg[*]}" \
@@ -106,8 +109,8 @@ _network_check() {
   elif [[ "${_target_network}" != "" ]]; then
     if [[ " ${_networks[*]} " != *" ${_target_network} "* ]]; then
       _msg=(
-        "the contract does not result deployed on"
-        "'${_target_network}' network"
+        "The contract does not result deployed on"
+        "'${_target_network}' network."
       )
       _msg_error \
         "${_msg[*]}" \
@@ -182,33 +185,48 @@ _user_deployments_check() {
 
 _evm_contract_deployment_address() {
   local \
-    _target_network="${1}" \
-    _target_network_id="${2}" \
-    _target_app="${3}" \
-    _target_contract="${4}" \
-    _contract_version="${5}" \
-    _user_defined="${6}" \
-    _deployments_dir="${7}" \
+    _networks_amount="${1}" \
+    _network_ids_amount="${2}" \
+    _networks_all="${3}" \
+    _target_app="${4}" \
+    _target_contract="${5}" \
+    _contract_version="${6}" \
+    _user_defined="${7}" \
+    _deployments_dir="${8}" \
+    _target_network \
+    _target_networks=() \
+    _network_id \
+    _network_ids=() \
     _system_deployments_dir \
     _user_deployments_dir \
-    _network_id \
     _contract_address \
     _args=() \
     _msg=()
   shift \
-    7
-  _args+=(
-    "$@"
-  )
+    8
+  for _target_network \
+    in $(seq "${_networks_amount}"); do
+    _target_networks+=(
+      "${1}"
+    )
+    shift
+  done
+  for _network_id \
+    in $(seq "${_network_ids_amount}"); do
+    _network_ids+=(
+      "${1}"
+    )
+    shift
+  done
   if [[ "${_user_defined}" == "n" ]]; then
     if [[ "${_target_app}" == "" ]]; then
       _msg=(
-        "a target application needs to"
+        "A target application needs to"
         "be specified with option '-a'"
         "if not enabling user-defined"
         "deployments with '-u' and"
         "specifying a deployments directory"
-        "path with '-d'"
+        "path with '-d'."
       )
       _msg_error \
         "${_msg[*]}" \
@@ -219,9 +237,9 @@ _evm_contract_deployment_address() {
         "${_target_app}")"
     if [[ "${_deployments_dir}" != "${_system_deployments_dir}" ]]; then
       _msg=(
-        "to set a custom deployments directory path"
+        "To set a custom deployments directory path"
         "you need to enable the user-defined"
-        "deployments switch with '-u'"
+        "deployments switch with '-u'."
       )
       _msg_error \
         "${_msg[*]}" \
@@ -237,8 +255,8 @@ _evm_contract_deployment_address() {
     fi
     if [[ "${_deployments_dir}" != "${_user_deployments_dir}" ]]; then
       _msg=(
-        "using custom deployments directory"
-        "path '${_deployments_dir}'"
+        "Using custom deployments directory"
+        "path '${_deployments_dir}'."
       )
       _msg_info \
         "${_msg[*]}"
@@ -246,19 +264,21 @@ _evm_contract_deployment_address() {
       _user_deployments_check
     fi
   fi
-  _network_check \
-    "${_deployments_dir}" \
-    "${_target_contract}" \
-    "${_target_network}" \
-    "${_target_network_id}"
-  _contract_address_get \
-    "${_deployments_dir}" \
-    "${_target_contract}" \
-    "${_target_network}" \
-    "${_target_network_id}" \
-    "${_contract_version}"
-  echo \
-    "${_contract_address}"
+  for _target_network in "${_target_networks[@]}"; do
+    _network_check \
+      "${_deployments_dir}" \
+      "${_target_contract}" \
+      "${_target_network}" \
+      "${_target_network_id}"
+    _contract_address_get \
+      "${_deployments_dir}" \
+      "${_target_contract}" \
+      "${_target_network}" \
+      "${_target_network_id}" \
+      "${_contract_version}"
+    echo \
+      "${_contract_address}"
+  done
 }
 
 _deployments_dir_auto_detect() {
@@ -267,15 +287,9 @@ _deployments_dir_auto_detect() {
     _deployments \
     _user_defined
   _deployments=""
-  _app="$( \
-    _get \
-      "target" \
-      "app")"
+  _app="${target_app}"
   if [[ "${_app}" != "" ]]; then
-    _user_defined="$( \
-      _get \
-        "user" \
-        "defined")"
+    _user_defined="${user_defined}"
     if [[ "${_user_defined}" == "y" ]]; then
       _evm_contracts_deployment_dir_opts+=(
         -u
@@ -355,14 +369,8 @@ _set_overrides() {
     "resolve" \
     "date" \
     "$(_get_date_human)"
-  _set_override \
-    "target" \
-    "network" \
-    ""
-  _set_override \
-    "network" \
-    "id" \
-    ""
+  _networks_amount="${#target_networks[@]}"
+  _network_ids_amount="${#network_ids[@]}"
   _set_override \
     "target" \
     "app" \
@@ -386,7 +394,8 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
-Returns an EVM network's contract deployment address
+
+Returns an EVM network's contract deployment address.
 
 Usage:
 
@@ -395,14 +404,15 @@ Usage:
     <target_contract>
 
   networks:
-    ethereum
-    gnosis
+    All those supported
+    by 'evm-chains-info'.
 
   options:
      -n <network>           EVM network name.
-                            Default: ${target_network}
      -i <network_id>        EVM network id.
-                            Default: ${network_id}
+     -A                     Returns address for all
+                            available networks.
+                            Default: ${networks_all}
      -a <target_app>        Application whose target
                             contract is part of.
                             Default: ${target_app}
@@ -445,8 +455,9 @@ _display_flags() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "             Resolve date:   ${resolve_date}"
-  _msg_info "           Target network:   ${target_network}"
-  _msg_info "               Network ID:   ${network_id}"
+  _msg_info "          Target networks:   ${target_networks[*]}"
+  _msg_info "        Network Chain IDs:   ${network_ids[*]}"
+  _msg_info "             All networks:   ${networks_all}"
   _msg_info "          Target contract:   ${target_contract}"
   _msg_info "       Target application:   ${target_app}"
   _msg_info "         Contract version:   ${contract_version}"
@@ -458,18 +469,21 @@ _globals
 _global_variables
 _requirements
 _config_user_init \
-  "$(_get \
-       "app" \
-       "name")"
+  "${app_name}"
 # shellcheck disable=SC2034
 while \
   getopts \
-    'n:i:a:V:ud:cvh?' \
+    'n:i:Aa:V:ud:cvh?' \
     arg; do
   case \
     "${arg}" in
-    n) override_target_network="${OPTARG}" ;;
-    i) override_network_id="${OPTARG}" ;;
+    n) target_networks+=(
+         "${OPTARG}"
+       ) ;;
+    i) network_ids+=(
+         "${OPTARG}"
+       ) ;;
+    A) override_networks_all="y" ;;
     a) override_target_app="${OPTARG}" ;;
     V) override_contract_version="${OPTARG}" ;;
     u) override_user_defined="y" ;;
@@ -493,8 +507,8 @@ shift \
   ))
 if (( $# < 1 )); then
   _msg=(
-    "a target contract"
-    "must be specified"
+    "A target contract"
+    "must be specified."
   )
   _set_overrides
   _msg_error \
@@ -510,13 +524,16 @@ _set \
 _set_overrides
 _show_config
 app_opts=(
-  "${target_network}"
-  "${network_id}"
+  "${networks_amount}"
+  "${network_ids_amount}"
+  "${networks_all}"
   "${target_app}"
   "${target_contract}"
   "${contract_version}"
   "${user_defined}"
   "${deployments_dir}"
+  "${target_networks[@]}"
+  "${network_ids[@]}"
 )
 _evm_contract_deployment_address \
   "${app_opts[@]}"
