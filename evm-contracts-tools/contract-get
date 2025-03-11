@@ -1,8 +1,25 @@
 #!/usr/bin/env node
 
-//
 // SPDX-License-Identifier: AGPL-3.0-or-later
+
+//    ----------------------------------------------------------------------
+//    Copyright © 2024, 2025  Pellegrino Prevete
 //
+//    All rights reserved
+//    ----------------------------------------------------------------------
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU Affero General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU Affero General Public License for more details.
+//
+//    You should have received a copy of the GNU Affero General Public License
+//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 const
   { ethers } =
@@ -18,6 +35,8 @@ const
   _libcrash =
     require(
       '../libcrash-js/crash-js');
+_cmdline_check =
+  _libcrash._cmdline_check;
 _dirname =
   _libcrash._dirname;
 _file_read =
@@ -92,7 +111,7 @@ function
     _msg,
     _template;
   _template =
-    "wallet is '{_wallet}'";
+    "Wallet is '{_wallet}'.";
   _msg =
     _template.replaceAll(
       "{_wallet}",
@@ -156,8 +175,13 @@ async function
         _contract_address);
   }
   else if ( _contract_address == "" ) {
-    _contract = await
-      _factory.getDeployTransaction();
+    try {
+      _contract =
+        _factory.getDeployTransaction();
+    } catch (e) {
+      console.error(
+        e);
+    }
   }
   return _contract;
 }
@@ -276,10 +300,15 @@ async function
             _contract_compiler_output_path == "" ) {
     _msg_error_no_input_data();
   }
-  _contract = await
-    _contract_get_fun.apply(
-      null,
-      _contract_get_opts);
+  try {
+    _contract = await
+      _contract_get_fun.apply(
+        null,
+        _contract_get_opts);
+  } catch (e) {
+    console.error(
+      e);
+  }
   return _contract;
 }
 
@@ -427,9 +456,9 @@ function _cmdline_parse() {
   }
 }
 
-_global_variables();
-
-if ( require.main == module ) {
+if ( _cmdline_check(
+       "contract-get") ) {
+  _global_variables();
   _cmdline_parse();
   _config_show();
   app_opts = [
