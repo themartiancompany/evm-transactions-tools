@@ -212,6 +212,7 @@ _evm_contract_deployment_address() {
     _contract_version="${6}" \
     _user_defined="${7}" \
     _deployments_dir="${8}" \
+    _network \
     _target_network \
     _target_networks=() \
     _network_id \
@@ -283,7 +284,43 @@ _evm_contract_deployment_address() {
       _user_deployments_check
     fi
   fi
-  for _target_network in "${_target_networks[@]}"; do
+  if [[ "${_networks_all}" == "y" ]]; then
+    _network_ids=()
+    _target_networks=()
+    _target_networks+=( $( \
+      evm-contract-deployment-networks \
+        -A \
+        "${_deployments_dir}/${_target_contract}")
+    )
+    _networks_amount="${#_target_networks[@]}"
+    _network_ids_amount="${#_network_ids[@]}"
+  fi
+  for _network \
+    in $(seq \
+           "0" \
+           "$(("${_networks_amount}" - 1))"); do
+    _target_network="${_target_networks[${_network}]}"
+    _target_network_id=""
+    _network_check \
+      "${_deployments_dir}" \
+      "${_target_contract}" \
+      "${_target_network}" \
+      "${_target_network_id}"
+    _contract_address_get \
+      "${_deployments_dir}" \
+      "${_target_contract}" \
+      "${_target_network}" \
+      "${_target_network_id}" \
+      "${_contract_version}"
+    echo \
+      "${_contract_address}"
+  done
+  for _network \
+    in $(seq \
+           "0" \
+           "$(("${_network_ids_amount}" - 1))"); do
+    _target_network=""
+    _target_network_id="${_network_ids[${_network}]}"
     _network_check \
       "${_deployments_dir}" \
       "${_target_contract}" \
@@ -334,17 +371,35 @@ _contract_version_auto_detect() {
     _version \
     _net \
     _found \
+    _networks=() \
     _msg=()
   _contract="${target_contract}"
   _version=""
   _found="false"
+  _network=""
+  _network_id=""
   if [[ "${_contract}" != "" ]]; then
     _deployments="${deployments_dir}"
-    _network="${target_network}"
-    _network_id="${network_id}"
+    if (( 0 < "${networks_amount}" )); then 
+      _network="${target_networks[0]}"
+    fi
+    if (( 0 < "${network_ids_amount}" )); then 
+      _network="${target_network_ids[0]}"
+    fi
+    if [[ "${networks_all}" == "n" ]]; then
+      _networks+=(
+        "${_network}"
+        "${_network_id}"
+      )
+    elif [[ "${networks_all}" == "y" ]]; then
+      _networks+=( $( \
+        evm-contract-deployment-networks \
+          -A \
+          "${_deployments}/${_contract}")
+      )
+    fi
     for _net \
-      in "${_network}" \
-         "${_network_id}"; do
+      in "${_networks[@]}"; do
       _config="${_deployments}/${_contract}/${_net}/config.sh"
       if [[ -e "${_config}" ]]; then
         _found="true"
@@ -373,6 +428,20 @@ _contract_version_auto_detect() {
     "${_version}"
 }
 
+_networks_all_auto_detect() {
+  local \
+    _networks_all
+  _networks_all="n"
+  if (( "${networks_amount}" == "0" && \
+        "${network_ids_amount}" == "0" )); then
+    _networks_all="y"
+  fi
+  _set_override \
+    "networks" \
+    "all" \
+    "${_networks_all}"
+}
+
 _set_overrides() {
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
@@ -388,8 +457,9 @@ _set_overrides() {
     "resolve" \
     "date" \
     "$(_get_date_human)"
-  _networks_amount="${#target_networks[@]}"
-  _network_ids_amount="${#network_ids[@]}"
+  networks_amount="${#target_networks[@]}"
+  network_ids_amount="${#network_ids[@]}"
+  _networks_all_auto_detect
   _set_override \
     "target" \
     "app" \
