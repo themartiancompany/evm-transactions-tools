@@ -401,6 +401,8 @@ _contract_version_auto_detect() {
     for _net \
       in "${_networks[@]}"; do
       _config="${_deployments}/${_contract}/${_net}/config.sh"
+      _msg_info \
+        "${_config}"
       if [[ -e "${_config}" ]]; then
         _found="true"
         break
