@@ -384,7 +384,7 @@ _contract_version_auto_detect() {
       _network="${target_networks[0]}"
     fi
     if (( 0 < "${network_ids_amount}" )); then 
-      _network="${target_network_ids[0]}"
+      _network="${network_ids[0]}"
     fi
     if [[ "${networks_all}" == "n" ]]; then
       _networks+=(
