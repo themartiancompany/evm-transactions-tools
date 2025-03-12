@@ -259,6 +259,7 @@ _evm_contract_call() {
     _contract_bytecode_path="${14}" \
     _contract_compiler_output_path="${15}" \
     _contract_method="${16}" \
+    _node_run_opts=() \
     _method_args=() \
     _cmd \
     _args=() \
@@ -314,8 +315,12 @@ _evm_contract_call() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_run \
-    "${_retries_max}" \
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
+  node-run \
+    "${_node_run_opts[@]}" \
     "${_cmd}" \
     "${_args[@]}"
 }
