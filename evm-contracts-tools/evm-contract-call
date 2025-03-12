@@ -66,8 +66,7 @@ _requirements() {
   _check_cmd \
     'evm-wallet'
   _check_cmd \
-    'node' \
-    'nodejs'
+    'node-run'
 }
 
 _get_conf_dir_path() {
@@ -89,48 +88,6 @@ _evm_contract_call_type() {
     _get_lib)/evm-contracts-tools"
   echo \
     "${_lib}/evm-contract-call-${_type}"
-}
-
-_node_run() {
-  local \
-    _retries_max="${1}" \
-    _cmd="${2}" \
-    _args=() \
-    _node_path \
-    _lib \
-    _retry \
-    _msg=()
-  shift \
-    2
-  _args=(
-    "$@"
-  )
-  _retry=1
-  _lib="$( \
-    _get_lib)"
-  _node_path="${_lib}/node_modules" 
-  export \
-    NODE_PATH="${_node_path}"
-  for _retry \
-    in $(seq "${_retries_max}"); do
-    if NODE_PATH="${_node_path}" \
-       node \
-         "${_cmd}" \
-         "${_args[@]}"; then
-      return
-    else
-      _msg=(
-        "contract calling error,"
-        "retry '${_retry}' out of"
-        "'${_retries_max}'"
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        "0"
-    fi
-  done
-  return \
-    1
 }
 
 _network_setup() {
@@ -270,6 +227,10 @@ _evm_contract_call() {
   _method_args+=(
     "$@"
   )
+  _node_run_opts+=(
+    -r
+      "${_retries_max}"
+  )
   _network_setup \
     "${_network}" \
     "${_rpc_selection}"
@@ -315,10 +276,6 @@ _evm_contract_call() {
   )
   _msg_info \
     "${_msg[*]}"
-  _node_run_opts+=(
-    -r
-      "${_retries_max}"
-  )
   node-run \
     "${_node_run_opts[@]}" \
     "${_cmd}" \
