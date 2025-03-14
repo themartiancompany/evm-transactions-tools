@@ -19,7 +19,7 @@
 [comment]: <> (License along with this program.)
 [comment]: <> (If not, see <https://www.gnu.org/licenses/>.)
 
-# EVM smart contracts tools
+# EVM Smart Contracts Tools
 
 A full-suite collection of useful Bash and JavaScript
 programs and libraries to enable seamless development
@@ -31,10 +31,16 @@ to seamlessly call publicly verified smart contracts functions
 same as they would do to retrieve information from any other standard
 local program.
 
-In order to do so, the `evm-contract-call` program automatically
-retrieves eventually missing smart contracts artifacts
-from online sources using the
-[evm-contracts-abi-get](
+In order to do so, the `evm-contract-call` program obtains networks'
+informations from the
+[EVM Chains Info](
+  https://github.com/themartiancompany/evm-chains-info)
+and 
+[EVM Chains Explorers](
+  https://github.com/themartiancompany/evm-chains-explorers)
+programs and automatically retrieves eventually missing smart
+contracts artifacts from online sources using the
+[EVM Contracts ABI Get](
   https://github.com/themartiancompany/evm-contracts-abi-get)
 utility.
 
@@ -48,6 +54,10 @@ and depends on the
 [EVM Wallet](
   https://github.com/themartiancompany/evm-wallet),
 but it's also possible to directly provide seeds files.
+
+The tools are a required software dependency for
+[libEVM](
+  https://github.com/themartiancompany/libevm).
 
 ## Installation
 
