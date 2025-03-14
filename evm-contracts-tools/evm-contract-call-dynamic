@@ -281,7 +281,7 @@ async function
       error)
     throw error;
   };
-  return _value;
+  return _tx;
 }
 
 async function
