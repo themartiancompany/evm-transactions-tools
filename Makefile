@@ -23,6 +23,7 @@ PREFIX ?= /usr/local
 _PROJECT=evm-contracts-tools
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
+MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
 LIB_DIR=$(DESTDIR)$(PREFIX)/lib
 
 DOC_FILES=\
@@ -37,7 +38,7 @@ check: shellcheck
 shellcheck:
 	shellcheck -s bash $(SCRIPT_FILES)
 
-install: install-scripts install-doc
+install: install-scripts install-doc install-man
 
 install-scripts:
 
@@ -46,12 +47,21 @@ install-scripts:
 	install -vDm 755 "$(_PROJECT)/contract-get" "$(LIB_DIR)/$(_PROJECT)/contract-get"
 	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-address" "$(BIN_DIR)/evm-contract-deployment-address"
 	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-networks" "$(BIN_DIR)/evm-contract-deployment-networks"
-	install -vDm 755 $(_PROJECT)/evm-contract-deployment-versions "$(BIN_DIR)/evm-contract-deployment-versions"
-	install -vDm 755 $(_PROJECT)/evm-contract-deployments-dir "$(BIN_DIR)/evm-contract-deployments-dir"
-	install -vDm 755 $(_PROJECT)/evm-contract-call "$(BIN_DIR)/evm-contract-call"
+	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-versions" "$(BIN_DIR)/evm-contract-deployment-versions"
+	install -vDm 755 "$(_PROJECT)/evm-contract-deployments-dir" "$(BIN_DIR)/evm-contract-deployments-dir"
+	install -vDm 755 "$(_PROJECT)/evm-contract-call" "$(BIN_DIR)/evm-contract-call"
 
 install-doc:
 
 	install -vDm 644 $(DOC_FILES) -t $(DOC_DIR)
 
-.PHONY: check install install-doc install-scripts shellcheck
+install-man:
+
+	install \
+	  -vdm755 \
+	  "$(MAN_DIR)/man1"
+	rst2man \
+	  "man/evm-contract-call.1.rst" \
+	  "$(MAN_DIR)/man1/evm-contract-call.1"
+
+.PHONY: check install install-doc install-man install-scripts shellcheck
