@@ -19,7 +19,7 @@
 [comment]: <> (License along with this program.)
 [comment]: <> (If not, see <https://www.gnu.org/licenses/>.)
 
-# EVM smart contracts tools
+# EVM Smart Contracts Tools
 
 A full-suite collection of useful Bash and JavaScript
 programs and libraries to enable seamless development
@@ -48,6 +48,10 @@ and depends on the
 [EVM Wallet](
   https://github.com/themartiancompany/evm-wallet),
 but it's also possible to directly provide seeds files.
+
+The tools are a required software dependency for
+[libEVM](
+  https://github.com/themartiancompany/libevm).
 
 ## Installation
 
