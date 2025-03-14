@@ -31,10 +31,13 @@ to seamlessly call publicly verified smart contracts functions
 same as they would do to retrieve information from any other standard
 local program.
 
-In order to do so, the `evm-contract-call` program automatically
-retrieves eventually missing smart contracts artifacts
-from online sources using the
-[evm-contracts-abi-get](
+In order to do so, the `evm-contract-call` program obtains networks'
+informations from the
+[EVM Chains Info](
+  https://github.com/themartiancompany/evm-chains-info)
+program and automatically retrieves eventually missing smart
+contracts artifacts from online sources using the
+[EVM Contracts ABI Get](
   https://github.com/themartiancompany/evm-contracts-abi-get)
 utility.
 
