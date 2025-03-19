@@ -278,7 +278,7 @@ async function
     _receipt =
       await _tx.wait(
         1,
-        120000);
+        240000);
   } catch (error) {
     _msg_info(
       "Dynamic contract call crashed.");
