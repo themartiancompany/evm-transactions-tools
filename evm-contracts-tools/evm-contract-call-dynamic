@@ -275,6 +275,10 @@ async function
     if ( _tx == undefined ) {
       throw "Transaction response undefined."
     }
+    _receipt =
+      await _tx.wait(
+        1,
+        15);
   } catch (error) {
     _msg_info(
       "Dynamic contract call crashed.");
@@ -282,9 +286,6 @@ async function
       error)
     throw error;
   };
-  _receipt =
-    await _tx.wait(
-    1);
   return _receipt;
 }
 
