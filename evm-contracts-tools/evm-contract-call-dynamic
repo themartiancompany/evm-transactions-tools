@@ -231,6 +231,7 @@ async function
     _contract_get_opts,
     _method,
     _send_opts,
+    _receipt,
     _tx;
   _contract_get_opts = [
     _wallet_seed,
