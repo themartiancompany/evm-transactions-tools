@@ -161,65 +161,40 @@ async function
       _chain_name);
   }
   _network_provider =
-    _provider_get.apply(
+    await _provider_get.apply(
       null,
       _provider_get_opts);
-  _network =
-    await _network_provider.getNetwork()
-  console.log(_network_provider);
-  console.log(_network_provider.getNetwork);
-  console.log(_network);
-  console.log(_network_provider.provider.network);
-  console.log(_network_provider.network);
-  console.log(_network_provider.getTransaction);
-  _tx =
-    await _network_provider.getTransaction(
-      _transaction_address);
-  _tx =
-    await _network_provider.getTransaction.apply(
-      null,
-      [_transaction_address]);
-  _get_transaction_opts =
-    [];
-  // if ( _wallet_seed != "" &&
-  //      _wallet_seed != undefined ) {
-  //   _wallet_path_list = [
-  //     _dirname(
-  //       _wallet_seed),
-  //     "wallet.dat"
-  //   ];
-  //   _wallet_path =
-  //     _path_join(
-  //       _wallet_path_list);
-  //   _wallet_get_opts = [
-  //     _wallet_path,
-  //     _wallet_password_path,
-  //     _wallet_seed,
-  //     _network_provider
-  //   ];
-  //   _wallet =
-  //     _wallet_get.apply(
-  //       null,
-  //       _wallet_get_opts);
-  //   _msg_info_wallet_selected(
-  //     _wallet);
-  //   _network_provider =
-  //     _wallet;
-  // }
-  _get_transaction_opts.push(
-    _transaction_address);
+  if ( _wallet_seed != "" &&
+       _wallet_seed != undefined ) {
+    _wallet_path_list = [
+      _dirname(
+        _wallet_seed),
+      "wallet.dat"
+    ];
+    _wallet_path =
+      _path_join(
+        _wallet_path_list);
+    _wallet_get_opts = [
+      _wallet_path,
+      _wallet_password_path,
+      _wallet_seed,
+      _network_provider
+    ];
+    _wallet =
+      _wallet_get.apply(
+        null,
+        _wallet_get_opts);
+    _msg_info_wallet_selected(
+      _wallet);
+    _network_provider =
+      _wallet;
+  }
   try {
     _tx =
-      await _network_provider.getTransaction.apply(
-        null,
-        _get_transaction_opts);
-    // _tx =
-    //   _transaction.from(
-    //     _transaction_address);
-    // _transaction = await
-    //   _transaction_get.apply(
-    //     null,
-    //     _transaction_get_opts);
+      await _network_provider.getTransaction(
+        _transaction_address);
+    console.log(
+      _tx);
   } catch (e) {
     console.error(
       e);
