@@ -74,7 +74,7 @@ Options
                         'receipt'.
 -f tx_field             Returns a specific field from
                         the transaction.
--d y\/n                 Whether to remove quotes from
+-d y_or_n               Whether to remove quotes from
                         the field value (for string fields).
 -o output_path          If no transaction field is specified,
                         it will save the output in json format
