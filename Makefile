@@ -20,7 +20,7 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 PREFIX ?= /usr/local
-_PROJECT=evm-contracts-tools
+_PROJECT=evm-transactions-tools
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 MAN_DIR?=$(DESTDIR)$(PREFIX)/share/man
@@ -42,14 +42,14 @@ install: install-scripts install-doc install-man
 
 install-scripts:
 
-	install -vDm 755 "$(_PROJECT)/evm-contract-call-dynamic" "$(LIB_DIR)/$(_PROJECT)/evm-contract-call-dynamic"
-	install -vDm 755 "$(_PROJECT)/evm-contract-call-static" "$(LIB_DIR)/$(_PROJECT)/evm-contract-call-static"
-	install -vDm 755 "$(_PROJECT)/contract-get" "$(LIB_DIR)/$(_PROJECT)/contract-get"
-	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-address" "$(BIN_DIR)/evm-contract-deployment-address"
-	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-networks" "$(BIN_DIR)/evm-contract-deployment-networks"
-	install -vDm 755 "$(_PROJECT)/evm-contract-deployment-versions" "$(BIN_DIR)/evm-contract-deployment-versions"
-	install -vDm 755 "$(_PROJECT)/evm-contract-deployments-dir" "$(BIN_DIR)/evm-contract-deployments-dir"
-	install -vDm 755 "$(_PROJECT)/evm-contract-call" "$(BIN_DIR)/evm-contract-call"
+	install \
+	  -vDm755 \
+	  "$(_PROJECT)/transaction-get" \
+	  "$(LIB_DIR)/$(_PROJECT)/transaction-get"
+	install \
+	  -vDm755 \
+	  "$(_PROJECT)/evm-transaction-get" \
+	  "$(BIN_DIR)/evm-transaction-get"
 
 install-doc:
 
@@ -61,7 +61,7 @@ install-man:
 	  -vdm755 \
 	  "$(MAN_DIR)/man1"
 	rst2man \
-	  "man/evm-contract-call.1.rst" \
-	  "$(MAN_DIR)/man1/evm-contract-call.1"
+	  "man/evm-transaction-get.1.rst" \
+	  "$(MAN_DIR)/man1/evm-transaction-get.1"
 
 .PHONY: check install install-doc install-man install-scripts shellcheck

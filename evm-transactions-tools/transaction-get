@@ -21,16 +21,12 @@
 //    You should have received a copy of the GNU Affero General Public License
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const
-  { ethers } =
-    require(
-      "ethers");
-_ethers =
-  ethers;
-_contract_factory =
-  _ethers.ContractFactory;
-_base_contract =
-  _ethers.BaseContract;
+// const
+//   { ethers } =
+//     require(
+//       "ethers");
+// _ethers =
+//   ethers;
 const
   _libcrash =
     require(
@@ -56,28 +52,23 @@ const
 _wallet_get =
   _evm_wallet_get._wallet_get;
 const
-  _network_provider =
+  _network_provider_module =
     require(
       '../evm-wallet/network-provider');
 _provider_get =
-  _network_provider._provider_get;
-
+  _network_provider_module._provider_get;
 
 function
   _global_variables() {
   app_name =
-    "contract-get"
+    "transaction-get"
+  retries_max =
+    "";
   wallet_seed =
     "";
   wallet_password_path =
     "";
-  contract_address =
-    "";
-  contract_abi_path =
-    "";
-  contract_bytecode_path =
-    "";
-  contract_compiler_output_path =
+  transaction_address =
     "";
   target_network =
     "";
@@ -121,115 +112,18 @@ function
 }
 
 async function
-  _contract_get_abi(
-    _wallet,
-    _contract_address,
-    _contract_abi_path) {
-  let
-    _contract,
-    _contract_abi;
-  _contract_abi =
-    _json_read(
-      _contract_abi_path);
-  _contract = new
-    _base_contract(
-      _contract_address,
-      _contract_abi,
-      runner =
-        _wallet);
-  return _contract;
-}
-
-async function
-  _contract_get_bytecode(
-    _wallet,
-    _contract_address,
-    _contract_abi_path,
-    _contract_bytecode_path) {
-  let
-    _contract,
-    _contract_abi,
-    _contract_bytecode,
-    _factory;
-  if ( _contract_abi_path == "" ) {
-    _contract_abi = [];
-  }
-  else if ( _contract_abi_path != "" ) {
-    _contract_abi =
-      _json_read(
-        _contract_abi_path);
-  }
-  if ( _contract_bytecode_path != "" ) {
-    _contract_bytecode =
-      _file_read(
-        _contract_bytecode_path);
-  }
-  _factory =
-    new _contract_factory(
-      _contract_abi,
-      _contract_bytecode,
-      _wallet);
-  if ( _contract_address != "" ) {
-    _contract =
-      _factory.attach(
-        _contract_address);
-  }
-  else if ( _contract_address == "" ) {
-    try {
-      _contract =
-        _factory.getDeployTransaction();
-    } catch (e) {
-      console.error(
-        e);
-    }
-  }
-  return _contract;
-}
-
-async function
-  _contract_get_compiler_output(
-    _wallet,
-    _contract_address,
-    _contract_compiler_output_path) {
-  let
-    _contract,
-    _contract_compiler_output,
-    _factory;
-  _contract_compiler_output =
-    _file_read(
-      _contract_compiler_output_path);
-  _factory =
-    _contract_factory.fromSolidity(
-      _contract_compiler_output,
-      _wallet);
-  if ( _contract_address != "" ) {
-    _contract =
-      _factory.attach(
-        _contract_address);
-  }
-  else if ( _contract_address == "" ) {
-    _contract = await
-      _factory.getDeployTransaction();
-  }
-  return _contract;
-}
-
-
-async function
-  _contract_get(
+  _transaction_get(
+    _retries_max,
     _wallet_seed,
     _wallet_password_path,
-    _contract_address,
-    _contract_abi_path,
-    _contract_bytecode_path,
-    _contract_compiler_output_path,
     _target_network,
-    _api_key_path) {
+    _api_key_path,
+    _transaction_address) {
   let
     _api_key,
-    _contract,
-    _contract_get_opts,
+    _get_transaction_opts,
     _network_provider,
+    _tx,
     _wallet,
     _wallet_get_opts,
     _wallet_path_list,
@@ -243,7 +137,7 @@ async function
     _provider_get(
       _target_network,
       _api_key);
-  _contract_get_opts =
+  _get_transaction_opts =
     [];
   if ( _wallet_seed != "" ) {
     _wallet_path_list = [
@@ -266,50 +160,28 @@ async function
         _wallet_get_opts);
     _msg_info_wallet_selected(
       _wallet);
-    _contract_get_opts.push(
-      _wallet);
+    _network_provider =
+      _wallet;
   }
-  else {
-    _contract_get_opts.push(
-      _network_provider);
-  }
-  _contract_get_opts.push(
-    _contract_address);
-  if ( _contract_bytecode_path != "" ) {
-    _contract_get_opts.push(
-      _contract_abi_path,
-      _contract_bytecode_path);
-    _contract_get_fun =
-      _contract_get_bytecode;
-  }
-  else if ( _contract_compiler_output_path != "" ) {
-    _contract_get_opts.push(
-      _contract_compiler_output_path);
-    _contract_get_fun =
-      _contract_get_compiler_output;
-  }
-  else if ( _contract_bytecode_path == "" && 
-	    _contract_abi_path != "" ) {
-    _contract_get_opts.push(
-      _contract_abi_path);
-    _contract_get_fun =
-      _contract_get_abi;
-  }
-  else if ( _contract_bytecode_path == "" &&
-	    _contract_abi_path == "" &&
-            _contract_compiler_output_path == "" ) {
-    _msg_error_no_input_data();
-  }
+  _get_transaction_opts.push(
+    _transaction_address);
   try {
-    _contract = await
-      _contract_get_fun.apply(
-        null,
-        _contract_get_opts);
+    _tx =
+      await _network_provider.getTransaction.apply(
+	null,
+        _get_transaction_opts)
+    // _tx =
+    //   _transaction.from(
+    //     _transaction_address);
+    // _transaction = await
+    //   _transaction_get.apply(
+    //     null,
+    //     _transaction_get_opts);
   } catch (e) {
     console.error(
       e);
   }
-  return _contract;
+  return _tx;
 }
 
 function
@@ -319,6 +191,10 @@ function
     _text;
   _text = [];
   _text.push(
+    "         Maximum retries: {retries_max}".replace(
+      "{retries_max}",
+      retries_max));
+  _text.push(
     "             Wallet seed: {wallet_seed}".replace(
       "{wallet_seed}",
       wallet_seed));
@@ -327,21 +203,9 @@ function
       "{wallet_password_path}",
       wallet_password_path));
   _text.push(
-    "        Contract address: {contract_address}".replace(
-      "{contract_address}",
-      contract_address));
-  _text.push(
-    "       Contract ABI path: {contract_abi_path}".replace(
-      "{contract_abi_path}",
-      contract_abi_path));
-  _text.push(
-    "       Contract bytecode: {contract_bytecode_path}".replace(
-      "{contract_bytecode_path}",
-      contract_bytecode_path));
-  _text.push(
-    "Contract compiler output: {contract_compiler_output_path}".replace(
-      "{contract_compiler_output_path}",
-      contract_compiler_output_path));
+    "     Transaction address: {transaction_address}".replace(
+      "{transaction_address}",
+      transaction_address));
   _text.push(
     "          Target network: {target_network}".replace(
       "{target_network}",
@@ -365,27 +229,22 @@ function
     "Usage:",
     "  contract-get",
     "    <quiet>",
+    "    <retries_max>",
     "    <wallet_seed>",
     "    <wallet_password_path>",
-    "    <contract_address>",
-    "    <contract_abi_path>",
-    "    <contract_bytecode_path>",
-    "    <contract_compiler_output_path>",
+    "    <transaction_address>",
     "    <target_network>",
     "    (<api_key_path>)",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
     "                                   Default: y",
+    "  <retries_max>                    Maximum number of retries before",
+    "                                   failing.",
     "  <wallet_seed>                    Path of the seed phrase.",
     "  <wallet_password_path>           Wallet password path.",
-    "  <contract_address>               Contract of the address one is",
-    "                                   getting the contract of.",
-    "  <contract_abi_path>              Path of the contract ABI.",
-    "  <contract_bytecode_path>         Path for the contract bytecode.",
-    "  <contract_compiler_output_path>  Path for the contract compiler",
-    "                                   output path (the hardhat artifact).",
-    "  <target_network>                 Network on which the contract",
+    "  <transaction_address>            Transaction one wants to retrieve.",
+    "  <target_network>                 Network on which the transaction",
     "                                   resides.",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
@@ -401,7 +260,8 @@ function
 }
 
 function _cmdline_parse() {
-  quiet = "y";
+  quiet =
+    "y";
   process.argv.forEach(
     function (
       _value,
@@ -412,71 +272,70 @@ function _cmdline_parse() {
           _value;
       }
       if ( _index == 3 ) {
-        wallet_seed =
+        retries_max =
           _value;
       }
       if ( _index == 4 ) {
-        wallet_password_path =
+        wallet_seed =
           _value;
       }
       if ( _index == 5 ) {
-        contract_address =
+        wallet_password_path =
           _value;
       }
       if ( _index == 6 ) {
-        contract_abi_path =
-          _value;
-      }
-      if ( _index == 7 ) {
-        contract_bytecode_path =
-          _value;
-      }
-      if ( _index == 8 ) {
-        contract_compiler_output_path =
-          _value;
-      }
-      if ( _index == 9 ) {
         target_network =
           _value;
       }
-      if ( _index ==  10 ) {
+      if ( _index == 7 ) {
         api_key_path =
+          _value;
+      }
+      if ( _index == 8 ) {
+        transaction_address =
           _value;
       }
       if ( _value == "-h" ||
            _value == "--help" ) {
+        quiet =
+          "n";
         _usage();
       }
     }
   );
-  if ( contract_abi_path == "" &&
-       contract_bytecode_path == "" && 
-       contract_compiler_output_path == ""  ) {
+  if ( transaction_address == "" ) {
     _usage();
   }
 }
 
+function
+  _overrides_set() {
+  if ( retries_max == "" ) {
+    retries_max =
+      100;
+  }
+}
+
 if ( _cmdline_check(
-       "contract-get") ) {
+       "transaction-get") ) {
   _global_variables();
   _cmdline_parse();
+  _overrides_set();
   _config_show();
   app_opts = [
+    retries_max,
     wallet_seed,
     wallet_password_path,
-    contract_address,
-    contract_abi_path,
-    contract_bytecode_path,
-    contract_compiler_output_path,
     target_network,
     api_key_path,
+    transaction_address
   ];
-  _contract_get.apply(
+  _transaction_get.apply(
     null,
     app_opts);
 }
 
 module.exports = {
-  _contract_get:
-    _contract_get
+  _transaction_get:
+    _transaction_get
 };

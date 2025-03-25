@@ -33,8 +33,7 @@ source \
 
 # shellcheck disable=SC2034
 _global_variables() {
-  call_date=""
-  call_type=""
+  retrieval_date=""
   wallet_name=""
   wallet_path=""
   wallet_password=""
@@ -43,13 +42,7 @@ _global_variables() {
   api_key=""
   target_network=""
   rpc_selection=""
-  contract_address=""
-  contract_bytecode=""
-  contract_compiler_output=""
-  contract_abi=""
-  contract_method=""
-  method_args=()
-  msg_value=""
+  transaction_address=""
   measure_unit=""
   retries_max=""
   color=""
@@ -62,8 +55,6 @@ _requirements() {
   _check_cmd \
     "evm-chains-info"
   _check_cmd \
-    'evm-contracts-abi-get'
-  _check_cmd \
     'evm-wallet'
   _check_cmd \
     'node-run'
@@ -72,22 +63,18 @@ _requirements() {
 _get_conf_dir_path() {
   local \
     _dir
-  _dir="${HOME}/.config/$( \
-    _get \
-      "app" \
-      "name")"
+  _dir="${HOME}/.config/${app_name}"
   echo \
     "${_dir}"
 }
 
-_evm_contract_call_type() {
+_transaction_get() {
   local \
-    _type="${1}" \
     _lib
   _lib="$( \
-    _get_lib)/evm-contracts-tools"
+    _get_lib)/evm-transactions-tools"
   echo \
-    "${_lib}/evm-contract-call-${_type}"
+    "${_lib}/transaction-get"
 }
 
 _network_setup() {
@@ -99,8 +86,8 @@ _network_setup() {
     _rpc \
     _msg=()
   _msg=(
-    "looking for info on EVM blockchain"
-    "'${_chain}'"
+    "Looking for info on EVM blockchain"
+    "'${_chain}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -175,47 +162,18 @@ _artifact_missing_reset() {
   fi
 }
 
-_artifacts_check() {
+_evm_transaction_get() {
   local \
-    _msg=()
-  _artifact_missing_reset \
-    "abi_path"
-  _artifact_missing_reset \
-    "bytecode_path"
-  _artifact_missing_reset \
-    "compiler_output_path"
-  if [[ "${_contract_compiler_output_path}" == "" ]] && \
-     [[ "${_contract_abi_path}" == "" ]]; then
-    _msg=(
-      "to safely perform an EVM contract call"
-      "you have to provide either"
-      "the contract abi or"
-      "an hardhat compilation artifact"
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-}
-
-_evm_contract_call() {
-  local \
-    _call_type="${1}" \
-    _wallet_name="${2}" \
-    _wallet_path="${3}" \
-    _wallet_password="${4}" \
-    _wallet_seed="${5}" \
-    _api_key_path="${6}" \
-    _msg_value="${7}" \
-    _measure_unit="${8}" \
-    _retries_max="${9}" \
-    _network="${10}" \
-    _rpc_selection="${11}" \
-    _contract_address="${12}" \
-    _contract_abi_path="${13}" \
-    _contract_bytecode_path="${14}" \
-    _contract_compiler_output_path="${15}" \
-    _contract_method="${16}" \
+    _wallet_name="${1}" \
+    _wallet_path="${2}" \
+    _wallet_password="${3}" \
+    _wallet_seed="${4}" \
+    _api_key_path="${5}" \
+    _measure_unit="${6}" \
+    _retries_max="${7}" \
+    _network="${8}" \
+    _rpc_selection="${9}" \
+    _transaction_address="${10}" \
     _node_run_opts=() \
     _method_args=() \
     _cmd \
@@ -223,10 +181,7 @@ _evm_contract_call() {
     _network_backend \
     _msg=()
   shift \
-    16
-  _method_args+=(
-    "$@"
-  )
+    10
   _node_run_opts+=(
     -r
       "${_retries_max}"
@@ -235,44 +190,20 @@ _evm_contract_call() {
     "${_network}" \
     "${_rpc_selection}"
   _cmd="$( \
-    _evm_contract_call_type \
-      "${_call_type}")"
-  _artifacts_check
-  if [[ "${_call_type}" == "static" ]]; then
-    _args+=(
-      "${quiet}"
-      "${_wallet_seed}"
-      "${_retries_max}"
-      "${_api_key_path}"
-      "${_network_backend}"
-      "${_contract_abi_path}"
-      "${_contract_bytecode_path}"
-      "${_contract_compiler_output_path}"
-      "${_contract_address}"
-      "${_contract_method}"
-      "${_method_args[@]}"
-    )
-  elif [[ "${_call_type}" == "dynamic" ]]; then
-    _args+=(
-      "${quiet}"
-      "${_retries_max}"
-      "${_wallet_seed}"
-      "${_wallet_password}"
-      "${_api_key_path}"
-      "${_msg_value}"
-      "${_measure_unit}"
-      "${_network_backend}"
-      "${_contract_address}"
-      "${_contract_abi_path}"
-      "${_contract_bytecode_path}"
-      "${_contract_compiler_output_path}"
-      "${_contract_method}"
-      "${_method_args[@]}"
-    )
-  fi
+    _transaction_get)"
+  # _artifacts_check
+  _args+=(
+    "${quiet}"
+    "${_retries_max}"
+    "" # "${_wallet_seed}"
+    "" # "${_wallet_password}"
+    "${_network_backend}"
+    "${_api_key_path}"
+    "${_transaction_address}"
+  )
   _msg=(
-    "calling evm-contract-call-${_call_type}"
-    "with arguments '${_args[*]}'"
+    "Calling 'transaction-get'"
+    "with arguments '${_args[*]}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -366,185 +297,6 @@ _api_key_auto_detect() {
     "${_key}"
 }
 
-_contract_abi_retrieve() {
-  local \
-    _evm_contracts_abi_get_opts=() \
-    _msg=() \
-    _data_dir
-  _msg=(
-    "no contract ABI or compiler output"
-    "available, attempting to obtain it from"
-    "a network's contracts ABI provider"
-    "at path '${_abi_target}'"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _data_dir="$( \
-    dirname \
-      "${_abi}")"
-  mkdir \
-    -p \
-    "${_data_dir}"
-  chmod \
-    700 \
-    "${_data_dir}"
-  if [[ "${quiet}" == "n" ]]; then
-    _evm_contracts_abi_get_opts+=(
-      --verbose
-    )
-  fi
-  _evm_contracts_abi_get_opts+=(
-    --network
-      "${_network}"
-    --key 
-      "${_key}"
-    --output-file
-      "${_abi_target}"
-  )
-  if [ ! -e "${_key}" ]; then
-    _msg=(
-      "contract ABI provider API"
-      "key '${_key}' not found,"
-      "fetch the ABI from the"
-      "provider may not work."
-    )
-    _msg_info \
-      "${_msg[*]}"
-  elif [ -e "${_key}" ]; then
-    _evm_contracts_abi_get_opts+=(
-      --key 
-        "${_key}"
-    )
-  fi
-  evm-contracts-abi-get \
-    "${_evm_contracts_abi_get_opts[@]}" \
-      "${_address}"
-  if [ $? -eq 0 ]; then
-    _msg=(
-      "obtained ABI from a network explorer,"
-      "setting contract ABI value to '${_abi_target}'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _abi="${_abi_target}"
-  else
-    _msg=(
-      "Couldn't obtain contract ABI"
-      "from the provider, blanking contract ABI value."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _abi=""
-  fi
-}
-
-_contract_abi_auto_detect() {
-  local \
-    _abi \
-    _address \
-    _compiler_output \
-    _key \
-    _network
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _address="$( \
-    _get \
-      "contract" \
-      "address")"
-  _key="$( \
-    _get \
-      "api" \
-      "key")"
-  _abi="$( \
-    _get \
-      "contract" \
-      "abi")"
-  _compiler_output="$( \
-    _get \
-      "contract" \
-      "compiler_output")"
-  _abi_target="${_abi}"
-  if [[ "${_abi_target}" == "" ]]; then
-     _abi_target="$( \
-      _default_artifact_path_get \
-        "abi")"
-  fi
-  if [[ ! -e "${_abi}" ]] && \
-     [[ ! -e "${_compiler_output}" ]]; then
-    if [[ -e "${_abi_target}" ]]; then
-      _abi="${_abi_target}"
-    elif [[ ! -e "${_abi_target}" ]]; then
-      _contract_abi_retrieve
-    fi
-  fi
-  _set \
-    "contract" \
-    "abi" \
-    "${_abi}"
-}
-
-_default_artifact_path_get() {
-  local \
-    _type="${1}" \
-    _address \
-    _app \
-    _artifact \
-    _data_dir \
-    _network
-  _network="$( \
-    _get \
-      "target" \
-      "network")"
-  _address="$( \
-    _get \
-      "contract" \
-      "address")"
-  _app="$( \
-    _get \
-      "app" \
-      "name")"
-  _data_dir="${HOME}/.local/share/${_app}"
-  if [[ "${_type}" == "abi" ]]; then
-    _artifact="${_data_dir}/${_network}/${_address}.abi.json"
-  elif [[ "${_type}" == "bytecode" ]]; then
-    _artifact="${_data_dir}/${_network}/${_address}.bin"
-  elif [[ "${_type}" == "compiler_output" ]]; then
-    _artifact="${_data_dir}/${_network}/${_address}.json"
-  fi
-  echo \
-    "${_artifact}"
-}
-
-_contract_bytecode_auto_detect() {
-  local \
-    _bytecode
-  _bytecode="$( \
-    _default_artifact_path_get \
-      "bytecode")"
-  if [[ ! -e "${_bytecode}" ]]; then
-    _bytecode=""
-  fi
-  _set_override \
-    "contract" \
-    "bytecode"
-    "${_bytecode}"
-}
-
-_artifact_local_auto_detect() {
-  local \
-    _type="${1}" \
-    _artifact
-  _artifact="$( \
-    _default_artifact_path_get \
-      "${_type}")"
-  _set_override \
-    "contract" \
-    "${_type}" \
-    "${_artifact}"
-}
-
 _set_overrides() {
   local \
     _abi \
@@ -561,19 +313,15 @@ _set_overrides() {
   elif [[ -z "${color}" ]]; then
     color="n"
   fi
-  _data_dir="${HOME}/.local/share/$(_get "app" "name")"
+  _data_dir="${HOME}/.local/share/${app_name}"
   _set_override \
-    "call" \
+    "retrieval" \
     "date" \
     "$(_get_date_human)"
   _set_override \
     "retries" \
     "max" \
     "300"
-  _set_override \
-    "contract" \
-    "address" \
-    ""
   _set_override \
     "wallet" \
     "name" \
@@ -586,68 +334,32 @@ _set_overrides() {
     "rpc" \
     "selection" \
     "kirsh"
-  _set_override \
-    "call" \
-    "type" \
-    "static"
   _api_key_auto_detect \
-    "$(_get \
-         "target" \
-         "network")"
-  if [[ "$(_get \
-             "contract" \
-             "address")" != "" ]]; then
-    _set_override \
-      "contract" \
-      "abi" \
-      "$(_default_artifact_path_get \
-           "abi")"
-    _artifact_local_auto_detect \
-      "bytecode"
-    _artifact_local_auto_detect \
-      "compiler_output"
-    if [[ "${contract_abi}" == "" ]] || 
-       [[ "$(_default_artifact_path_get \
-               "abi")" == "${contract_abi}" ]]; then
-      _contract_abi_auto_detect
-    fi
-  fi
+    "${target_network}"
   _set_override \
     "wallet" \
     "address" \
     "$(_wallet_address_get \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _set_override \
     "wallet" \
     "path" \
     "$(_wallet_path_get \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _set_override \
     "wallet" \
     "seed" \
     "$(_wallet_seed_get \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _set_override \
     "wallet" \
     "password" \
     "$(_wallet_password_get \
-         "$(_get \
-              "wallet" \
-              "name")")"
+         "${wallet_name}")"
   _set_override \
     "measure" \
     "unit" \
     "ether"
-  _set_override \
-    "msg" \
-    "value" \
-    "0"
 }
 
 # Show help usage, with an exit status.
@@ -664,11 +376,9 @@ _usage() {
 Run a smart contract function 
 
 Usage:
-  $(_get "app" "name")
+  ${app_name}
     [options]
-    <contract_address>
-    <contract_method>
-    ([method_args])
+    <transaction_address>
 
   networks:
     all those supported by
@@ -676,13 +386,6 @@ Usage:
     well as directly RPC address
 
   options:
-     -A <abi>               Contract ABI path.
-                            Default: ${contract_abi}
-     -B <bytecode>          Contract bytecode path.
-                            Default: ${contract_bytecode}
-     -C <compiler_output>   Contract compiler output
-                            path (the hardhat artifact).
-                            Default: ${contract_compiler_output}
      -N <wallet_name>       EVM wallet name.
                             Default: ${wallet_name}
      -w <wallet_path>       EVM wallet file path.
@@ -695,13 +398,8 @@ Usage:
                             are all those supported by
                             evm-chains-info and RPC addresses.
                             Default: ${target_network}
-     -t <call_type>         Static or dynamic.
-                            Default: ${call_type}
      -k <api_key>           Etherscan-like service key.
                             Default: ${api_key}
-     -V <msg_value>         How much <measure_unit> attach to the
-                            transaction.
-                            Default: ${msg_value}
      -u <measure_unit>      Measure unit for the transaction
                             value. It can be 'ether' or 'wei'.
                             Default: ${measure_unit}
@@ -740,8 +438,7 @@ _display_array() {
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "                Call date:   ${call_date}"
-  _msg_info "                Call type:   ${call_type}"
+  _msg_info "           Retrieval date:   ${retrieval_date}"
   _msg_info "              Max retries:   ${retries_max}"
   _msg_info "              Wallet name:   ${wallet_name}"
   _msg_info "              Wallet path:   ${wallet_path}"
@@ -749,18 +446,10 @@ _show_config() {
   _msg_info "              Wallet seed:   ${wallet_seed}"
   _msg_info "                  API key:   ${api_key}"
   _msg_info "           Wallet address:   ${wallet_address}"
-  _msg_info "            Message value:   ${msg_value}"
   _msg_info "             Measure unit:   ${measure_unit}"
   _msg_info "           Target network:   ${target_network}"
   _msg_info "     RPC selection method:   ${rpc_selection}"
-  _msg_info "         Contract address:   ${contract_address}"
-  _msg_info "             Contract ABI:   ${contract_abi}"
-  _msg_info "        Contract bytecode:   ${contract_bytecode}"
-  _msg_info " Contract compiler output:   ${contract_compiler_output}"
-  _msg_info "          Contract method:   ${contract_method}"
-  _msg_info "         Method arguments:   "
-  _display_array                          "${method_args[@]}"
-
+  _msg_info "      Transaction address:   ${transaction_address}"
 }
 
 _globals
@@ -769,21 +458,16 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'A:B:C:N:w:p:s:n:t:k:V:u:r:S:cvh?' \
+    'N:w:p:s:n:k:u:r:S:cvh?' \
     arg; do
   case \
     "${arg}" in
-    A) override_contract_abi="${OPTARG}" ;;
-    B) override_contract_bytecode="${OPTARG}" ;;
-    C) override_contract_compiler_output="${OPTARG}" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
     s) override_wallet_seed="${OPTARG}" ;;
     n) override_target_network="${OPTARG}" ;;
-    t) override_call_type="${OPTARG}" ;;
     k) override_api_key="${OPTARG}" ;;
-    V) override_msg_value="${OPTARG}" ;;
     u) override_measure_unit="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
     S) override_rpc_selection="${OPTARG}" ;;
@@ -804,59 +488,32 @@ shift \
     OPTIND - 1 ))
 if (( $# < 1 )); then
   _msg_error \
-    "no address given" \
-    0
-  _set_overrides
-  _usage \
-    1
-fi
-if (( $# < 2 )); then
-  _msg_error \
-    "no method given" \
+    "no transaction address given" \
     0
   _set_overrides
   _usage \
     1
 fi
 if (( 0 < $# )); then
-  _set \
-    "contract" \
-    "address" \
-    "${1}"
-fi
-if (( 1 < $# )); then
-  _set \
-    "contract" \
-    "method" \
-    "${2}"
+  transaction_address="${1}"
 fi
 shift \
-  2
-method_args=(
-  "$@"
-)
+  1
 _set_overrides
 _show_config
 app_opts=(
-  "${call_type}"
   "${wallet_name}"
   "${wallet_path}"
   "${wallet_password}"
   "${wallet_seed}"
   "${api_key}"
-  "${msg_value}"
   "${measure_unit}"
   "${retries_max}"
   "${target_network}"
   "${rpc_selection}"
-  "${contract_address}"
-  "${contract_abi}"
-  "${contract_bytecode}"
-  "${contract_compiler_output}"
-  "${contract_method}"
-  "${method_args[@]}"
+  "${transaction_address}"
 )
-_evm_contract_call \
+_evm_transaction_get \
   "${app_opts[@]}"
 
 # vim:set sw=2 sts=-1 et:
