@@ -193,8 +193,17 @@ async function
     _tx =
       await _network_provider.getTransaction(
         _transaction_address);
+    _receipt =
+      await _network_provider.getTransactionReceipt(
+        _transaction_address);
+    console.log(
+      "the transaction:");
     console.log(
       _tx);
+    console.log(
+      "the receipt:");
+    console.log(
+      _receipt);
   } catch (e) {
     console.error(
       e);
@@ -363,6 +372,29 @@ function
       "TODO: use evm_chains_info_module");
   }
 }
+
+async function
+  _transaction_get_cmdline(
+    _app_opts) {
+  try {
+    _tx = 
+      await _transaction_get.apply(
+        null,
+        _app_opts);
+    if ( _tx != undefined ) {
+      _printf(
+        _tx.toString());
+    }
+    else {
+      throw "Transaction Get returned undefined value."
+    }
+  } catch (error) {
+    _msg_error(
+      error,
+      1);
+  }
+}
+
 
 if ( _cmdline_check(
        "transaction-get") ) {
