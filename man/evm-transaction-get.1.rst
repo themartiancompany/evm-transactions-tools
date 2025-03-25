@@ -21,34 +21,32 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-=================
-evm-contract-call
-=================
+===================
+evm-transaction-get
+===================
 
---------------------------------------------------------------
-Ethereum Virtual Machine-compatible Contract Caller
---------------------------------------------------------------
-:Version: evm-contract-call |version|
+----------------------------------------------------------------------
+Ethereum Virtual Machine (EVM) compatible transactions retrieval tool
+----------------------------------------------------------------------
+:Version: evm-transaction-get |version|
 :Manual section: 1
 
 Synopsis
 ========
 
-evm-contract-call *[options]* *address* *method* (*args*)
+evm-transaction-get *[options]* *transaction_address*
 
 Description
 ===========
-
-Runs smart contract functions as if they were
-normal programs.
+Retrieves EVM networks transactions.
 
 The caller uses the Ethers JavaScript library to
-communicate with blockchain networks and integrates
-natively with and depends on evm-wallet
-but it's also possible to directly provide seeds files.
+communicate with blockchain networks and can
+perform authenticated RPC calls through evm-wallet.
 
 Networks
 =========
+
 All those supported by
 'evm-chains-info' as
 well as direct RPC addresses.
@@ -56,33 +54,38 @@ well as direct RPC addresses.
 Options
 =======
 
--o output_file          Name of the file in which to save
-                        the downloaded resource.
--A abi                  Contract ABI path.
--B bytecode             Contract bytecode path.
--C compiler_output      Contract compiler output
-                        path (the hardhat artifact).
+-a                      Whether to perform an authenticated
+                        RPC call.
 -N wallet_name          EVM wallet name.
 -w wallet_path          EVM wallet file path.
 -p wallet_path          EVM wallet password file.
--s wallet_seed          Standard 12-words seed phrase file.
+-s wallet_seed          EVM wallet seed file.
 -n network              EVM network name. Accepted values
                         are all those supported by
-                        evm-chains-info as well as RPC addresses.
--t call_type            Static (read-only) or dynamic (read/write).
+                        evm-chains-info and RPC addresses.
 -k api_key              Etherscan-like service key.
--V msg_value            How much <measure_unit> attach to the
-                        transaction.
 -u measure_unit         Measure unit for the transaction
                         value. It can be 'ether' or 'wei'.
 -r retries_max          Maximum number of retries before
                         declaring the call failed.
 -S rpc_selection        RPC selection method. It can be
                         'kirsh' or 'random'.
+-t transaction_type     It can be 'transaction' or
+                        'receipt'.
+-f tx_field             Returns a specific field from
+                        the transaction.
+-o output_path          If no transaction field is specified,
+                        it will save the output in json format
+                        at the specified location.
 
--h                      This message.
+-h                      Display help.
 -c                      Enable color output
 -v                      Enable verbose output
+
+Bugs
+====
+
+https://github.com/themartiancompany/evm-transactions-tools/-/issues
 
 Copyright
 =========
@@ -92,11 +95,8 @@ Copyright Pellegrino Prevete. AGPL-3.0.
 See also
 ========
 
-* evm-contract-deployment-address
-* evm-contract-deployments-dir
-* evm-contract-deployment-networks
-* evm-contract-deployment-versions
-* evm-contracts-abi-get
+* evm-contract-call
+* evm-contract-deployer-get
 * evm-wallet
 
 .. include:: variables.rst

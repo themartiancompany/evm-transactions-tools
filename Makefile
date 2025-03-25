@@ -44,12 +44,16 @@ install-scripts:
 
 	install \
 	  -vDm755 \
+	  "$(_PROJECT)/evm-transaction-get" \
+	  "$(BIN_DIR)/evm-transaction-get"
+	install \
+	  -vDm755 \
 	  "$(_PROJECT)/transaction-get" \
 	  "$(LIB_DIR)/$(_PROJECT)/transaction-get"
 	install \
 	  -vDm755 \
-	  "$(_PROJECT)/evm-transaction-get" \
-	  "$(BIN_DIR)/evm-transaction-get"
+	  "$(_PROJECT)/transaction-get" \
+	  "$(LIB_DIR)/$(_PROJECT)/transaction-receipt-get"
 
 install-doc:
 

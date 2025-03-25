@@ -28,12 +28,16 @@ _bin="$( \
         -v \
 	  "env")")"
 _lib="${_bin}/../lib"
+_libevm="${_lib}/libevm/libevm"
 source \
   "${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_libevm}"
 
 # shellcheck disable=SC2034
 _global_variables() {
   retrieval_date=""
+  call_auth=""
   wallet_name=""
   wallet_path=""
   wallet_password=""
@@ -42,6 +46,9 @@ _global_variables() {
   api_key=""
   target_network=""
   rpc_selection=""
+  transaction_type=""
+  tx_field=""
+  output_path=""
   transaction_address=""
   measure_unit=""
   retries_max=""
@@ -57,6 +64,8 @@ _requirements() {
   _check_cmd \
     'evm-wallet'
   _check_cmd \
+    "jq"
+  _check_cmd \
     'node-run'
 }
 
@@ -70,11 +79,18 @@ _get_conf_dir_path() {
 
 _transaction_get() {
   local \
-    _lib
+    _type="${1}" \
+    _lib \
+    _cmd
   _lib="$( \
     _get_lib)/evm-transactions-tools"
+  if [[ "${_type}" == "transaction" ]]; then
+    _cmd="${_lib}/transaction-get"
+  elif [[ "${_type}" == "receipt" ]]; then
+    _cmd="${_lib}/transaction-receipt-get"
+  fi
   echo \
-    "${_lib}/transaction-get"
+    "${_cmd}"
 }
 
 _network_setup() {
@@ -129,7 +145,7 @@ _network_setup() {
   fi
   _msg=(
     "Selected RPC address"
-    "'${_rpc}'"
+    "'${_rpc}'."
   )
   _msg_info \
     "${_msg[*]}"
@@ -138,26 +154,33 @@ _network_setup() {
 
 _evm_transaction_get() {
   local \
-    _wallet_name="${1}" \
-    _wallet_path="${2}" \
-    _wallet_password="${3}" \
-    _wallet_seed="${4}" \
-    _api_key_path="${5}" \
-    _measure_unit="${6}" \
-    _retries_max="${7}" \
-    _network="${8}" \
-    _rpc_selection="${9}" \
-    _transaction_address="${10}" \
+    _call_auth="${1}" \
+    _wallet_name="${2}" \
+    _wallet_path="${3}" \
+    _wallet_password="${4}" \
+    _wallet_seed="${5}" \
+    _api_key_path="${6}" \
+    _measure_unit="${7}" \
+    _retries_max="${8}" \
+    _network="${9}" \
+    _rpc_selection="${10}" \
+    _transaction_type="${11}" \
+    _tx_field="${12}" \
+    _output_path="${13}" \
+    _transaction_address="${14}" \
     _node_run_opts=() \
     _method_args=() \
     _cmd \
+    _base_args=() \
     _args=() \
+    _verbose_args=() \
     _network_backend \
     _chain_id \
     _chain_name \
+    _transaction \
     _msg=()
   shift \
-    10
+    14
   _node_run_opts+=(
     -r
       "${_retries_max}"
@@ -166,20 +189,45 @@ _evm_transaction_get() {
     "${_network}" \
     "${_rpc_selection}"
   _cmd="$( \
-    _transaction_get)"
+    _transaction_get \
+      "${_transaction_type}")"
   _args+=(
     "${quiet}"
     "${_retries_max}"
-    "" # "${_wallet_seed}"
-    "" # "${_wallet_password}"
+    "${_wallet_seed}"
+    "${_wallet_password}"
     "${_chain_id}"
     "${_chain_name}"
     "${_network_backend}"
     "${_api_key_path}"
+  )
+  if [[ "${_tx_field}" == "" ]]; then
+    _msg=(
+      "Saving output to"
+      "'${_output_path}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _args+=(
+      "${_output_path}"
+    )
+  elif [[ "${_tx_field}" != "" ]]; then
+    _msg=(
+      "You are showing verbose log"
+      "together with the output."
+    )
+    _msg_warning \
+      "${_msg[*]}"
+    _args+=(
+      # Only console, no output path
+      ""
+    )
+  fi
+  _args+=(
     "${_transaction_address}"
   )
   _msg=(
-    "Calling 'transaction-get'"
+    "Calling '$(basename ${_cmd})'"
     "with arguments '${_args[*]}'."
   )
   _msg_info \
@@ -190,96 +238,28 @@ _evm_transaction_get() {
     "${_args[@]}"
 }
 
-_wallet_path_get() {
+_output_path_auto_detect() {
   local \
-    _wallet_name="${1}" \
-    _path \
-    _wallet_address
-  _wallet_address="$( \
-    evm-wallet \
-      get \
-        "${_wallet_name}" \
-        "address")"
-  _path="${HOME}/.config/evm-wallet/${_wallet_name}.dat"
-  echo \
-    "${_path}"
-}
-
-_wallet_password_get() {
-  local \
-    _wallet_name="${1}" \
-    _path
-  _path="${HOME}/.config/evm-wallet/${_wallet_name}-password.txt"
-  echo \
-    "${_path}"
-}
-
-_wallet_seed_get() {
-  local \
-    _wallet_name="${1}" \
-    _path
-  _path="${HOME}/.config/evm-wallet/${_wallet_name}-seed.txt"
-  echo \
-    "${_path}"
-}
-
-_wallet_address_get() {
-  local \
-    _wallet_name="${1}" \
-    _wallet_address
-  _wallet_address="$( \
-    evm-wallet \
-      get \
-        "${_wallet_name}" \
-        "address")"
-  echo \
-    "${_wallet_address}"
-}
-
-_api_key_auto_detect() {
-  local \
-    _chain="${1}" \
-    _chain_name \
-    _key \
-    _msg=()
-  _key="$( \
-    evm-chains-explorers \
-      -c \
-        "${_chain}" \
-      -s \
-        'kirsh' \
-      get \
-        keys)"
-  _chain_name="$( \
-    evm-chains-info \
-      -o \
-        "name" \
-      "${_chain}")"
-  if [[ ! -e "${_key}" ]]; then
-    _msg=(
-      "Found no provider services"
-      "keys for chain '${_chain_name}'."
-      "Check available service"
-      "providers with \"evm-chains-info"
-      "-o explorers '${_chain}'\""
-      "and add the relative api key in"
-      "'<user_home>/.config/evm-chains-explorers/<service>/default.txt'"
-    )
-    _msg_info \
-      "${_msg[*]}"
-  fi
+    _cache_dir \
+    _output_dir \
+    _output_path
+  _cache_dir="${HOME}/.cache/${app_name}"
+  _output_dir="${_cache_dir}/${target_network}/${transaction_type}"
+  _output_path="${_output_dir}/${transaction_address}.json"
+  mkdir \
+    -p \
+    "${_output_dir}" || \
+    true
+  chmod \
+    700 \
+    "${_output_dir}"
   _set_override \
-    "api" \
-    "key" \
-    "${_key}"
+    "output" \
+    "path" \
+    "${_output_path}"
 }
 
 _set_overrides() {
-  local \
-    _abi \
-    _bytecode \
-    _compiler_output \
-    _data_dir
   if [[ -v override_quiet ]]; then
     quiet="${override_quiet}"
   elif [[ -z "${quiet}" ]]; then
@@ -290,49 +270,86 @@ _set_overrides() {
   elif [[ -z "${color}" ]]; then
     color="n"
   fi
-  _data_dir="${HOME}/.local/share/${app_name}"
   _set_override \
     "retrieval" \
     "date" \
     "$(_get_date_human)"
   _set_override \
+    "call" \
+    "auth" \
+    "n"
+  _set_override \
     "retries" \
     "max" \
     "300"
   _set_override \
-    "wallet" \
-    "name" \
-    "default"
-  _set_override \
     "target" \
     "network" \
-    "Gnosis"
+    "100"
   _set_override \
     "rpc" \
     "selection" \
     "kirsh"
+  _set_override \
+    "transaction" \
+    "type" \
+    "transaction"
+  _set_override \
+    "tx" \
+    "field" \
+    ""
+  _output_path_auto_detect
   _api_key_auto_detect \
     "${target_network}"
-  _set_override \
-    "wallet" \
-    "address" \
-    "$(_wallet_address_get \
-         "${wallet_name}")"
-  _set_override \
-    "wallet" \
-    "path" \
-    "$(_wallet_path_get \
-         "${wallet_name}")"
-  _set_override \
-    "wallet" \
-    "seed" \
-    "$(_wallet_seed_get \
-         "${wallet_name}")"
-  _set_override \
-    "wallet" \
-    "password" \
-    "$(_wallet_password_get \
-         "${wallet_name}")"
+  if [[ "${call_auth}" == "y" ]]; then
+    _set_override \
+      "wallet" \
+      "name" \
+      "default"
+    _set_override \
+      "wallet" \
+      "path" \
+      "$(_wallet_path_get \
+           "${wallet_name}")"
+    _secret_auto_detect \
+      "seed" \
+      "seed" \
+      "evm-wallet" \
+      "${wallet_name}"
+    _secret_auto_detect \
+      "password" \
+      "plain" \
+      "evm-wallet" \
+      "${wallet_name}"
+    _set_override \
+      "wallet" \
+      "address" \
+      "$(evm-wallet \
+           get \
+             "${wallet_name}" \
+             "address")"
+  elif [[ "${call_auth}" == "n" ]]; then
+    _set_override \
+      "wallet" \
+      "name" \
+      ""
+    _set_override \
+      "wallet" \
+      "path" \
+      ""
+    _set_override \
+      "wallet" \
+      "seed" \
+      ""
+    _set_override \
+      "wallet" \
+      "password" \
+      ""
+    _set_override \
+      "wallet" \
+      "address" \
+      ""
+  fi
   _set_override \
     "measure" \
     "unit" \
@@ -350,7 +367,7 @@ _usage() {
       -d '' \
       _usage_text << \
         ENDUSAGETEXT || true
-Run a smart contract function 
+Retrieves EVM networks transactions.
 
 Usage:
   ${app_name}
@@ -386,6 +403,16 @@ Usage:
      -S <rpc_selection>     RPC selection method. It can be
                             'kirsh' or 'random'.
                             Default: ${rpc_selection}
+     -t <transaction_type>  It can be 'transaction' or
+                            'receipt'.
+                            Default: ${transaction_type}
+     -f <tx_field>          Returns a specific field from
+                            the transaction.
+                            Default: ${tx_field}
+     -o <output_path>       If no transaction field is specified,
+                            it will save the output in json format
+                            at the specified location.
+                            Default: ${output_path}
 
      -h                     This message.
      -c                     Enable color output
@@ -416,6 +443,7 @@ _display_array() {
 _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "           Retrieval date:   ${retrieval_date}"
+  _msg_info "       Authenticated call:   ${call_auth}"
   _msg_info "              Max retries:   ${retries_max}"
   _msg_info "              Wallet name:   ${wallet_name}"
   _msg_info "              Wallet path:   ${wallet_path}"
@@ -426,6 +454,9 @@ _show_config() {
   _msg_info "             Measure unit:   ${measure_unit}"
   _msg_info "           Target network:   ${target_network}"
   _msg_info "     RPC selection method:   ${rpc_selection}"
+  _msg_info "         Transaction type:   ${transaction_type}"
+  _msg_info "        Transaction field:   ${tx_field}"
+  _msg_info "              Output path:   ${output_path}"
   _msg_info "      Transaction address:   ${transaction_address}"
 }
 
@@ -435,10 +466,11 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'N:w:p:s:n:k:u:r:S:cvh?' \
+    'aN:w:p:s:n:k:u:r:S:t:f:o:cvh?' \
     arg; do
   case \
     "${arg}" in
+    a) override_call_auth="y" ;;
     N) override_wallet_name="${OPTARG}" ;;
     w) override_wallet_path="${OPTARG}" ;;
     p) override_wallet_password="${OPTARG}" ;;
@@ -448,6 +480,9 @@ while \
     u) override_measure_unit="${OPTARG}" ;;
     r) override_retries_max="${OPTARG}" ;;
     S) override_rpc_selection="${OPTARG}" ;;
+    t) override_transaction_type="${OPTARG}" ;;
+    f) override_tx_field="${OPTARG}" ;;
+    o) override_output_path="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
     h|?) _set_overrides && \
@@ -479,6 +514,7 @@ shift \
 _set_overrides
 _show_config
 app_opts=(
+  "${call_auth}"
   "${wallet_name}"
   "${wallet_path}"
   "${wallet_password}"
@@ -488,6 +524,9 @@ app_opts=(
   "${retries_max}"
   "${target_network}"
   "${rpc_selection}"
+  "${transaction_type}"
+  "${tx_field}"
+  "${output_path}"
   "${transaction_address}"
 )
 _evm_transaction_get \

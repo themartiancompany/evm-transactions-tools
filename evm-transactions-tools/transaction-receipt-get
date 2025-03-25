@@ -37,8 +37,6 @@ _dirname =
   _libcrash._dirname;
 _file_read =
   _libcrash._file_read;
-_file_write =
-  _libcrash._file_write;
 _json_display =
   _libcrash._json_display;
 _path_join =
@@ -47,8 +45,6 @@ _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
-_printf =
-  _libcrash._printf;
 const
   _evm_wallet_get =
     require(
@@ -65,7 +61,7 @@ _provider_get =
 function
   _global_variables() {
   app_name =
-    "transaction-get"
+    "transaction-receipt-get"
   retries_max =
     "";
   wallet_seed =
@@ -122,7 +118,7 @@ function
 }
 
 async function
-  _transaction_get(
+  _transaction_receipt_get(
     _retries_max,
     _wallet_seed,
     _wallet_password_path,
@@ -135,10 +131,11 @@ async function
   let
     _api_key,
     _get_transaction_opts,
+    _json,
     _network,
     _network_provider,
     _provider_get_opts,
-    _tx,
+    _receipt,
     _wallet,
     _wallet_get_opts,
     _wallet_path_list,
@@ -161,7 +158,7 @@ async function
   }
   _provider_get_opts.push(
     _api_key);
-  if ( _chain_id == undefined ) {
+  if (_chain_id == undefined ) {
     _chain_id =
       "";
   }
@@ -203,22 +200,21 @@ async function
       _wallet;
   }
   try {
-    _tx =
-      await _network_provider.getTransaction(
+    _receipt =
+      await _network_provider.getTransactionReceipt(
         _transaction_address);
     if ( _output_path != "" ) {
       _json =
         _json_display(
-	  _tx);
+          _receipt);
       _file_write(
         _output_path,
-	_json);
-    }
+        _json);
   } catch (e) {
     console.error(
       e);
   }
-  return _tx;
+  return _receipt;
 }
 
 function
@@ -297,7 +293,7 @@ function
     "  <target_network>                 Network on which the transaction",
     "                                   resides.",
     "  <api_key_path>                   Path of the API key for the",
-    "                                   network provider service.",
+    "                                   contract ABI provider service.",
     "  <output_path>                    File on which to optionally save",
     "                                   the output.",
     "  <transaction_address>            Transaction one wants to retrieve.",
@@ -395,25 +391,25 @@ function
 }
 
 async function
-  _transaction_get_cmdline(
+  _transaction_receipt_get_cmdline(
     _app_opts) {
   let
     _json,
-    _tx;
+    _receipt;
   try {
-    _tx = 
-      await _transaction_get.apply(
+    _receipt = 
+      await _transaction_receipt_get.apply(
         null,
         _app_opts);
-    if ( _tx != undefined ) {
+    if ( _receipt != undefined ) {
       _json =
         _json_display(
-          _tx);
+          _receipt);
       _printf(
         _json);
     }
     else {
-      throw "Transaction Get returned undefined value."
+      throw "'Transaction Receipt Get' returned undefined value."
     }
   } catch (error) {
     _msg_error(
@@ -422,9 +418,8 @@ async function
   }
 }
 
-
 if ( _cmdline_check(
-       "transaction-get") ) {
+       "transaction-receipt-get") ) {
   _global_variables();
   _cmdline_parse();
   _overrides_set();
@@ -440,11 +435,11 @@ if ( _cmdline_check(
     output_path,
     transaction_address
   ];
-  _transaction_get_cmdline(
+  _transaction_receipt_get_cmdline(
     app_opts);
 }
 
 module.exports = {
-  _transaction_get:
-    _transaction_get
+  _transaction_receipt_get:
+    _transaction_receipt_get
 };
