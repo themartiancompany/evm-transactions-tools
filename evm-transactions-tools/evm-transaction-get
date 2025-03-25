@@ -48,6 +48,7 @@ _global_variables() {
   rpc_selection=""
   transaction_type=""
   tx_field=""
+  field_dequote=""
   output_path=""
   transaction_address=""
   measure_unit=""
@@ -166,21 +167,23 @@ _evm_transaction_get() {
     _rpc_selection="${10}" \
     _transaction_type="${11}" \
     _tx_field="${12}" \
-    _output_path="${13}" \
-    _transaction_address="${14}" \
+    _field_dequote="${13}" \
+    _output_path="${14}" \
+    _transaction_address="${15}" \
+    _jq_opts=() \
     _node_run_opts=() \
     _method_args=() \
     _cmd \
     _base_args=() \
     _args=() \
-    _verbose_args=() \
     _network_backend \
     _chain_id \
     _chain_name \
     _transaction \
+    _value \
     _msg=()
   shift \
-    14
+    15
   _node_run_opts+=(
     -r
       "${_retries_max}"
@@ -191,8 +194,7 @@ _evm_transaction_get() {
   _cmd="$( \
     _transaction_get \
       "${_transaction_type}")"
-  _args+=(
-    "${quiet}"
+  _base_args+=(
     "${_retries_max}"
     "${_wallet_seed}"
     "${_wallet_password}"
@@ -209,16 +211,14 @@ _evm_transaction_get() {
     _msg_info \
       "${_msg[*]}"
     _args+=(
+      "${quiet}"
+      "${_base_args[@]}"
       "${_output_path}"
     )
   elif [[ "${_tx_field}" != "" ]]; then
-    _msg=(
-      "You are showing verbose log"
-      "together with the output."
-    )
-    _msg_warning \
-      "${_msg[*]}"
     _args+=(
+      "y"
+      "${_base_args[@]}"
       # Only console, no output path
       ""
     )
@@ -232,10 +232,26 @@ _evm_transaction_get() {
   )
   _msg_info \
     "${_msg[*]}"
-  node-run \
-    "${_node_run_opts[@]}" \
-    "${_cmd}" \
-    "${_args[@]}"
+  _transaction="$( \
+    node-run \
+      "${_node_run_opts[@]}" \
+      "${_cmd}" \
+      "${_args[@]}")"
+  if [[ "${_tx_field}" == "" ]]; then
+    echo \
+      "${_transaction}"
+  elif [[ "${_tx_field}" != "" ]]; then
+    if [[ "${_field_dequote}" == "y" ]]; then
+      _jq_opts+=(
+        -r
+      )
+    fi
+    echo \
+      "${_transaction}" | \
+      jq \
+        "${_jq_opts[@]}" \
+        ".${_tx_field}"
+  fi
 }
 
 _output_path_auto_detect() {
@@ -354,6 +370,10 @@ _set_overrides() {
     "measure" \
     "unit" \
     "ether"
+  _set_override \
+    "field" \
+    "dequote" \
+    "y"
 }
 
 # Show help usage, with an exit status.
@@ -380,6 +400,9 @@ Usage:
     well as directly RPC address
 
   options:
+     -a                     Whether to perform an authenticated
+                            call.
+                            Default: ${call_auth}
      -N <wallet_name>       EVM wallet name.
                             Default: ${wallet_name}
      -w <wallet_path>       EVM wallet file path.
@@ -409,6 +432,10 @@ Usage:
      -f <tx_field>          Returns a specific field from
                             the transaction.
                             Default: ${tx_field}
+     -d <y/n>               Whether to remove quotes from
+                            the field value (for string fields).
+                            Default: ${field_dequote}
+
      -o <output_path>       If no transaction field is specified,
                             it will save the output in json format
                             at the specified location.
@@ -456,6 +483,7 @@ _show_config() {
   _msg_info "     RPC selection method:   ${rpc_selection}"
   _msg_info "         Transaction type:   ${transaction_type}"
   _msg_info "        Transaction field:   ${tx_field}"
+  _msg_info "            Dequote field:   ${field_dequote}"
   _msg_info "              Output path:   ${output_path}"
   _msg_info "      Transaction address:   ${transaction_address}"
 }
@@ -466,7 +494,7 @@ _requirements
 # shellcheck disable=SC2034
 while \
   getopts \
-    'aN:w:p:s:n:k:u:r:S:t:f:o:cvh?' \
+    'aN:w:p:s:n:k:u:r:S:t:f:d:o:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -482,6 +510,7 @@ while \
     S) override_rpc_selection="${OPTARG}" ;;
     t) override_transaction_type="${OPTARG}" ;;
     f) override_tx_field="${OPTARG}" ;;
+    d) override_field_dequote="${OPTARG}" ;;
     o) override_output_path="${OPTARG}" ;;
     c) override_color="y" ;;
     v) override_quiet="n" ;;
@@ -500,7 +529,7 @@ shift \
     OPTIND - 1 ))
 if (( $# < 1 )); then
   _msg_error \
-    "no transaction address given" \
+    "No transaction address given." \
     0
   _set_overrides
   _usage \
@@ -526,6 +555,7 @@ app_opts=(
   "${rpc_selection}"
   "${transaction_type}"
   "${tx_field}"
+  "${field_dequote}"
   "${output_path}"
   "${transaction_address}"
 )

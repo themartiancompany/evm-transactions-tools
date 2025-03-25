@@ -37,6 +37,8 @@ _dirname =
   _libcrash._dirname;
 _file_read =
   _libcrash._file_read;
+_file_write =
+  _libcrash._file_write;
 _json_display =
   _libcrash._json_display;
 _path_join =
@@ -45,6 +47,8 @@ _msg_info =
   _libcrash._msg_info;
 _msg_error =
   _libcrash._msg_error;
+_printf =
+  _libcrash._printf;
 const
   _evm_wallet_get =
     require(
@@ -210,6 +214,7 @@ async function
       _file_write(
         _output_path,
         _json);
+    }
   } catch (e) {
     console.error(
       e);
