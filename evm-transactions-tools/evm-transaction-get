@@ -172,6 +172,8 @@ _evm_transaction_get() {
     "${_retries_max}"
     "" # "${_wallet_seed}"
     "" # "${_wallet_password}"
+    "${_chain_id}"
+    "${_chain_name}"
     "${_network_backend}"
     "${_api_key_path}"
     "${_transaction_address}"

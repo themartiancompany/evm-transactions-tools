@@ -158,47 +158,61 @@ async function
   if ( _chain_name != "" &&
        _chain_name != undefined ) {
     _provider_get_opts.push(
-      _chain_id);
+      _chain_name);
   }
   _network_provider =
     _provider_get.apply(
       null,
       _provider_get_opts);
+  _network =
+    await _network_provider.getNetwork()
+  console.log(_network_provider);
+  console.log(_network_provider.getNetwork);
+  console.log(_network);
+  console.log(_network_provider.provider.network);
+  console.log(_network_provider.network);
+  console.log(_network_provider.getTransaction);
+  _tx =
+    await _network_provider.getTransaction(
+      _transaction_address);
+  _tx =
+    await _network_provider.getTransaction.apply(
+      null,
+      [_transaction_address]);
   _get_transaction_opts =
     [];
-  if ( _wallet_seed != "" ) {
-    _wallet_path_list = [
-      _dirname(
-        _wallet_seed),
-      "wallet.dat"
-    ];
-    _wallet_path =
-      _path_join(
-        _wallet_path_list);
-    _wallet_get_opts = [
-      _wallet_path,
-      _wallet_password_path,
-      _wallet_seed,
-      _network_provider
-    ];
-    _wallet =
-      _wallet_get.apply(
-        null,
-        _wallet_get_opts);
-    _msg_info_wallet_selected(
-      _wallet);
-    _network_provider =
-      _wallet;
-  }
+  // if ( _wallet_seed != "" &&
+  //      _wallet_seed != undefined ) {
+  //   _wallet_path_list = [
+  //     _dirname(
+  //       _wallet_seed),
+  //     "wallet.dat"
+  //   ];
+  //   _wallet_path =
+  //     _path_join(
+  //       _wallet_path_list);
+  //   _wallet_get_opts = [
+  //     _wallet_path,
+  //     _wallet_password_path,
+  //     _wallet_seed,
+  //     _network_provider
+  //   ];
+  //   _wallet =
+  //     _wallet_get.apply(
+  //       null,
+  //       _wallet_get_opts);
+  //   _msg_info_wallet_selected(
+  //     _wallet);
+  //   _network_provider =
+  //     _wallet;
+  // }
   _get_transaction_opts.push(
     _transaction_address);
   try {
-    console.log(_network_provider);
-    console.log(_network_provider.getTransaction);
     _tx =
       await _network_provider.getTransaction.apply(
-	null,
-        _get_transaction_opts)
+        null,
+        _get_transaction_opts);
     // _tx =
     //   _transaction.from(
     //     _transaction_address);
@@ -228,13 +242,13 @@ function
       "{wallet_seed}",
       wallet_seed));
   _text.push(
-    "         Wallet password: {wallet_password_path}".replace(
-      "{wallet_password_path}",
-      wallet_password_path));
+    "                Chain ID: {chain_id}".replace(
+      "{chain_id}",
+      chain_id));
   _text.push(
-    "     Transaction address: {transaction_address}".replace(
-      "{transaction_address}",
-      transaction_address));
+    "              Chain Name: {chain_name}".replace(
+      "{chain_name}",
+      chain_name));
   _text.push(
     "          Target network: {target_network}".replace(
       "{target_network}",
@@ -243,6 +257,10 @@ function
     "                 API Key: {api_key_path}".replace(
       "{api_key_path}",
       api_key_path));
+  _text.push(
+    "     Transaction address: {transaction_address}".replace(
+      "{transaction_address}",
+      transaction_address));
   for ( _line of _text ) {
     _msg_info(
       _line);
@@ -262,9 +280,11 @@ function
     "    <retries_max>",
     "    <wallet_seed>",
     "    <wallet_password_path>",
-    "    <transaction_address>",
+    "    <chain_id>",
+    "    <chain_name>",
     "    <target_network>",
-    "    (<api_key_path>)",
+    "    <api_key_path>",
+    "    <transaction_address>",
     "",
     "Args:",
     "  <quiet>                          Can be 'y' or 'n'",
@@ -273,11 +293,13 @@ function
     "                                   failing.",
     "  <wallet_seed>                    Path of the seed phrase.",
     "  <wallet_password_path>           Wallet password path.",
-    "  <transaction_address>            Transaction one wants to retrieve.",
+    "  <chain_id>                       Chain ID for the network.",
+    "  <chain_name>                     Name for the network.",
     "  <target_network>                 Network on which the transaction",
     "                                   resides.",
     "  <api_key_path>                   Path of the API key for the",
     "                                   contract ABI provider service.",
+    "  <transaction_address>            Transaction one wants to retrieve.",
     "",
     "  Options:",
     "    -h                             This help."
@@ -315,14 +337,22 @@ function _cmdline_parse() {
           _value;
       }
       if ( _index == 6 ) {
-        target_network =
+        chain_id =
           _value;
       }
       if ( _index == 7 ) {
-        api_key_path =
+        chain_name =
           _value;
       }
       if ( _index == 8 ) {
+        target_network =
+          _value;
+      }
+      if ( _index == 9 ) {
+        api_key_path =
+          _value;
+      }
+      if ( _index == 10 ) {
         transaction_address =
           _value;
       }
