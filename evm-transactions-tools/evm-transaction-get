@@ -81,8 +81,6 @@ _network_setup() {
   local \
     _chain="${1}" \
     _rpc_selection="${2}" \
-    _chain_name \
-    _chain_id \
     _rpc \
     _msg=()
   _msg=(
@@ -138,30 +136,6 @@ _network_setup() {
   _network_backend="${_rpc}"
 }
 
-_artifact_missing_reset() {
-  local \
-    _type="${1}" \
-    _artifact \
-    _msg=()
-  _artifact="$( \
-    _get \
-      "_contract" \
-      "${_type}")"
-  if [[ ! -e "${_artifact}" ]]; then
-    _msg=(
-      "contract '${_type//_/ }' at"
-      "'${_artifact}' does not"
-      "exist."
-    )
-    _msg_warning \
-      "${_msg[*]}"
-    _set \
-      "_contract" \
-      "${_type}" \
-      ""
-  fi
-}
-
 _evm_transaction_get() {
   local \
     _wallet_name="${1}" \
@@ -179,6 +153,8 @@ _evm_transaction_get() {
     _cmd \
     _args=() \
     _network_backend \
+    _chain_id \
+    _chain_name \
     _msg=()
   shift \
     10
@@ -191,7 +167,6 @@ _evm_transaction_get() {
     "${_rpc_selection}"
   _cmd="$( \
     _transaction_get)"
-  # _artifacts_check
   _args+=(
     "${quiet}"
     "${_retries_max}"

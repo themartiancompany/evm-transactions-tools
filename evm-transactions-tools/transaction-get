@@ -70,6 +70,10 @@ function
     "";
   transaction_address =
     "";
+  chain_id =
+    "";
+  chain_name =
+    "";
   target_network =
     "";
   api_key_path =
@@ -116,27 +120,50 @@ async function
     _retries_max,
     _wallet_seed,
     _wallet_password_path,
+    _chain_id,
+    _chain_name,
     _target_network,
     _api_key_path,
     _transaction_address) {
   let
     _api_key,
     _get_transaction_opts,
+    _network,
     _network_provider,
+    _provider_get_opts,
     _tx,
     _wallet,
     _wallet_get_opts,
     _wallet_path_list,
     _wallet_path;
+  _provider_get_opts = [
+    _target_network
+  ];
   if ( _api_key_path != "" ) {
     _api_key =
       _file_read(
         _api_key_path);
   }
+  else if ( _api_key_path == undefined ) {
+    _api_key =
+      "";
+  }
+  _provider_get_opts.push(
+    _api_key);
+  if ( _chain_id != "" &&
+       _chain_id != undefined ) {
+    _provider_get_opts.push(
+      _chain_id);
+  }
+  if ( _chain_name != "" &&
+       _chain_name != undefined ) {
+    _provider_get_opts.push(
+      _chain_id);
+  }
   _network_provider =
-    _provider_get(
-      _target_network,
-      _api_key);
+    _provider_get.apply(
+      null,
+      _provider_get_opts);
   _get_transaction_opts =
     [];
   if ( _wallet_seed != "" ) {
@@ -166,6 +193,8 @@ async function
   _get_transaction_opts.push(
     _transaction_address);
   try {
+    console.log(_network_provider);
+    console.log(_network_provider.getTransaction);
     _tx =
       await _network_provider.getTransaction.apply(
 	null,
@@ -221,7 +250,8 @@ function
 }
 
 function
-  _usage() {
+  _usage(
+    _exit_code) {
   let
     _line,
     _text;
@@ -256,7 +286,8 @@ function
     _msg_info(
       _line);
   }
-  process.exit();
+  process.exit(
+    _exit_code);
 }
 
 function _cmdline_parse() {
@@ -299,12 +330,16 @@ function _cmdline_parse() {
            _value == "--help" ) {
         quiet =
           "n";
-        _usage();
+        _usage(
+	  0);
       }
     }
   );
   if ( transaction_address == "" ) {
-    _usage();
+    quiet =
+      "n";
+    _usage(
+      1);
   }
 }
 
@@ -313,6 +348,14 @@ function
   if ( retries_max == "" ) {
     retries_max =
       100;
+  }
+  if ( chain_id == "" ) {
+    _msg_info(
+      "TODO: use evm_chains_info_module");
+  }
+  if ( chain_name == "" ) {
+    _msg_info(
+      "TODO: use evm_chains_info_module");
   }
 }
 
@@ -326,6 +369,8 @@ if ( _cmdline_check(
     retries_max,
     wallet_seed,
     wallet_password_path,
+    chain_id,
+    chain_name,
     target_network,
     api_key_path,
     transaction_address
